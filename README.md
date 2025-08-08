@@ -1,6 +1,6 @@
 # Flotation Grade Prediction - Modeling Framework
 
-This project implements a comprehensive modeling framework for predicting Pb grade in rougher concentrate using three different approaches: Linear Regression, Random Forest, and LSTM. The best performing model is then integrated into a digital twin for real-time process monitoring.
+This project implements a comprehensive modeling framework for predicting Pb grade in rougher concentrate using three different approaches: Linear Regression, Random Forest, and XGBoost. The best performing model is then integrated into a digital twin for real-time process monitoring.
 
 ## 🎯 Project Overview
 
@@ -9,7 +9,7 @@ This project implements a comprehensive modeling framework for predicting Pb gra
 **Models Implemented**:
 1. **Linear Regression** - Baseline linear model for comparison
 2. **Random Forest** - Non-linear ensemble model with feature importance
-3. **LSTM** - Deep learning time series model (expected to be the best performer)
+3. **XGBoost** - Advanced gradient boosting model with lagged features (expected to be the best performer)
 
 ## 📁 Project Structure
 
@@ -21,8 +21,8 @@ TUT Research Project/
 │   ├── linear_regression_model.pkl
 │   ├── linear_regression_scaler.pkl
 │   ├── random_forest_model.pkl
-│   ├── lstm_model.h5
-│   ├── lstm_scaler.pkl
+│   ├── xgboost_model.pkl
+│   ├── xgboost_scaler.pkl
 │   └── model_info.pkl
 ├── flotation_models.py                           # Main modeling framework
 ├── digital_twin_integration.py                   # Digital twin integration
@@ -76,12 +76,12 @@ print(f"Predicted Pb Grade: {prediction:.4f}%")
 - **Advantages**: Feature importance, robust to outliers
 - **Use Case**: When complex non-linear relationships exist
 
-### LSTM (Long Short-Term Memory)
-- **Purpose**: Deep learning time series model
-- **Features**: Sequential data with 12 time steps (1 hour history)
-- **Architecture**: 2 LSTM layers (64→32 units) + Dense layers
-- **Advantages**: Captures temporal dependencies, best for time series
-- **Expected Performance**: Highest accuracy due to temporal modeling
+### XGBoost (eXtreme Gradient Boosting)
+- **Purpose**: Advanced gradient boosting model with time series features
+- **Features**: Lagged features (3 time steps) + original features
+- **Architecture**: Gradient boosting with early stopping and regularization
+- **Advantages**: Fast training, excellent performance, feature importance, interpretable
+- **Expected Performance**: Highest accuracy due to advanced boosting and temporal features
 
 ## 🤖 Digital Twin Features
 
@@ -142,12 +142,14 @@ The framework evaluates models using:
 - min_samples_split: 5
 - min_samples_leaf: 2
 
-**LSTM**:
-- Time steps: 12 (1 hour history)
-- Architecture: 64→32 LSTM units
-- Dropout: 0.2, 0.2, 0.1
-- Learning rate: 0.001
-- Early stopping with patience: 20
+**XGBoost**:
+- Lag steps: 3 (previous time steps)
+- n_estimators: 200
+- max_depth: 6
+- learning_rate: 0.1
+- subsample: 0.8
+- colsample_bytree: 0.8
+- Early stopping rounds: 20
 
 ### Data Splitting
 - **Train**: 60% of data (chronological)
@@ -158,10 +160,11 @@ The framework evaluates models using:
 
 Based on the nature of flotation processes and time series characteristics:
 
-1. **LSTM** should perform best due to:
-   - Temporal dependencies in flotation processes
-   - Complex non-linear relationships
-   - Sequential nature of process variables
+1. **XGBoost** should perform best due to:
+   - Advanced gradient boosting algorithm
+   - Lagged features capturing temporal dependencies
+   - Excellent handling of non-linear relationships
+   - Robust regularization and early stopping
 
 2. **Random Forest** should be second best due to:
    - Ability to capture non-linear relationships
@@ -223,10 +226,10 @@ The trained model integrates seamlessly with flotation digital twin systems:
 
 ### Common Issues
 
-1. **Memory Issues with LSTM**:
-   - Reduce batch size
-   - Use smaller time steps
-   - Implement data generators
+1. **Memory Issues with XGBoost**:
+   - Reduce n_estimators
+   - Use smaller max_depth
+   - Implement early stopping
 
 2. **Poor Performance**:
    - Check data quality
@@ -236,13 +239,13 @@ The trained model integrates seamlessly with flotation digital twin systems:
 3. **Digital Twin Loading Errors**:
    - Ensure model files exist
    - Check file paths
-   - Verify TensorFlow version compatibility
+   - Verify XGBoost version compatibility
 
 ### Performance Optimization
 
-1. **For LSTM**:
-   - Use GPU acceleration
-   - Optimize batch size
+1. **For XGBoost**:
+   - Use parallel processing (n_jobs=-1)
+   - Optimize hyperparameters
    - Implement early stopping
 
 2. **For Production**:
