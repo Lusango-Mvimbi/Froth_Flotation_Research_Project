@@ -28,7 +28,7 @@ TUT Research Project/
 ├── digital_twin_integration.py                   # Digital twin integration
 ├── Run_Modeling_Pipeline.ipynb                   # Complete pipeline execution
 ├── modeling_requirements.txt                     # Dependencies
-└── README_Modeling.md                            # This file
+└── README.md                                     # This file
 ```
 
 ## 🚀 Quick Start
