@@ -1,0 +1,52 @@
+# Froth Flotation Research Project - Requirements
+# ==============================================
+#
+# This file contains all the Python packages required to run the
+# froth flotation optimization and prediction pipeline.
+#
+# Installation: pip install -r requirements.txt
+#
+# Core Data Processing Libraries
+# ------------------------------
+pandas>=1.5.0          # Data manipulation and analysis
+numpy>=1.21.0          # Numerical computing and array operations
+
+# Visualization Libraries
+# -----------------------
+matplotlib>=3.5.0      # Basic plotting and visualization
+seaborn>=0.11.0        # Statistical data visualization
+
+# Machine Learning Libraries
+# --------------------------
+scikit-learn>=1.1.0    # Core ML algorithms (Random Forest, Ridge, etc.)
+xgboost>=1.6.0         # Gradient boosting with GPU support
+joblib>=1.1.0          # Model serialization and parallel processing
+
+# GPU Acceleration (Optional)
+# ---------------------------
+# Uncomment the line below if you have NVIDIA GPU and want GPU acceleration
+# cupy-cuda12x>=13.0.0  # GPU-accelerated NumPy operations
+
+# Additional Utilities
+# --------------------
+pathlib2>=2.3.0        # Path manipulation utilities
+warnings>=0.0.1        # Warning management
+
+# Development and Jupyter (Optional)
+# ----------------------------------
+# Uncomment these if you want to use Jupyter notebooks
+# jupyter>=1.0.0        # Jupyter notebook environment
+# ipykernel>=6.0.0      # Python kernel for Jupyter
+
+# System Requirements
+# -------------------
+# - Python 3.8 or higher
+# - NVIDIA GPU (optional, for GPU acceleration)
+# - CUDA 11.0 or higher (optional, for GPU acceleration)
+
+# Installation Notes
+# ------------------
+# 1. For GPU support, install CUDA toolkit first
+# 2. Install cupy-cuda12x after CUDA installation
+# 3. Some packages may require additional system dependencies
+# 4. For Windows users, some GPU packages may not be available
