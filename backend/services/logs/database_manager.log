@@ -4252,3 +4252,23 @@ ConnectionResetError: [WinError 10054] An existing connection was forcibly close
 2025-08-19 14:30:45,075 - __main__ - INFO - [authentication_service.py:523] - login() - Authentication successful for user: LusangoM
 2025-08-19 14:30:45,084 - __main__ - INFO - [authentication_service.py:527] - login() - Session created: rKEqb0APbW5-yjZmAwoL...
 2025-08-19 14:30:45,086 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:30:45] "POST /login HTTP/1.1" 200 -
+2025-08-19 14:35:27,115 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:35:27,115 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:35:27,115 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:35:27,116 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:35:27,117 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:35:27,119 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:35:27,119 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:35:27,119 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:35:27,119 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:35:27,121 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:35:27,121 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:35:27,122 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:35:27,122 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:35:27,155 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:35:27,155 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:35:45,404 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:35:45] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:35:53,475 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:35:53] "GET /login HTTP/1.1" 200 -

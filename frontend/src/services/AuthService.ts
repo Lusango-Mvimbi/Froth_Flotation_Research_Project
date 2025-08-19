@@ -15,8 +15,8 @@ export class AuthService implements IAuthService {
 
   constructor(apiService: ApiService) {
     this.apiService = apiService;
-    // Clear any stored authentication data and require fresh login
-    this.clearStoredAuth();
+    // Load stored authentication data if available
+    this.loadStoredAuth();
   }
 
   async login(credentials: ILoginCredentials): Promise<ILoginResponse> {
@@ -74,25 +74,29 @@ export class AuthService implements IAuthService {
   }
 
   getCurrentUser(): IUser | null {
-    // Don't return stored user - require fresh login
-    return null;
+    // Return the current user if authenticated
+    return this.currentUser;
   }
 
   isAuthenticated(): boolean {
-    // Don't automatically authenticate from stored data - require fresh login
-    return false; // Always require fresh login
+    // Check if we have a valid token and user
+    return !!(this.token && this.currentUser);
   }
 
   private storeAuth(): void {
     if (this.token && this.currentUser) {
       localStorage.setItem('auth_token', this.token);
       localStorage.setItem('current_user', JSON.stringify(this.currentUser));
+      // Also store with the keys that the ApiService expects
+      localStorage.setItem('authToken', this.token);
+      localStorage.setItem('userData', JSON.stringify(this.currentUser));
     }
   }
 
   private loadStoredAuth(): void {
-    const token = localStorage.getItem('auth_token');
-    const userStr = localStorage.getItem('current_user');
+    // Try to load from multiple possible storage keys
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+    const userStr = localStorage.getItem('current_user') || localStorage.getItem('userData');
     
     if (token && userStr) {
       try {
@@ -100,10 +104,13 @@ export class AuthService implements IAuthService {
         this.token = token;
         this.currentUser = user;
         this.apiService.setAuthToken(token);
+        console.log('🔑 Loaded stored authentication for user:', user.username);
       } catch (error) {
         console.error('Failed to load stored auth:', error);
         this.clearAuth();
       }
+    } else {
+      console.log('🔑 No stored authentication found');
     }
   }
 
@@ -113,6 +120,8 @@ export class AuthService implements IAuthService {
     this.apiService.removeAuthToken();
     localStorage.removeItem('auth_token');
     localStorage.removeItem('current_user');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
   }
 
   private clearStoredAuth(): void {
