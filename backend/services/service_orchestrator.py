@@ -120,6 +120,20 @@ class FlotationServiceOrchestrator:
             'historical_data_count': len(self.historical_manager.historical_data)
         }
     
+    async def update_control_settings(self, controls: Dict[str, float]) -> None:
+        """Update control settings for the flotation process"""
+        try:
+            # Update the data generator with new control settings
+            if hasattr(self.data_generator, 'update_control_settings'):
+                self.data_generator.update_control_settings(controls)
+            
+            # Log the control settings update
+            self.logger.info(f"Control settings updated: {controls}")
+            
+        except Exception as e:
+            self.logger.error(f"Error updating control settings: {e}")
+            raise
+    
     def validate_system_health(self) -> Dict[str, Any]:
         """Validate the health of all system components"""
         health_status = {

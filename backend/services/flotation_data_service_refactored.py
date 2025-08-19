@@ -218,6 +218,45 @@ async def validate_parameters(parameters: Dict[str, float]):
         logger.error(f"Parameter validation failed: {e}")
         raise HTTPException(status_code=500, detail="Parameter validation failed")
 
+@app.post("/api/control-settings")
+async def update_control_settings(controls: Dict[str, float]):
+    """Update control settings for the flotation process"""
+    try:
+        # Validate the control parameters
+        is_valid = orchestrator.data_generator.validate_parameters(controls)
+        if not is_valid:
+            raise HTTPException(status_code=400, detail="Invalid control parameters")
+        
+        # Update the control settings in the orchestrator
+        await orchestrator.update_control_settings(controls)
+        
+        return {
+            "success": True,
+            "message": "Control settings updated successfully",
+            "controls": controls,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Control settings update failed: {e}")
+        raise HTTPException(status_code=500, detail="Control settings update failed")
+
+@app.get("/api/connections")
+async def get_connections():
+    """Get current connection status and statistics"""
+    try:
+        active_connections = len(orchestrator.websocket_manager.active_connections)
+        total_connections = orchestrator.websocket_manager.total_connections
+        
+        return {
+            "active_connections": active_connections,
+            "total_connections": total_connections,
+            "status": "operational" if active_connections > 0 else "idle",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Connections status retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail="Connections status retrieval failed")
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time data"""

@@ -4062,3 +4062,193 @@ ConnectionResetError: [WinError 10054] An existing connection was forcibly close
 2025-08-19 12:13:15,011 - __main__ - INFO - [authentication_service.py:523] - login() - Authentication successful for user: LusangoM
 2025-08-19 12:13:15,029 - __main__ - INFO - [authentication_service.py:527] - login() - Session created: _miL3Kw3N8TWT-nydBmC...
 2025-08-19 12:13:15,033 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 12:13:15] "POST /login HTTP/1.1" 200 -
+2025-08-19 14:09:45,081 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:09:45,082 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:09:45,082 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:09:45,082 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:09:45,090 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:09:45,092 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:09:45,092 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:09:45,093 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:09:45,093 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:09:45,095 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:09:45,095 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:09:45,096 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:09:45,096 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:09:45,127 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:09:45,127 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:13:13,863 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:13:13] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:13:24,920 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:13:24] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:13:43,967 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:13:43] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:13:58,215 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:13:58] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-19 14:13:58,466 - __main__ - INFO - [authentication_service.py:503] - login() - === LOGIN ATTEMPT ===
+2025-08-19 14:13:58,466 - __main__ - INFO - [authentication_service.py:504] - login() - Request method: POST
+2025-08-19 14:13:58,467 - __main__ - INFO - [authentication_service.py:505] - login() - Request headers: {'Host': 'localhost:8051', 'Connection': 'keep-alive', 'Content-Length': '42', 'Sec-Ch-Ua-Platform': '"Windows"', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"', 'Content-Type': 'application/json', 'Sec-Ch-Ua-Mobile': '?0', 'Accept': '*/*', 'Origin': 'http://localhost:3000', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:3000/', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Accept-Language': 'en,it;q=0.9,en-US;q=0.8'}
+2025-08-19 14:13:58,468 - __main__ - INFO - [authentication_service.py:506] - login() - Request is JSON: True
+2025-08-19 14:13:58,469 - __main__ - INFO - [authentication_service.py:507] - login() - Username: LusangoM
+2025-08-19 14:13:58,469 - __main__ - INFO - [authentication_service.py:508] - login() - Password length: 5
+2025-08-19 14:13:58,482 - __main__ - INFO - [authentication_service.py:523] - login() - Authentication successful for user: LusangoM
+2025-08-19 14:13:58,491 - __main__ - INFO - [authentication_service.py:527] - login() - Session created: IifRvcv2fpum0rAGZvra...
+2025-08-19 14:13:58,493 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:13:58] "POST /login HTTP/1.1" 200 -
+2025-08-19 14:18:54,444 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:18:54,444 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:18:54,444 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:18:54,445 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:18:54,446 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:18:54,448 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:18:54,448 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:18:54,448 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:18:54,448 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:18:54,450 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:18:54,450 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:18:54,451 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:18:54,451 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:18:54,479 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:18:54,479 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:19:12,836 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:19:12] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:19:21,315 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:19:21] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:19:32,198 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:19:32] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-19 14:19:32,443 - __main__ - INFO - [authentication_service.py:503] - login() - === LOGIN ATTEMPT ===
+2025-08-19 14:19:32,444 - __main__ - INFO - [authentication_service.py:504] - login() - Request method: POST
+2025-08-19 14:19:32,444 - __main__ - INFO - [authentication_service.py:505] - login() - Request headers: {'Host': 'localhost:8051', 'Connection': 'keep-alive', 'Content-Length': '42', 'Sec-Ch-Ua-Platform': '"Windows"', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"', 'Content-Type': 'application/json', 'Sec-Ch-Ua-Mobile': '?0', 'Accept': '*/*', 'Origin': 'http://localhost:3000', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:3000/', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Accept-Language': 'en,it;q=0.9,en-US;q=0.8'}
+2025-08-19 14:19:32,444 - __main__ - INFO - [authentication_service.py:506] - login() - Request is JSON: True
+2025-08-19 14:19:32,444 - __main__ - INFO - [authentication_service.py:507] - login() - Username: LusangoM
+2025-08-19 14:19:32,445 - __main__ - INFO - [authentication_service.py:508] - login() - Password length: 5
+2025-08-19 14:19:32,457 - __main__ - INFO - [authentication_service.py:523] - login() - Authentication successful for user: LusangoM
+2025-08-19 14:19:32,461 - __main__ - INFO - [authentication_service.py:527] - login() - Session created: 65qUtFCzLboS9p3Bp-69...
+2025-08-19 14:19:32,462 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:19:32] "POST /login HTTP/1.1" 200 -
+2025-08-19 14:23:29,834 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:23:29,835 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:23:29,835 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:23:29,835 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:23:29,837 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:23:29,838 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:23:29,838 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:23:29,838 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:23:29,838 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:23:29,840 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:23:29,840 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:23:29,840 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:23:29,840 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:23:29,868 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:23:29,868 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:23:48,220 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:23:48] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:23:56,701 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:23:56] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:25:22,842 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:25:22,843 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:25:22,843 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:25:22,844 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:25:22,845 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:25:22,847 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:25:22,847 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:25:22,848 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:25:22,848 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:25:22,852 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:25:22,853 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:25:22,853 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:25:22,854 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:25:22,908 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:25:22,909 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:25:41,272 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:25:41] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:25:49,591 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:25:49] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:26:37,454 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:26:37,454 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:26:37,455 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:26:37,455 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:26:37,457 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:26:37,458 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:26:37,458 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:26:37,458 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:26:37,459 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:26:37,460 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:26:37,461 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:26:37,461 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:26:37,461 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:26:37,484 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:26:37,485 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:26:55,784 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:26:55] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:27:03,822 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:27:03] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:28:19,352 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:28:19,353 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:28:19,353 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:28:19,353 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:28:19,355 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:28:19,357 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:28:19,357 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:28:19,357 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:28:19,358 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:28:19,359 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:28:19,360 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:28:19,360 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:28:19,360 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:28:19,387 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:28:19,387 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:28:37,764 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:28:37] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:28:45,815 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:28:45] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:28:53,221 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:28:53] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-19 14:28:53,474 - __main__ - INFO - [authentication_service.py:503] - login() - === LOGIN ATTEMPT ===
+2025-08-19 14:28:53,475 - __main__ - INFO - [authentication_service.py:504] - login() - Request method: POST
+2025-08-19 14:28:53,475 - __main__ - INFO - [authentication_service.py:505] - login() - Request headers: {'Host': 'localhost:8051', 'Connection': 'keep-alive', 'Content-Length': '33', 'Sec-Ch-Ua-Platform': '"Windows"', 'Authorization': 'Bearer 65qUtFCzLboS9p3Bp-69AprlibNjmdFp7dTXe0JYmYk', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"', 'Content-Type': 'application/json', 'Sec-Ch-Ua-Mobile': '?0', 'Accept': '*/*', 'Origin': 'http://localhost:3000', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:3000/', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Accept-Language': 'en,it;q=0.9,en-US;q=0.8'}
+2025-08-19 14:28:53,475 - __main__ - INFO - [authentication_service.py:506] - login() - Request is JSON: True
+2025-08-19 14:28:53,476 - __main__ - INFO - [authentication_service.py:507] - login() - Username: hi
+2025-08-19 14:28:53,476 - __main__ - INFO - [authentication_service.py:508] - login() - Password length: 2
+2025-08-19 14:28:53,478 - __main__ - WARNING - [authentication_service.py:552] - login() - Authentication failed - invalid credentials
+2025-08-19 14:28:53,479 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:28:53] "[31m[1mPOST /login HTTP/1.1[0m" 401 -
+2025-08-19 14:29:27,354 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:29:27] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-19 14:29:27,664 - __main__ - INFO - [authentication_service.py:503] - login() - === LOGIN ATTEMPT ===
+2025-08-19 14:29:27,664 - __main__ - INFO - [authentication_service.py:504] - login() - Request method: POST
+2025-08-19 14:29:27,664 - __main__ - INFO - [authentication_service.py:505] - login() - Request headers: {'Host': 'localhost:8051', 'Connection': 'keep-alive', 'Content-Length': '42', 'Sec-Ch-Ua-Platform': '"Windows"', 'Authorization': 'Bearer 65qUtFCzLboS9p3Bp-69AprlibNjmdFp7dTXe0JYmYk', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"', 'Content-Type': 'application/json', 'Sec-Ch-Ua-Mobile': '?0', 'Accept': '*/*', 'Origin': 'http://localhost:3000', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:3000/', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Accept-Language': 'en,it;q=0.9,en-US;q=0.8'}
+2025-08-19 14:29:27,665 - __main__ - INFO - [authentication_service.py:506] - login() - Request is JSON: True
+2025-08-19 14:29:27,668 - __main__ - INFO - [authentication_service.py:507] - login() - Username: LusangoM
+2025-08-19 14:29:27,669 - __main__ - INFO - [authentication_service.py:508] - login() - Password length: 5
+2025-08-19 14:29:27,681 - __main__ - INFO - [authentication_service.py:523] - login() - Authentication successful for user: LusangoM
+2025-08-19 14:29:27,688 - __main__ - INFO - [authentication_service.py:527] - login() - Session created: GZWOlILzJsNdvwl_b6hR...
+2025-08-19 14:29:27,690 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:29:27] "POST /login HTTP/1.1" 200 -
+2025-08-19 14:30:04,174 - database_manager - INFO - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-19 14:30:04,175 - database_manager - INFO - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-19 14:30:04,175 - database_manager - INFO - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-19 14:30:04,175 - database_manager - INFO - [database_manager.py:60] - init_database() - Initializing database at: C:\@Python Projects\Froth_Flotation_Research_Project\backend\models\databases\flotation_data.db
+2025-08-19 14:30:04,177 - database_manager - INFO - [database_manager.py:200] - init_database() - Database tables initialized successfully
+2025-08-19 14:30:04,178 - __main__ - INFO - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-19 14:30:04,178 - __main__ - INFO - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-19 14:30:04,179 - __main__ - INFO - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-19 14:30:04,179 - __main__ - INFO - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-19 14:30:04,181 - __main__ - INFO - [authentication_service.py:624] - <module>() - === STARTING FLASK LOGIN SERVER ===
+2025-08-19 14:30:04,181 - __main__ - INFO - [authentication_service.py:625] - <module>() - Starting Flask Login Server...
+2025-08-19 14:30:04,181 - __main__ - INFO - [authentication_service.py:626] - <module>() - Login page: http://localhost:8051
+2025-08-19 14:30:04,181 - __main__ - INFO - [authentication_service.py:627] - <module>() - Login system ready - contact administrator for credentials
+2025-08-19 14:30:04,209 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.199:8051
+2025-08-19 14:30:04,209 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-19 14:30:22,574 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:30:22] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:30:30,635 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:30:30] "GET /login HTTP/1.1" 200 -
+2025-08-19 14:30:44,798 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:30:44] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-19 14:30:45,048 - __main__ - INFO - [authentication_service.py:503] - login() - === LOGIN ATTEMPT ===
+2025-08-19 14:30:45,050 - __main__ - INFO - [authentication_service.py:504] - login() - Request method: POST
+2025-08-19 14:30:45,051 - __main__ - INFO - [authentication_service.py:505] - login() - Request headers: {'Host': 'localhost:8051', 'Connection': 'keep-alive', 'Content-Length': '42', 'Sec-Ch-Ua-Platform': '"Windows"', 'Authorization': 'Bearer GZWOlILzJsNdvwl_b6hRlSWW4cs8A8mHyIyqYmx-Ixk', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"', 'Content-Type': 'application/json', 'Sec-Ch-Ua-Mobile': '?0', 'Accept': '*/*', 'Origin': 'http://localhost:3000', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:3000/', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Accept-Language': 'en,it;q=0.9,en-US;q=0.8'}
+2025-08-19 14:30:45,052 - __main__ - INFO - [authentication_service.py:506] - login() - Request is JSON: True
+2025-08-19 14:30:45,056 - __main__ - INFO - [authentication_service.py:507] - login() - Username: LusangoM
+2025-08-19 14:30:45,057 - __main__ - INFO - [authentication_service.py:508] - login() - Password length: 5
+2025-08-19 14:30:45,075 - __main__ - INFO - [authentication_service.py:523] - login() - Authentication successful for user: LusangoM
+2025-08-19 14:30:45,084 - __main__ - INFO - [authentication_service.py:527] - login() - Session created: rKEqb0APbW5-yjZmAwoL...
+2025-08-19 14:30:45,086 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:30:45] "POST /login HTTP/1.1" 200 -
