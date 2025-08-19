@@ -21,9 +21,9 @@ log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'database_manager.log')
 
-# Configure logging with detailed format for developers
+# Configure logging - Only log errors and warnings
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s',
     handlers=[
         logging.FileHandler(log_file),
@@ -32,10 +32,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Log service startup
-logger.info("Starting Froth Flotation Database Manager")
-logger.info(f"Log file: {log_file}")
-logger.info(f"Service: SQLite Database Manager")
+# Log service startup (WARNING level for important startup info)
+logger.warning("Starting Froth Flotation Database Manager")
+logger.warning(f"Log file: {log_file}")
+logger.warning(f"Service: SQLite Database Manager")
 
 class FlotationDatabase:
     """SQLite database manager for flotation data"""

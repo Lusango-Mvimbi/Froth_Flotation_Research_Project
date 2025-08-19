@@ -28,9 +28,9 @@ log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'flotation_data_service_refactored.log')
 
-# Configure logging
+# Configure logging - Only log errors and warnings
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s',
     handlers=[
         logging.FileHandler(log_file),
@@ -39,11 +39,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Log service startup
-logger.info("Starting Refactored Froth Flotation Data Service")
-logger.info(f"Log file: {log_file}")
-logger.info(f"Service: FastAPI WebSocket Server (SOLID Architecture)")
-logger.info(f"Port: 8000")
+# Log service startup (WARNING level for important startup info)
+logger.warning("Starting Refactored Froth Flotation Data Service")
+logger.warning(f"Log file: {log_file}")
+logger.warning(f"Service: FastAPI WebSocket Server (SOLID Architecture)")
+logger.warning(f"Port: 8000")
 
 # Create FastAPI app
 app = FastAPI(
@@ -71,7 +71,7 @@ data_generation_task = None
 async def startup_event():
     """Initialize services on startup"""
     global data_generation_task
-    logger.info("Starting background data generation task")
+    logger.warning("Starting background data generation task")
     data_generation_task = asyncio.create_task(
         orchestrator.run_data_generation_loop(interval_seconds=5)
     )
@@ -86,7 +86,7 @@ async def shutdown_event():
             await data_generation_task
         except asyncio.CancelledError:
             pass
-    logger.info("Service shutdown complete")
+    logger.warning("Service shutdown complete")
 
 @app.get("/")
 async def root():

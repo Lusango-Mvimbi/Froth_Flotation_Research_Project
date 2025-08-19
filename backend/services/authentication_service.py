@@ -22,9 +22,9 @@ log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'authentication_service.log')
 
-# Configure logging with detailed format for developers
+# Configure logging - Only log errors and warnings
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s',
     handlers=[
         logging.FileHandler(log_file),
@@ -33,11 +33,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Log service startup
-logger.info("Starting Froth Flotation Authentication Service")
-logger.info(f"Log file: {log_file}")
-logger.info(f"Service: Flask Authentication Server")
-logger.info(f"Port: 8051")
+# Log service startup (WARNING level for important startup info)
+logger.warning("Starting Froth Flotation Authentication Service")
+logger.warning(f"Log file: {log_file}")
+logger.warning(f"Service: Flask Authentication Server")
+logger.warning(f"Port: 8051")
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # In production, use a secure secret key

@@ -46,7 +46,7 @@ class MLModelService:
         self.model_metadata = None
         self.load_trained_model()
         
-        logger.info("ML Model Service initialized with froth flotation specifications")
+        logger.warning("ML Model Service initialized with froth flotation specifications")
     
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the loaded model"""
@@ -82,8 +82,8 @@ class MLModelService:
             if model_path.exists() and metadata_path.exists():
                 self.model = joblib.load(model_path)
                 self.model_metadata = joblib.load(metadata_path)
-                logger.info(f"Loaded trained model: {self.model_metadata['model_name'].upper()}")
-                logger.info(f"Model Performance - R²: {self.model_metadata['test_r2']:.4f}, RMSE: {self.model_metadata['test_rmse']:.4f}")
+                logger.warning(f"Loaded trained model: {self.model_metadata['model_name'].upper()}")
+                logger.warning(f"Model Performance - R²: {self.model_metadata['test_r2']:.4f}, RMSE: {self.model_metadata['test_rmse']:.4f}")
             else:
                 logger.warning("Trained model not found, using rule-based predictions")
                 self.model = None

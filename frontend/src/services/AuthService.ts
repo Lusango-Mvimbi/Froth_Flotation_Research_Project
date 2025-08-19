@@ -21,21 +21,44 @@ export class AuthService implements IAuthService {
 
   async login(credentials: ILoginCredentials): Promise<ILoginResponse> {
     try {
+      console.log('🔐 Attempting login for user:', credentials.username);
+      
+      // Clear any existing auth data first
+      this.clearAuth();
+      
       const response = await this.apiService.post<ILoginResponse>('/login', credentials);
+      
+      console.log('🔐 Login response received:', response);
       
       if (response.success && response.token && response.user) {
         this.token = response.token;
         this.currentUser = response.user;
         this.storeAuth();
         this.apiService.setAuthToken(response.token);
+        console.log('🔐 Login successful for user:', response.user.username);
+      } else {
+        console.log('🔐 Login failed:', response.message);
       }
       
       return response;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('🔐 Login failed with error:', error);
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('message channel closed')) {
+          console.warn('🔐 Message channel closed error detected - this may be caused by browser extensions');
+          return {
+            success: false,
+            message: 'Login failed due to browser communication issue. Please try again or disable browser extensions.',
+            status_code: 500
+          };
+        }
+      }
+      
       return {
         success: false,
-        message: 'Login failed. Please check your credentials.',
+        message: 'Login failed. Please check your credentials and try again.',
         status_code: 500
       };
     }

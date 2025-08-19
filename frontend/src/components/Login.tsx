@@ -6,40 +6,29 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuthRefactored';
 
 const Login: React.FC = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const { login, error: authError, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  console.log('🔍 Login component render:', {
-    isAuthenticated,
-    authLoading,
-    isLoading
-  });
-
-  // Redirect to dashboard if already authenticated (only on initial load)
   useEffect(() => {
-    console.log('🔄 Login useEffect triggered:', { isAuthenticated, authLoading });
-    
     if (isAuthenticated && !authLoading) {
-      console.log('✅ User already authenticated, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]); // Include all dependencies
+  }, [isAuthenticated, authLoading, navigate]);
 
-  // Show loading spinner while checking authentication
+  // Debug: Log authentication state changes
+  useEffect(() => {
+    console.log('🔐 Login component: auth state changed', { isAuthenticated, authLoading, authError });
+  }, [isAuthenticated, authLoading, authError]);
+
   if (authLoading) {
-    console.log('⏳ Showing auth loading spinner');
     return (
       <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center">
         <div className="text-center">
-          <div className="spinner mb-4"></div>
-          <p className="text-dark-300">Checking authentication...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading authentication...</p>
         </div>
       </div>
     );
@@ -53,171 +42,156 @@ const Login: React.FC = () => {
       return;
     }
 
-    console.log('🚀 Form submitted, starting login process');
     setIsLoading(true);
-    
+    console.log('🔐 Login form submitted:', { username: formData.username, passwordLength: formData.password.length });
+
     try {
       const result = await login({ username: formData.username, password: formData.password });
-      console.log('📋 Login result:', result);
+      console.log('🔐 Login result:', result);
       
       if (result.success) {
-        console.log('✅ Login successful, showing success toast');
         toast.success('Login successful!');
-        // Use React Router navigation instead of page refresh
-        console.log('🔄 Navigating to dashboard using React Router');
         navigate('/dashboard', { replace: true });
       } else {
-        console.log('❌ Login failed:', result.error);
-        toast.error(result.error || 'Login failed');
+        const errorMessage = result.error || result.message || 'Login failed';
+        console.error('🔐 Login failed:', errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error) {
-      console.error('💥 Unexpected error during login:', error);
-      toast.error('An unexpected error occurred');
+      console.error('🔐 Login exception:', error);
+      
+      // Handle message channel closed errors specifically
+      if (error instanceof Error && error.message.includes('message channel closed')) {
+        toast.error('Login failed due to browser communication issue. Please try again or disable browser extensions.');
+      } else {
+        toast.error('An unexpected error occurred during login');
+      }
     } finally {
-      console.log('🏁 Login process completed, setting loading to false');
       setIsLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center p-2 sm:p-4 lg:p-6">
-      {/* Animated background particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary-400 rounded-full animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-primary-300 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-primary-500 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
-
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
       >
-        {/* Login Card */}
         <div className="glass rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-2xl">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-center mb-4 sm:mb-6 lg:mb-8"
-          >
-            <div className="flex justify-center mb-2 sm:mb-3 lg:mb-4">
-              <div className="p-1.5 sm:p-2 lg:p-3 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl">
-                <Activity className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-white" />
-              </div>
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <Activity className="w-12 h-12 text-blue-400" />
             </div>
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold gradient-text mb-1 sm:mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               Froth Flotation Digital Twin
             </h1>
-            <p className="text-dark-300 text-xs sm:text-sm lg:text-base">
-              Industrial Process Monitoring Dashboard
+            <p className="text-gray-400 text-sm sm:text-base">
+              Industrial Process Monitoring System
             </p>
-          </motion.div>
+          </div>
 
-          {/* Error Message */}
+          {/* Error Display */}
           {authError && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mb-4 sm:mb-6 p-3 sm:p-4 bg-danger-900/20 border border-danger-700 rounded-lg flex items-center space-x-2"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3"
             >
-              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-danger-400 flex-shrink-0" />
-              <span className="text-danger-400 text-xs sm:text-sm">{authError}</span>
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <div className="text-red-400 text-sm">
+                <p className="font-medium">Login Error</p>
+                <p className="text-red-300">{authError}</p>
+              </div>
             </motion.div>
           )}
 
           {/* Login Form */}
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            onSubmit={handleSubmit}
-            className="space-y-3 sm:space-y-4 lg:space-y-6"
-          >
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-dark-200 mb-2">
+            <div className="space-y-2">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                 Username
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-dark-400" />
-                </div>
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   id="username"
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className="input-field w-full pl-8 sm:pl-10 text-sm sm:text-base"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your username"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
 
             {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-dark-200 mb-2">
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-dark-400" />
-                </div>
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="input-field w-full pl-8 sm:pl-10 pr-8 sm:pr-10 text-sm sm:text-base"
+                  className="w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your password"
                   required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                  disabled={isLoading}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-dark-400 hover:text-dark-300" />
-                  ) : (
-                    <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-dark-400 hover:text-dark-300" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             {/* Login Button */}
-            <motion.button
+            <button
               type="submit"
               disabled={isLoading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-primary w-full py-2 sm:py-2.5 lg:py-3 text-sm sm:text-base lg:text-lg font-semibold relative overflow-hidden"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="spinner"></div>
-                  <span>Signing In...</span>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Logging in...</span>
                 </div>
               ) : (
-                'Sign In to Dashboard'
+                'Login to System'
               )}
-            </motion.button>
-          </motion.form>
+            </button>
+          </form>
 
-
+          {/* Credentials Info */}
+          <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
+            <h4 className="text-blue-400 font-medium mb-2">Default Credentials</h4>
+            <p className="text-gray-400 text-sm">
+              Username: <span className="text-white font-mono">LusangoM</span>
+            </p>
+            <p className="text-gray-400 text-sm">
+              Password: <span className="text-white font-mono">admin</span>
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>

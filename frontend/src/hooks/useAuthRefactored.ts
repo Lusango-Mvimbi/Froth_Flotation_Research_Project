@@ -43,8 +43,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         setIsAuthenticated(false);
         console.log('🔒 Authentication check: Requiring fresh login');
+        
+        // Clear any stored auth data to prevent conflicts
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('current_user');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('🔒 Auth check failed:', error);
       } finally {
         setLoading(false);
       }
@@ -58,18 +65,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     setError(undefined);
     try {
+      console.log('🔐 useAuth: Starting login process');
       const response = await authService.login(credentials);
+      
+      console.log('🔐 useAuth: Login response:', response);
       
       if (response.success && response.user) {
         setUser(response.user);
         setIsAuthenticated(true);
+        console.log('🔐 useAuth: Login successful, user authenticated');
       } else {
-        setError(response.error || response.message);
+        const errorMsg = response.error || response.message || 'Login failed';
+        setError(errorMsg);
+        console.log('🔐 useAuth: Login failed:', errorMsg);
       }
       
       return response;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('🔐 useAuth: Login error:', error);
+      
+      // Handle message channel closed errors
+      if (error instanceof Error && error.message.includes('message channel closed')) {
+        const errorMessage = 'Login failed due to browser communication issue. Please try again or disable browser extensions.';
+        setError(errorMessage);
+        return {
+          success: false,
+          message: errorMessage,
+          error: errorMessage,
+          status_code: 500
+        };
+      }
+      
       const errorMessage = 'Login failed. Please try again.';
       setError(errorMessage);
       return {

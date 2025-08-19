@@ -16,8 +16,8 @@ from datetime import datetime
 from typing import Dict, Any, List
 import logging
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging - Only log errors and warnings
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Simple Flotation Data Service")

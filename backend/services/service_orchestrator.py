@@ -35,7 +35,7 @@ class FlotationServiceOrchestrator:
         self.websocket_manager: IWebSocketManager = WebSocketConnectionManager(logger)
         self.recovery_calculator = RecoveryCalculator()
         
-        self.logger.info("Flotation Service Orchestrator initialized")
+        self.logger.warning("Flotation Service Orchestrator initialized")
     
     async def generate_and_process_data(self) -> Dict[str, Any]:
         """Generate data point and process it through the ML pipeline"""
@@ -176,7 +176,7 @@ class FlotationServiceOrchestrator:
     
     async def run_data_generation_loop(self, interval_seconds: int = 5) -> None:
         """Run continuous data generation loop"""
-        self.logger.info(f"Starting data generation loop with {interval_seconds}s interval")
+        self.logger.warning(f"Starting data generation loop with {interval_seconds}s interval")
         
         while True:
             try:
@@ -190,7 +190,7 @@ class FlotationServiceOrchestrator:
                 await asyncio.sleep(interval_seconds)
                 
             except asyncio.CancelledError:
-                self.logger.info("Data generation loop cancelled")
+                self.logger.warning("Data generation loop cancelled")
                 break
             except Exception as e:
                 self.logger.error(f"Error in data generation loop: {e}")
