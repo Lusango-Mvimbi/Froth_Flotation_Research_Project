@@ -182,16 +182,7 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          {/* Credentials Info */}
-          <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
-            <h4 className="text-blue-400 font-medium mb-2">Default Credentials</h4>
-            <p className="text-gray-400 text-sm">
-              Username: <span className="text-white font-mono">LusangoM</span>
-            </p>
-            <p className="text-gray-400 text-sm">
-              Password: <span className="text-white font-mono">admin</span>
-            </p>
-          </div>
+
         </div>
       </motion.div>
     </div>

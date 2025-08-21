@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  LineChart, 
   Line, 
   XAxis, 
   YAxis, 
@@ -14,7 +13,7 @@ import {
 } from 'recharts';
 import { TrendingUp, Activity, Clock } from 'lucide-react';
 import { FlotationData, Prediction, Recommendation } from '../types';
-import RecommendationsPanel from './RecommendationsPanel';
+
 
 interface RealTimeGraphProps {
   data: FlotationData[];
@@ -31,18 +30,28 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
 }) => {
   // Transform data for chart
   const chartData = useMemo(() => {
-    return data.map((item, index) => ({
-      time: index,
-      timestamp: new Date(item.timestamp || Date.now()).toLocaleTimeString(),
-      'Pb Concentrate': typeof item.Pb_Concentrate === 'number' ? item.Pb_Concentrate : 0,
-      'Recovery Rate': typeof item.Pb_Recovery === 'number' ? item.Pb_Recovery : 0,
-      'pH Level': typeof item.pH === 'number' ? item.pH : 0,
-      'Air Flow': typeof item.Pb_Rougher1_AirFlow === 'number' ? item.Pb_Rougher1_AirFlow : 0,
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    const baseData = data.map((item, index) => ({
+        time: index,
+        timestamp: new Date(item.timestamp || Date.now()).toLocaleTimeString(),
+        // Predicted vs Actual values
+        'Predicted Pb Concentrate': typeof item.Predicted_Pb_Concentrate === 'number' ? item.Predicted_Pb_Concentrate : (typeof item.Pb_Concentrate === 'number' ? item.Pb_Concentrate : 0),
+        'Actual Pb Concentrate': typeof item.Actual_Pb_Concentrate === 'number' ? item.Actual_Pb_Concentrate : 0,
+        'Predicted Recovery': typeof item.Predicted_Pb_Recovery === 'number' ? (item.Predicted_Pb_Recovery * 100) : (typeof item.Pb_Recovery === 'number' ? (item.Pb_Recovery * 100) : 0),
+        'Actual Recovery': typeof item.Actual_Pb_Recovery === 'number' ? (item.Actual_Pb_Recovery * 100) : 0,
+      // ONLY parameters from training data
+      'Feed Pb': typeof item.Feed_Pb === 'number' ? item.Feed_Pb : 0,
+      'Feed Zn': typeof item.Feed_Zn === 'number' ? item.Feed_Zn : 0,
       'KEX Flow': typeof item.Pb_Conditioner_KEX_Flowrate === 'number' ? item.Pb_Conditioner_KEX_Flowrate : 0,
       'SIPX Flow': typeof item.Pb_Rougher1_SIPX_Flowrate === 'number' ? item.Pb_Rougher1_SIPX_Flowrate : 0,
-      'Feed Grade': typeof item.Feed_Pb === 'number' ? item.Feed_Pb : 0,
-      'Impeller Speed': typeof item.Impeller_Speed === 'number' ? item.Impeller_Speed : 0,
+      'Air Flow': typeof item.Pb_Rougher1_AirFlow === 'number' ? item.Pb_Rougher1_AirFlow : 0,
+      'Cell Level': typeof item.Pb_Rougher1_Level === 'number' ? item.Pb_Rougher1_Level : 0,
     }));
+
+    return baseData;
   }, [data]);
 
   // Get performance color for a value based on ML model status
@@ -124,17 +133,19 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
             <TrendingUp className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Real-time Performance</h2>
-            <p className="text-sm text-dark-300">Live process monitoring</p>
+            <h2 className="text-xl font-bold text-white">Real-time Performance & Optimization</h2>
+            <p className="text-sm text-dark-300">Live process monitoring with optimization insights</p>
           </div>
         </div>
         
-        {currentData && (
-          <div className="flex items-center space-x-2 text-sm text-dark-300">
-            <Clock className="h-4 w-4" />
-            <span>Last update: {new Date(currentData.timestamp).toLocaleTimeString()}</span>
-          </div>
-        )}
+        <div className="flex items-center space-x-4">
+          {currentData && (
+            <div className="flex items-center space-x-2 text-sm text-dark-300">
+              <Clock className="h-4 w-4" />
+              <span>Last update: {new Date(currentData.timestamp).toLocaleTimeString()}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Chart */}
@@ -142,13 +153,21 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <defs>
-              <linearGradient id="pbGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="predictedPbGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+              </linearGradient>
+              <linearGradient id="actualPbGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
                 <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1}/>
               </linearGradient>
               <linearGradient id="recoveryGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+              </linearGradient>
+              <linearGradient id="actualRecoveryGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
             
@@ -169,139 +188,114 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
             
             <Area
               type="monotone"
-              dataKey="Pb Concentrate"
+              dataKey="Predicted Pb Concentrate"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              fill="url(#predictedPbGradient)"
+              dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+            />
+            
+            <Area
+              type="monotone"
+              dataKey="Actual Pb Concentrate"
               stroke="#22c55e"
               strokeWidth={2}
-              fill="url(#pbGradient)"
+              fill="url(#actualPbGradient)"
               dot={{ fill: '#22c55e', strokeWidth: 2, r: 3 }}
               activeDot={{ r: 6, stroke: '#22c55e', strokeWidth: 2 }}
             />
             
             <Area
               type="monotone"
-              dataKey="Recovery Rate"
+              dataKey="Predicted Recovery"
               stroke="#3b82f6"
               strokeWidth={2}
               fill="url(#recoveryGradient)"
               dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
               activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
             />
+            
+            <Area
+              type="monotone"
+              dataKey="Actual Recovery"
+              stroke="#8b5cf6"
+              strokeWidth={2}
+              fill="url(#actualRecoveryGradient)"
+              dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
+            />
+            
+
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Performance Indicators */}
-      {currentData && predictions && (
-        <div className="grid grid-cols-2 gap-4">
-          {/* Pb Concentrate Performance */}
-          <div className="p-4 bg-dark-700/50 rounded-lg border border-dark-600">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold text-white">Pb Concentrate</h4>
-              <div 
-                className="w-3 h-3 rounded-full"
-                style={{ 
-                  backgroundColor: getPerformanceColor(
-                    typeof currentData.Pb_Concentrate === 'number' ? currentData.Pb_Concentrate : 0, 
-                    'pb', 
-                    currentData.Pb_Concentrate_Status
-                  ) 
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-white">
-                {typeof currentData.Pb_Concentrate === 'number' && !isNaN(currentData.Pb_Concentrate) 
-                  ? currentData.Pb_Concentrate.toFixed(2) 
-                  : 'N/A'}%
-              </span>
-              <span className="text-sm text-dark-300">
-                Target: 15-25%
-              </span>
-            </div>
-            <div className="mt-2 text-xs text-dark-400">
-              Status: {currentData.Pb_Concentrate_Status || 'optimal'}
-            </div>
-          </div>
 
-          {/* Recovery Rate Performance */}
-          <div className="p-4 bg-dark-700/50 rounded-lg border border-dark-600">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold text-white">Recovery Rate</h4>
-              <div 
-                className="w-3 h-3 rounded-full"
-                style={{ 
-                  backgroundColor: getPerformanceColor(
-                    typeof currentData.Pb_Recovery === 'number' ? currentData.Pb_Recovery * 100 : 0, 
-                    'recovery', 
-                    currentData.Recovery_Status
-                  ) 
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-white">
-                {typeof currentData.Pb_Recovery === 'number' && !isNaN(currentData.Pb_Recovery) 
-                  ? (currentData.Pb_Recovery * 100).toFixed(1) 
-                  : 'N/A'}%
-              </span>
-              <span className="text-sm text-dark-300">
-                Target: 75-95%
-              </span>
-            </div>
-            <div className="mt-2 text-xs text-dark-400">
-              Status: {currentData.Recovery_Status || 'optimal'}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Process Parameters */}
       {currentData && (
-        <div className="mt-6">
-          <h4 className="text-sm font-semibold text-white mb-3">Process Parameters</h4>
-          <div className="grid grid-cols-3 gap-3 text-xs">
-            <div className="p-2 bg-dark-700/30 rounded">
-              <span className="text-dark-300">pH:</span>
-              <span className="text-white ml-1">
-                {typeof currentData.pH === 'number' && !isNaN(currentData.pH) 
-                  ? currentData.pH.toFixed(1) 
-                  : 'N/A'}
+        <div className="mt-6 mb-6">
+          <h4 className="text-base font-semibold text-white mb-3">Process Parameters</h4>
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            {/* ONLY parameters from training data */}
+            <div className="p-3 bg-dark-700/30 rounded">
+              <span className="text-dark-300">Feed Pb:</span>
+              <span className="text-white ml-2 font-medium">
+                {typeof currentData.Feed_Pb === 'number' && !isNaN(currentData.Feed_Pb) 
+                  ? currentData.Feed_Pb.toFixed(2) 
+                  : 'N/A'}%
               </span>
             </div>
-            <div className="p-2 bg-dark-700/30 rounded">
+            <div className="p-3 bg-dark-700/30 rounded">
+              <span className="text-dark-300">Feed Zn:</span>
+              <span className="text-white ml-2 font-medium">
+                {typeof currentData.Feed_Zn === 'number' && !isNaN(currentData.Feed_Zn) 
+                  ? currentData.Feed_Zn.toFixed(2) 
+                  : 'N/A'}%
+              </span>
+            </div>
+            <div className="p-3 bg-dark-700/30 rounded">
+              <span className="text-dark-300">KEX Flow:</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Conditioner_KEX_Flowrate || 'N/A'}</span>
+            </div>
+            <div className="p-3 bg-dark-700/30 rounded">
+              <span className="text-dark-300">SIPX Flow:</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_SIPX_Flowrate || 'N/A'}</span>
+            </div>
+            <div className="p-3 bg-dark-700/30 rounded">
               <span className="text-dark-300">Air Flow:</span>
-              <span className="text-white ml-1">{currentData.Pb_Rougher1_AirFlow || 'N/A'} L/min</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_AirFlow || 'N/A'}</span>
             </div>
-            <div className="p-2 bg-dark-700/30 rounded">
-              <span className="text-dark-300">KEX:</span>
-              <span className="text-white ml-1">{currentData.Pb_Conditioner_KEX_Flowrate || 'N/A'} L/min</span>
-            </div>
-            <div className="p-2 bg-dark-700/30 rounded">
-              <span className="text-dark-300">SIPX:</span>
-              <span className="text-white ml-1">{currentData.Pb_Rougher1_SIPX_Flowrate || 'N/A'} L/min</span>
-            </div>
-            <div className="p-2 bg-dark-700/30 rounded">
-              <span className="text-dark-300">Feed Grade:</span>
-              <span className="text-white ml-1">{currentData.Feed_Pb || 'N/A'}%</span>
-            </div>
-            <div className="p-2 bg-dark-700/30 rounded">
-              <span className="text-dark-300">Impeller:</span>
-              <span className="text-white ml-1">{currentData.Impeller_Speed || 'N/A'} RPM</span>
+            <div className="p-3 bg-dark-700/30 rounded">
+              <span className="text-dark-300">Cell Level:</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_Level || 'N/A'}</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Recommendations Panel */}
-      <div className="mt-6">
-        <RecommendationsPanel
-          recommendations={recommendations}
-          predictions={predictions}
-          currentData={currentData}
-        />
-      </div>
-    </motion.div>
+       {/* Recommendations Panel */}
+       <div className="mt-6">
+         <div className="p-4 bg-dark-700/50 rounded-lg border border-dark-600">
+           <h4 className="text-base font-semibold text-white mb-3">Recommendations</h4>
+           {recommendations && recommendations.length > 0 ? (
+             <div className="space-y-3">
+               {recommendations.map((rec, index) => (
+                 <div key={index} className="flex items-start space-x-3 text-sm">
+                   <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                   <span className="text-dark-300 leading-relaxed">{rec.message}</span>
+                 </div>
+               ))}
+             </div>
+           ) : (
+             <p className="text-sm text-dark-400">No recommendations available at this time.</p>
+           )}
+         </div>
+       </div>
+     </motion.div>
   );
 };
 
 export default RealTimeGraph;
+

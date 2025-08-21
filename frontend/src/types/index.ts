@@ -1,43 +1,37 @@
-// Flotation Data Types
+// Flotation Data Types - ONLY parameters from training data
 export interface FlotationData {
   timestamp: string;
-  Pb_Concentrate: number;
-  Pb_Recovery: number;
-  pH: number;
-  Pb_Rougher1_AirFlow: number;
+  // ONLY parameters that were actually in the training data
+  Feed_Pb: number;
+  Feed_Zn: number;
   Pb_Conditioner_KEX_Flowrate: number;
   Pb_Rougher1_SIPX_Flowrate: number;
-  Feed_Pb: number;
-  Impeller_Speed: number;
-  Temperature?: number;
-  Pulp_Density?: number;
-  Pb_Conditioner_Nigrosine_Flowrate_Min?: number;
-  Pb_Conditioner_Nigrosine_Flowrate_Max?: number;
-  Cell_Level?: number;
-  Froth_Height?: number;
-  timestamp_display?: string;
-  // ML Model fields
-  Model_Confidence?: number;
+  Pb_Rougher1_AirFlow: number;
+  Pb_Rougher1_Level: number;
+  // ML predictions and calculated values
+  Pb_Concentrate: number;  // Legacy - same as Predicted_Pb_Concentrate
+  Pb_Recovery: number;     // Legacy - same as Predicted_Pb_Recovery
+  // New predicted and actual values
+  Predicted_Pb_Concentrate?: number;
+  Predicted_Pb_Recovery?: number;
+  Actual_Pb_Concentrate?: number;
+  Actual_Pb_Recovery?: number;
   Process_Status?: string;
   Pb_Concentrate_Status?: 'critical' | 'optimal' | 'warning';
   Recovery_Status?: 'critical' | 'optimal' | 'warning';
   Recommendations?: string[];
-  Feed_Zn?: number;
+  optimization_recommendations?: string[];
+  timestamp_display?: string;
 }
 
 export interface ProcessControls {
   kex: number;
   sipx: number;
-  feed_grade: number;
-  impeller_speed: number;
-  air: number;
-  ph: number;
 }
 
 export interface Prediction {
   predicted_pb: number;
   recovery_efficiency: number;
-  confidence: number;
   status: string;
   prediction_method: 'ML Model' | 'Engineering-Based';
 }
@@ -61,10 +55,32 @@ export interface PerformanceState {
 export interface OptimalRanges {
   kex: { min: number; max: number };
   sipx: { min: number; max: number };
-  feed_grade: { min: number; max: number };
-  impeller_speed: { min: number; max: number };
-  air: { min: number; max: number };
-  ph: { min: number; max: number };
+}
+
+export interface TargetRanges {
+  pb_concentrate: {
+    min: number;
+    max: number;
+    optimal: number;
+    unit: string;
+  };
+  recovery: {
+    min: number;
+    max: number;
+    optimal: number;
+    unit: string;
+  };
+  feed_grade: {
+    min: number;
+    max: number;
+    optimal: number;
+    unit: string;
+  };
+  status: {
+    good: string[];
+    warning: string[];
+    critical: string[];
+  };
 }
 
 export interface User {
@@ -88,6 +104,7 @@ export interface DashboardState {
   predictions: Prediction | null;
   recommendations: Recommendation[];
   optimalRanges: OptimalRanges | null;
+  targetRanges: TargetRanges | null;
   loading: boolean;
   error: string | null;
   serverConnected: boolean;

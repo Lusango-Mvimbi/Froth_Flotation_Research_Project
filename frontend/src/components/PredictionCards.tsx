@@ -9,23 +9,49 @@ import {
   AlertTriangle,
   Zap
 } from 'lucide-react';
-import { Prediction, FlotationData, PerformanceState } from '../types';
+import { Prediction, FlotationData, PerformanceState, TargetRanges } from '../types';
 
 interface PredictionCardsProps {
   predictions: Prediction | null;
   currentData: FlotationData | null;
+  targetRanges: TargetRanges | null;
 }
 
-const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentData }) => {
+const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentData, targetRanges }) => {
   // Performance state calculation
-  const getPerformanceState = (value: number, metric: 'pb' | 'recovery'): PerformanceState => {
+  const getPerformanceState = (value: number, metric: 'pb' | 'recovery' | 'feed_grade'): PerformanceState => {
+    if (!targetRanges) {
+      // Fallback to hardcoded values if target ranges not available
+      if (metric === 'pb') {
+        if (value < 15) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
+        if (value >= 25) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
+        return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+      } else if (metric === 'recovery') {
+        if (value < 75) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
+        if (value >= 95) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
+        return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+      } else { // feed_grade
+        if (value < 2.0) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
+        if (value >= 4.0) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
+        return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+      }
+    }
+
+    // Use dynamic target ranges from backend
     if (metric === 'pb') {
-      if (value < 15) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
-      if (value >= 25) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
+      const { min, max } = targetRanges.pb_concentrate;
+      if (value < min) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
+      if (value >= max) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
       return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
-    } else {
-      if (value < 75) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
-      if (value >= 95) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
+    } else if (metric === 'recovery') {
+      const { min, max } = targetRanges.recovery;
+      if (value < min) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
+      if (value >= max) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
+      return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+    } else { // feed_grade
+      const { min, max } = targetRanges.feed_grade;
+      if (value < min) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
+      if (value >= max) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
       return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
     }
   };
@@ -59,49 +85,89 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
 
   const pbPerformance = getPerformanceState(predictions.predicted_pb, 'pb');
   const recoveryPerformance = getPerformanceState(predictions.recovery_efficiency, 'recovery');
+  const feedGradePerformance = getPerformanceState(currentData.Feed_Pb || 0, 'feed_grade');
+
+  // Helper function to get target range string
+  const getTargetRange = (metric: 'pb' | 'recovery' | 'feed_grade') => {
+    if (!targetRanges) {
+      // Fallback to hardcoded values
+      switch (metric) {
+        case 'pb': return '15-25%';
+        case 'recovery': return '75-95%';
+        case 'feed_grade': return '2.0-4.0%';
+        default: return '';
+      }
+    }
+    
+    const ranges = {
+      pb: targetRanges.pb_concentrate,
+      recovery: targetRanges.recovery,
+      feed_grade: targetRanges.feed_grade
+    };
+    
+    const range = ranges[metric];
+    return `${range.min}-${range.max}${range.unit}`;
+  };
 
   const cards = [
     {
-      title: 'Predicted Pb Concentrate',
+      title: 'Predicted Pb',
       value: `${predictions.predicted_pb.toFixed(2)}%`,
-      trend: getTrendDirection(predictions.predicted_pb, 20),
+      trend: getTrendDirection(predictions.predicted_pb, targetRanges?.pb_concentrate?.optimal || 20),
       performance: pbPerformance,
       icon: Activity,
-      method: predictions.prediction_method,
-      target: '15-25%',
+      method: 'ML Model',
+      target: getTargetRange('pb'),
     },
     {
-      title: 'Recovery Efficiency',
+      title: 'Actual Pb',
+      value: `${currentData.Actual_Pb_Concentrate?.toFixed(2) || 'N/A'}%`,
+      trend: currentData.Actual_Pb_Concentrate ? getTrendDirection(currentData.Actual_Pb_Concentrate, targetRanges?.pb_concentrate?.optimal || 20) : 'stable',
+      performance: currentData.Actual_Pb_Concentrate ? getPerformanceState(currentData.Actual_Pb_Concentrate, 'pb') : { state: 'unknown', color: 'text-dark-400', backgroundColor: 'bg-dark-700/20' },
+      icon: Activity,
+      target: getTargetRange('pb'),
+    },
+    {
+      title: 'Predicted Recovery',
       value: `${predictions.recovery_efficiency.toFixed(1)}%`,
-      trend: getTrendDirection(predictions.recovery_efficiency, 85),
+      trend: getTrendDirection(predictions.recovery_efficiency, targetRanges?.recovery?.optimal || 85),
       performance: recoveryPerformance,
       icon: TrendingUp,
-      target: '75-95%',
+      method: 'ML Model',
+      target: getTargetRange('recovery'),
     },
     {
-      title: 'Model Confidence',
-      value: `${predictions.confidence.toFixed(2)}%`,
-      trend: 'up',
-      performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
-      icon: Brain,
-      target: 'High',
+      title: 'Actual Recovery',
+      value: `${currentData.Actual_Pb_Recovery ? (currentData.Actual_Pb_Recovery * 100).toFixed(1) : 'N/A'}%`,
+      trend: currentData.Actual_Pb_Recovery ? getTrendDirection(currentData.Actual_Pb_Recovery * 100, targetRanges?.recovery?.optimal || 85) : 'stable',
+      performance: currentData.Actual_Pb_Recovery ? getPerformanceState(currentData.Actual_Pb_Recovery * 100, 'recovery') : { state: 'unknown', color: 'text-dark-400', backgroundColor: 'bg-dark-700/20' },
+      icon: TrendingUp,
+      target: getTargetRange('recovery'),
     },
     {
       title: 'Process Status',
       value: predictions.status,
-      trend: predictions.status === 'Good' ? 'up' : 'down',
+      trend: predictions.status === 'optimal' ? 'up' : predictions.status === 'warning' ? 'stable' : 'down',
       performance: { 
-        state: predictions.status === 'Good' ? 'within_range' : 'below_min',
-        color: predictions.status === 'Good' ? 'text-success-400' : 'text-danger-400',
-        backgroundColor: predictions.status === 'Good' ? 'bg-success-900/20' : 'bg-danger-900/20'
+        state: predictions.status === 'optimal' ? 'within_range' : predictions.status === 'warning' ? 'warning' : 'critical',
+        color: predictions.status === 'optimal' ? 'text-success-400' : predictions.status === 'warning' ? 'text-warning-400' : 'text-danger-400',
+        backgroundColor: predictions.status === 'optimal' ? 'bg-success-900/20' : predictions.status === 'warning' ? 'bg-warning-900/20' : 'bg-danger-900/20'
       },
       icon: CheckCircle,
-      target: 'Good',
+      target: 'Optimal',
     },
+    {
+      title: 'Feed Grade',
+      value: `${currentData.Feed_Pb?.toFixed(2) || 'N/A'}%`,
+      trend: 'stable',
+      performance: feedGradePerformance,
+      icon: TrendingDown,
+      target: getTargetRange('feed_grade'),
+    }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
       {cards.map((card, index) => (
         <motion.div
           key={card.title}
@@ -109,43 +175,36 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
           whileHover={{ scale: 1.02, y: -2 }}
-          className={`relative overflow-hidden bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-4 sm:p-6 transition-all duration-300 ${card.performance.backgroundColor}`}
+          className={`relative overflow-hidden bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6 sm:p-8 transition-all duration-300 ${card.performance.backgroundColor}`}
         >
           {/* Performance indicator bar */}
           <div className={`absolute top-0 left-0 right-0 h-1 ${card.performance.color.replace('text-', 'bg-')}`} />
           
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <div className="flex items-center space-x-2 min-w-0">
-              <card.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${card.performance.color} flex-shrink-0`} />
-              <h3 className="text-xs sm:text-sm font-medium text-dark-300 uppercase tracking-wide truncate">
+                              {/* Header */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
+              <card.icon className={`h-4 w-4 ${card.method ? 'text-primary-400' : card.performance.color} flex-shrink-0`} />
+              <h3 className="text-xs font-medium text-dark-300 uppercase tracking-wide leading-tight">
                 {card.title}
               </h3>
             </div>
-            {card.method && (
-              <div className="flex items-center space-x-1 flex-shrink-0">
-                <Zap className="h-3 w-3 text-primary-400" />
-                <span className="text-xs text-primary-400 font-medium hidden sm:inline">
-                  {card.method}
-                </span>
-              </div>
-            )}
+ 
           </div>
 
           {/* Value */}
-          <div className="mb-2">
-            <div className={`text-2xl sm:text-3xl font-bold ${card.performance.color} mb-1`}>
+          <div className="mb-3">
+            <div className={`text-2xl font-bold ${card.performance.color} mb-1`}>
               {card.value}
             </div>
             <div className="flex items-center space-x-2">
               {card.trend === 'up' ? (
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-success-400" />
+                <TrendingUp className="h-3 w-3 text-success-400" />
               ) : card.trend === 'down' ? (
-                <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-danger-400" />
+                <TrendingDown className="h-3 w-3 text-danger-400" />
               ) : (
-                <div className="h-3 w-3 sm:h-4 sm:w-4 text-dark-400">—</div>
+                <div className="h-3 w-3 text-dark-400">—</div>
               )}
-              <span className="text-xs text-dark-400">
+              <span className="text-xs text-dark-400 font-medium">
                 Target: {card.target}
               </span>
             </div>

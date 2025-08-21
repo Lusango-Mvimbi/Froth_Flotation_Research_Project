@@ -21,7 +21,7 @@ from typing import Dict, Any
 # Add the backend directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from service_orchestrator import FlotationServiceOrchestrator
+from services.service_orchestrator import FlotationServiceOrchestrator
 
 # Set up comprehensive logging
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
@@ -159,6 +159,134 @@ async def get_optimal_ranges():
         logger.error(f"Optimal ranges retrieval failed: {e}")
         raise HTTPException(status_code=500, detail="Optimal ranges retrieval failed")
 
+@app.get("/api/target-ranges")
+async def get_target_ranges():
+    """Get target ranges for prediction cards (frontend endpoint)"""
+    try:
+        target_ranges = orchestrator.data_generator.get_target_ranges()
+        return {
+            "target_ranges": target_ranges,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Target ranges retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail="Target ranges retrieval failed")
+
+@app.get("/api/optimization")
+async def get_optimization_results():
+    """Get optimization results and recommendations (frontend endpoint)"""
+    try:
+        import asyncio
+        
+        # Get current data for optimization
+        current_data = await orchestrator.generate_and_process_data()
+        
+        # Run optimization with timeout (30 seconds)
+        loop = asyncio.get_event_loop()
+        optimization_result = await loop.run_in_executor(
+            None, 
+            lambda: orchestrator.ml_model.optimize_reagent_rates(current_data)
+        )
+        
+        return {
+            "optimization": optimization_result,
+            "timestamp": datetime.now().isoformat()
+        }
+    except asyncio.TimeoutError:
+        logger.error("Optimization timed out after 30 seconds")
+        raise HTTPException(status_code=408, detail="Optimization timed out")
+    except Exception as e:
+        logger.error(f"Optimization results retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail="Optimization results retrieval failed")
+
+@app.get("/api/optimization-data")
+async def get_optimization_data():
+    """Get optimization data for visualization (frontend endpoint)"""
+    try:
+        import asyncio
+        
+        # Get current data for optimization
+        current_data = await orchestrator.generate_and_process_data()
+        
+        # Get optimization visualization data with timeout (30 seconds)
+        loop = asyncio.get_event_loop()
+        optimization_data = await loop.run_in_executor(
+            None, 
+            lambda: orchestrator.ml_model.get_optimization_data(current_data)
+        )
+        
+        return {
+            "optimization_data": optimization_data,
+            "timestamp": datetime.now().isoformat()
+        }
+    except asyncio.TimeoutError:
+        logger.error("Optimization data retrieval timed out after 30 seconds")
+        raise HTTPException(status_code=408, detail="Optimization data retrieval timed out")
+    except Exception as e:
+        logger.error(f"Optimization data retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail="Optimization data retrieval failed")
+
+@app.get("/api/control-settings")
+async def get_control_settings():
+    """Get current control settings (frontend endpoint)"""
+    try:
+        # Get current control settings from the orchestrator
+        current_data = await orchestrator.generate_and_process_data()
+        
+        current_controls = {
+            "kex": current_data.get('Pb_Conditioner_KEX_Flowrate', 45.0),
+            "sipx": current_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)
+        }
+        
+        logger.info(f"Current control settings retrieved: KEX={current_controls['kex']}, SIPX={current_controls['sipx']}")
+        
+        return {
+            "controls": current_controls,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Control settings retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail="Control settings retrieval failed")
+
+@app.post("/api/control-settings")
+async def update_control_settings(controls: Dict[str, float]):
+    """Update control settings (frontend endpoint)"""
+    try:
+        # Validate control parameters
+        if 'kex' not in controls or 'sipx' not in controls:
+            raise HTTPException(status_code=400, detail="Missing required control parameters: kex, sipx")
+        
+        # Update the orchestrator's control settings
+        orchestrator.update_control_settings(controls)
+        
+        logger.warning(f"Control settings updated: KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
+        
+        return {
+            "message": "Control settings updated successfully",
+            "controls": controls,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Control settings update failed: {e}")
+        raise HTTPException(status_code=500, detail="Control settings update failed")
+
+@app.get("/api/connections")
+async def get_connections():
+    """Get system connections status (frontend endpoint)"""
+    try:
+        # Get WebSocket connection status
+        ws_status = orchestrator.websocket_manager.get_connection_status()
+        
+        return {
+            "active_connections": ws_status.get("active_connections", 0),
+            "total_connections": ws_status.get("total_connections", 0),
+            "status": "operational" if ws_status.get("active_connections", 0) > 0 else "disconnected",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Connections status retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail="Connections status retrieval failed")
+
 @app.get("/api/database/sensor-data")
 async def get_sensor_data(limit: int = 100):
     """Get historical sensor data (frontend endpoint)"""
@@ -178,84 +306,128 @@ async def get_sensor_data(limit: int = 100):
         logger.error(f"Historical data retrieval failed: {e}")
         raise HTTPException(status_code=500, detail="Historical data retrieval failed")
 
-@app.get("/generate-data")
-async def generate_single_data_point():
-    """Generate a single data point"""
+@app.get("/api/res1-data")
+async def get_res1_data(limit: int = 100):
+    """Get latest RES1 data (real-time flotation data)"""
     try:
-        data_point = await orchestrator.generate_and_process_data()
+        data = orchestrator.database.get_latest_res1_data(limit)
+        logger.info(f"Retrieved {len(data)} records from RES1")
         return {
-            "data_point": data_point,
+            "data": data,
+            "count": len(data),
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        logger.error(f"Data generation failed: {e}")
-        raise HTTPException(status_code=500, detail="Data generation failed")
+        logger.error(f"Failed to retrieve RES1 data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve RES1 data")
 
-@app.get("/parameter-ranges")
-async def get_parameter_ranges():
-    """Get valid parameter ranges"""
+@app.get("/api/res2-data")
+async def get_res2_data(limit: int = 100):
+    """Get latest RES2 data (ML predictions and actual values)"""
     try:
-        ranges = orchestrator.data_generator.get_parameter_ranges()
+        data = orchestrator.database.get_latest_res2_data(limit)
+        logger.info(f"Retrieved {len(data)} records from RES2")
         return {
-            "parameter_ranges": ranges,
+            "data": data,
+            "count": len(data),
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        logger.error(f"Parameter ranges retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail="Parameter ranges retrieval failed")
+        logger.error(f"Failed to retrieve RES2 data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve RES2 data")
 
-@app.post("/validate-parameters")
-async def validate_parameters(parameters: Dict[str, float]):
-    """Validate if parameters are within acceptable ranges"""
+@app.get("/api/res3-data")
+async def get_res3_data(limit: int = 100):
+    """Get latest RES3 data (optimization recommendations and control settings)"""
     try:
-        is_valid = orchestrator.data_generator.validate_parameters(parameters)
+        data = orchestrator.database.get_latest_res3_data(limit)
+        logger.info(f"Retrieved {len(data)} records from RES3")
         return {
-            "is_valid": is_valid,
-            "parameters": parameters,
+            "data": data,
+            "count": len(data),
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        logger.error(f"Parameter validation failed: {e}")
-        raise HTTPException(status_code=500, detail="Parameter validation failed")
+        logger.error(f"Failed to retrieve RES3 data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve RES3 data")
 
-@app.post("/api/control-settings")
-async def update_control_settings(controls: Dict[str, float]):
-    """Update control settings for the flotation process"""
+@app.get("/api/res-tables-summary")
+async def get_res_tables_summary():
+    """Get summary of all RES tables"""
     try:
-        # Validate the control parameters
-        is_valid = orchestrator.data_generator.validate_parameters(controls)
-        if not is_valid:
-            raise HTTPException(status_code=400, detail="Invalid control parameters")
+        res1_data = orchestrator.database.get_latest_res1_data(1)
+        res2_data = orchestrator.database.get_latest_res2_data(1)
+        res3_data = orchestrator.database.get_latest_res3_data(1)
         
-        # Update the control settings in the orchestrator
-        await orchestrator.update_control_settings(controls)
-        
-        return {
-            "success": True,
-            "message": "Control settings updated successfully",
-            "controls": controls,
+        summary = {
+            "RES1": {
+                "latest_record": res1_data[0] if res1_data else None,
+                "description": "Real-time flotation data (sensor readings and process parameters)"
+            },
+            "RES2": {
+                "latest_record": res2_data[0] if res2_data else None,
+                "description": "ML predictions and actual values"
+            },
+            "RES3": {
+                "latest_record": res3_data[0] if res3_data else None,
+                "description": "Optimization recommendations and control settings"
+            },
             "timestamp": datetime.now().isoformat()
         }
+        
+        logger.info("Retrieved RES tables summary")
+        return summary
     except Exception as e:
-        logger.error(f"Control settings update failed: {e}")
-        raise HTTPException(status_code=500, detail="Control settings update failed")
+        logger.error(f"Failed to retrieve RES tables summary: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve RES tables summary")
 
-@app.get("/api/connections")
-async def get_connections():
-    """Get current connection status and statistics"""
+@app.get("/api/res-tables-timing")
+async def get_res_tables_timing():
+    """Get RES tables save timing status"""
     try:
-        active_connections = len(orchestrator.websocket_manager.active_connections)
-        total_connections = orchestrator.websocket_manager.total_connections
+        current_time = datetime.now()
         
-        return {
-            "active_connections": active_connections,
-            "total_connections": total_connections,
-            "status": "operational" if active_connections > 0 else "idle",
-            "timestamp": datetime.now().isoformat()
+        # Calculate time since last saves
+        time_since_res1 = (current_time - orchestrator.last_res1_save).total_seconds() / 60
+        time_since_res2 = (current_time - orchestrator.last_res2_save).total_seconds() / 60
+        time_since_res3 = (current_time - orchestrator.last_res3_save).total_seconds() / 60
+        
+        # Calculate time until next saves
+        time_until_res1 = max(0, orchestrator.res1_interval - time_since_res1)
+        time_until_res2 = max(0, orchestrator.res2_interval - time_since_res2)
+        time_until_res3 = max(0, orchestrator.res3_interval - time_since_res3)
+        
+        timing_status = {
+            "RES1": {
+                "interval_minutes": orchestrator.res1_interval,
+                "last_save": orchestrator.last_res1_save.isoformat(),
+                "minutes_since_last_save": round(time_since_res1, 2),
+                "minutes_until_next_save": round(time_until_res1, 2),
+                "ready_to_save": time_since_res1 >= orchestrator.res1_interval
+            },
+            "RES2": {
+                "interval_minutes": orchestrator.res2_interval,
+                "last_save": orchestrator.last_res2_save.isoformat(),
+                "minutes_since_last_save": round(time_since_res2, 2),
+                "minutes_until_next_save": round(time_until_res2, 2),
+                "ready_to_save": time_since_res2 >= orchestrator.res2_interval
+            },
+            "RES3": {
+                "interval_minutes": orchestrator.res3_interval,
+                "last_save": orchestrator.last_res3_save.isoformat(),
+                "minutes_since_last_save": round(time_since_res3, 2),
+                "minutes_until_next_save": round(time_until_res3, 2),
+                "ready_to_save": time_since_res3 >= orchestrator.res3_interval
+            },
+            "current_time": current_time.isoformat()
         }
+        
+        logger.info("Retrieved RES tables timing status")
+        return timing_status
     except Exception as e:
-        logger.error(f"Connections status retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail="Connections status retrieval failed")
+        logger.error(f"Failed to retrieve RES tables timing status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve RES tables timing status")
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

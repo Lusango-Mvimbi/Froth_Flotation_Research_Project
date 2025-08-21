@@ -62,6 +62,52 @@ class FlotationDatabase:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
             
+            # Create RES1 table for real-time flotation data (sensor readings and process parameters)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS RES1 (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    Feed_Pb REAL,
+                    Feed_Zn REAL,
+                    Pb_Conditioner_KEX_Flowrate REAL,
+                    Pb_Rougher1_SIPX_Flowrate REAL,
+                    Pb_Rougher1_AirFlow REAL,
+                    Pb_Rougher1_Level REAL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Create RES2 table for ML predictions and actual values
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS RES2 (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    Predicted_Pb_Concentrate REAL,
+                    Actual_Pb_Concentrate REAL,
+                    Predicted_Pb_Recovery REAL,
+                    Actual_Pb_Recovery REAL,
+                    Process_Status TEXT,
+                    model_confidence REAL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Create RES3 table for optimization recommendations and control settings
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS RES3 (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    current_kex REAL,
+                    current_sipx REAL,
+                    recommended_kex REAL,
+                    recommended_sipx REAL,
+                    optimization_confidence REAL,
+                    recommendations TEXT,
+                    external_factors_changed BOOLEAN DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
             # Create sensor_data table for real-time sensor readings
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS sensor_data (
@@ -86,17 +132,13 @@ class FlotationDatabase:
                 )
             ''')
             
-            # Create control_settings table for user control parameters
+            # Create control_settings table for reagent control parameters only
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS control_settings (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     kex_flowrate REAL,
                     sipx_flowrate REAL,
-                    feed_grade REAL,
-                    impeller_speed REAL,
-                    air_flow REAL,
-                    ph_level REAL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -186,6 +228,9 @@ class FlotationDatabase:
             ''')
             
             # Create indexes for better query performance
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_res1_timestamp ON RES1(timestamp)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_res2_timestamp ON RES2(timestamp)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_res3_timestamp ON RES3(timestamp)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_sensor_timestamp ON sensor_data(timestamp)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_control_timestamp ON control_settings(timestamp)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_predictions_timestamp ON predictions(timestamp)')
@@ -235,21 +280,17 @@ class FlotationDatabase:
             return cursor.lastrowid
     
     def save_control_settings(self, controls: Dict[str, Any]) -> int:
-        """Save control settings to database"""
+        """Save reagent control settings to database"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
             cursor.execute('''
                 INSERT INTO control_settings (
-                    kex_flowrate, sipx_flowrate, feed_grade, impeller_speed, air_flow, ph_level
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    kex_flowrate, sipx_flowrate
+                ) VALUES (?, ?)
             ''', (
                 controls.get('kex'),
-                controls.get('sipx'),
-                controls.get('feed_grade'),
-                controls.get('impeller_speed'),
-                controls.get('air'),
-                controls.get('ph')
+                controls.get('sipx')
             ))
             
             conn.commit()
@@ -629,18 +670,131 @@ class FlotationDatabase:
             cursor = conn.cursor()
             
             # Check if default user exists
-            cursor.execute('SELECT id FROM users WHERE username = ?', ('LusangoM',))
+            cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
             if not cursor.fetchone():
                 # Create default admin user
                 self.create_user(
-                    username='LusangoM',
-                    password='admin',
-                    full_name='Lusango M',
+                    username='admin',
+                    password='admin123',
+                    full_name='System Administrator',
                     role='admin'
                 )
-                print("✅ Default admin user 'LusangoM' created successfully")
+                print("✅ Default admin user 'admin' created successfully")
             else:
-                print("INFO: Default admin user 'LusangoM' already exists")
+                print("INFO: Default admin user 'admin' already exists")
+
+    def save_to_res1(self, data: Dict[str, Any]) -> int:
+        """Save real-time flotation data to RES1 table"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO RES1 (
+                    Feed_Pb, Feed_Zn, Pb_Conditioner_KEX_Flowrate, 
+                    Pb_Rougher1_SIPX_Flowrate, Pb_Rougher1_AirFlow, Pb_Rougher1_Level
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                data.get('Feed_Pb'),
+                data.get('Feed_Zn'),
+                data.get('Pb_Conditioner_KEX_Flowrate'),
+                data.get('Pb_Rougher1_SIPX_Flowrate'),
+                data.get('Pb_Rougher1_AirFlow'),
+                data.get('Pb_Rougher1_Level')
+            ))
+            
+            conn.commit()
+            return cursor.lastrowid
+    
+    def save_to_res2(self, data: Dict[str, Any]) -> int:
+        """Save ML predictions and actual values to RES2 table"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO RES2 (
+                    Predicted_Pb_Concentrate, Actual_Pb_Concentrate,
+                    Predicted_Pb_Recovery, Actual_Pb_Recovery,
+                    Process_Status, model_confidence
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                data.get('Predicted_Pb_Concentrate'),
+                data.get('Actual_Pb_Concentrate'),
+                data.get('Predicted_Pb_Recovery'),
+                data.get('Actual_Pb_Recovery'),
+                data.get('Process_Status'),
+                data.get('model_confidence', 0.85)
+            ))
+            
+            conn.commit()
+            return cursor.lastrowid
+    
+    def save_to_res3(self, data: Dict[str, Any]) -> int:
+        """Save optimization recommendations and control settings to RES3 table"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Convert recommendations list to JSON string
+            recommendations_json = json.dumps(data.get('recommendations', []))
+            
+            cursor.execute('''
+                INSERT INTO RES3 (
+                    current_kex, current_sipx, recommended_kex, recommended_sipx,
+                    optimization_confidence, recommendations, external_factors_changed
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                data.get('current_kex'),
+                data.get('current_sipx'),
+                data.get('recommended_kex'),
+                data.get('recommended_sipx'),
+                data.get('optimization_confidence', 0.8),
+                recommendations_json,
+                data.get('external_factors_changed', False)
+            ))
+            
+            conn.commit()
+            return cursor.lastrowid
+    
+    def get_latest_res1_data(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get latest RES1 data"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT * FROM RES1 
+                ORDER BY timestamp DESC 
+                LIMIT ?
+            ''', (limit,))
+            
+            return [dict(row) for row in cursor.fetchall()]
+    
+    def get_latest_res2_data(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get latest RES2 data"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT * FROM RES2 
+                ORDER BY timestamp DESC 
+                LIMIT ?
+            ''', (limit,))
+            
+            return [dict(row) for row in cursor.fetchall()]
+    
+    def get_latest_res3_data(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get latest RES3 data"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT * FROM RES3 
+                ORDER BY timestamp DESC 
+                LIMIT ?
+            ''', (limit,))
+            
+            return [dict(row) for row in cursor.fetchall()]
 
 # Global database instance
 db = FlotationDatabase()

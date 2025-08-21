@@ -11,7 +11,7 @@ import logging
 from typing import Dict, Any, List, Set
 from fastapi import WebSocket, WebSocketDisconnect
 
-from interfaces import IWebSocketManager
+from services.interfaces import IWebSocketManager
 
 class WebSocketConnectionManager(IWebSocketManager):
     """Manages WebSocket connections for real-time data broadcasting"""

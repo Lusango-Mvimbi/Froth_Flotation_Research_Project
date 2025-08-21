@@ -66,17 +66,13 @@ class FrothFlotationLauncher:
         except requests.exceptions.RequestException:
             pass  # Backend not running, continue with startup
         
-        backend_dir = self.project_root / 'backend' / 'services'
-        backend_script = backend_dir / 'simple_data_service.py'
-        
-        # Use absolute paths
-        backend_script_abs = backend_script.absolute()
-        backend_dir_abs = backend_dir.absolute()
+        backend_dir = self.project_root / 'backend'
         
         try:
-            # Start the backend server with real-time output
+            # Start the backend server using uvicorn
             self.backend_process = subprocess.Popen(
-                [sys.executable, str(backend_script_abs)],
+                [sys.executable, '-m', 'uvicorn', 'services.flotation_data_service_refactored:app', '--host', '0.0.0.0', '--port', '8000'],
+                cwd=str(backend_dir),
                 stdout=None,  # Show output in real-time
                 stderr=None,  # Show errors in real-time
                 text=True
@@ -233,7 +229,7 @@ class FrothFlotationLauncher:
         
         if not backend_ready:
             print("  Backend server failed to start")
-            print("  Try running: cd backend\\services && python simple_data_service.py")
+            print("  Try running: cd backend && python -m uvicorn services.flotation_data_service_refactored:app --host 0.0.0.0 --port 8000")
             return False
         
         # Wait for frontend
@@ -512,8 +508,8 @@ class FrothFlotationLauncher:
             print("API Documentation: http://localhost:8000/docs")
             print("Authentication: http://localhost:8051")
             print("Login Credentials:")
-            print("   Username: LusangoM")
-            print("   Password: admin")
+            print("   Username: admin")
+            print("   Password: admin123")
             print("=" * 70)
             print("Status updates will appear below...")
             print("=" * 70)

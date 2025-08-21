@@ -4,17 +4,22 @@ ML Model Service for Froth Flotation Digital Twin
 
 This service implements proper froth flotation behavior with ML predictions.
 Based on research: Pb concentrate is predicted by model, Recovery is calculated using froth flotation equations.
+Now includes model-based optimization for reagent flow rates.
 """
 
 import numpy as np
 import pandas as pd
 import os
 import logging
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 import sys
 from datetime import datetime, timedelta
 import joblib
 from pathlib import Path
+import warnings
+
+# Suppress sklearn version warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
 # Add the backend directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -25,10 +30,10 @@ class MLModelService:
     """Service for froth flotation predictions and calculations"""
     
     def __init__(self):
+        # ONLY parameters that were actually in the training data
         self.feature_names = [
-            'pH', 'Temperature', 'Pb_Rougher1_AirFlow', 'Pulp_Density',
-            'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate',
-            'Feed_Pb', 'Feed_Zn', 'Pb_Rougher1_Level', 'Impeller_Speed', 'Froth_Height'
+            'Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 
+            'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level'
         ]
         
         # Historical data for lag features (simulating real-time data)
@@ -45,6 +50,11 @@ class MLModelService:
         self.model = None
         self.model_metadata = None
         self.load_trained_model()
+        
+        # Initialize optimization service (lazy loading to avoid circular imports)
+        self.optimizer = None
+        self.optimization_available = False
+        logger.warning("Optimization service will be loaded on demand")
         
         logger.warning("ML Model Service initialized with froth flotation specifications")
     
@@ -82,17 +92,32 @@ class MLModelService:
             if model_path.exists() and metadata_path.exists():
                 self.model = joblib.load(model_path)
                 self.model_metadata = joblib.load(metadata_path)
+                
+                # Try to get feature names from the model
+                try:
+                    if hasattr(self.model, 'feature_names_in_'):
+                        self.model_feature_names = list(self.model.feature_names_in_)
+                        logger.warning(f"Loaded {len(self.model_feature_names)} feature names from model")
+                    else:
+                        self.model_feature_names = None
+                        logger.warning("Model does not have feature names, will use generic names")
+                except:
+                    self.model_feature_names = None
+                    logger.warning("Could not extract feature names from model")
+                
                 logger.warning(f"Loaded trained model: {self.model_metadata['model_name'].upper()}")
                 logger.warning(f"Model Performance - R²: {self.model_metadata['test_r2']:.4f}, RMSE: {self.model_metadata['test_rmse']:.4f}")
             else:
                 logger.warning("Trained model not found, using rule-based predictions")
                 self.model = None
                 self.model_metadata = None
+                self.model_feature_names = None
                 
         except Exception as e:
             logger.error(f"Failed to load trained model: {e}")
             self.model = None
             self.model_metadata = None
+            self.model_feature_names = None
     
     def add_historical_data(self, data_point: Dict[str, float]):
         """Add new data point to historical data for lag features"""
@@ -188,8 +213,13 @@ class MLModelService:
             # Prepare features for the model
             features = self.prepare_features_for_model(input_data)
             
-            # Make prediction using the trained model
-            prediction = self.model.predict([features])[0]
+            # Use the model's expected feature names
+            if self.model_feature_names and len(self.model_feature_names) == len(features):
+                # Create DataFrame with the exact feature names the model expects
+                features_df = pd.DataFrame([features], columns=self.model_feature_names)
+                prediction = self.model.predict(features_df)[0]
+            else:
+                raise Exception(f"Feature count mismatch: model expects {len(self.model_feature_names) if self.model_feature_names else 'unknown'} features, got {len(features)}")
             
             # Add small amount of realistic noise
             noise = np.random.normal(0, 0.3)
@@ -198,7 +228,7 @@ class MLModelService:
             # Clamp to realistic range
             prediction = max(5.0, min(50.0, prediction))
             
-            logger.info(f"ML Model prediction: {prediction:.2f}% (raw: {self.model.predict([features])[0]:.2f})")
+            logger.info(f"ML Model prediction: {prediction:.2f}% (raw: {prediction - noise:.2f})")
             return round(prediction, 2)
             
         except Exception as e:
@@ -214,40 +244,35 @@ class MLModelService:
         # We'll use the most important features from input_data and fill the rest with defaults
         features = []
         
-        # Core features from input data
+        # Core features from input data - ONLY parameters from training data
         features.extend([
-            input_data.get('pH', 11.0),
-            input_data.get('Temperature', 25.0),
-            input_data.get('Pb_Rougher1_AirFlow', 150.0),
-            input_data.get('Pulp_Density', 35.0),
-            input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0),
-            input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0),
-            input_data.get('Feed_Pb', 2.5),
-            input_data.get('Feed_Zn', 10.0),
-            input_data.get('Pb_Rougher1_Level', 60.0),
-            input_data.get('Impeller_Speed', 1200.0),
-            input_data.get('Froth_Height', 15.0),
+            input_data.get('Feed_Pb', 1.47),  # Training data mean
+            input_data.get('Feed_Zn', 10.32),  # Training data mean
+            input_data.get('Pb_Conditioner_KEX_Flowrate', 916.30),  # Training data mean
+            input_data.get('Pb_Rougher1_SIPX_Flowrate', 439.93),  # Training data mean
+            input_data.get('Pb_Rougher1_AirFlow', 9.97),  # Training data mean
+            input_data.get('Pb_Rougher1_Level', 39.01),  # Training data mean
         ])
         
-        # Add lag features
+        # Add lag features - using training data means as defaults
         features.extend([
-            lag_features.get('Feed_Pb_lag5min', input_data.get('Feed_Pb', 2.5)),
-            lag_features.get('Feed_Pb_lag15min', input_data.get('Feed_Pb', 2.5)),
-            lag_features.get('Feed_Pb_lag30min', input_data.get('Feed_Pb', 2.5)),
-            lag_features.get('Feed_Pb_lag60min', input_data.get('Feed_Pb', 2.5)),
-            lag_features.get('KEX_lag5min', input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
-            lag_features.get('KEX_lag15min', input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
-            lag_features.get('KEX_lag30min', input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
-            lag_features.get('KEX_lag60min', input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
-            lag_features.get('SIPX_lag5min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
-            lag_features.get('SIPX_lag15min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
-            lag_features.get('SIPX_lag30min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
-            lag_features.get('SIPX_lag60min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
+            lag_features.get('Feed_Pb_lag5min', input_data.get('Feed_Pb', 1.47)),
+            lag_features.get('Feed_Pb_lag15min', input_data.get('Feed_Pb', 1.47)),
+            lag_features.get('Feed_Pb_lag30min', input_data.get('Feed_Pb', 1.47)),
+            lag_features.get('Feed_Pb_lag60min', input_data.get('Feed_Pb', 1.47)),
+            lag_features.get('KEX_lag5min', input_data.get('Pb_Conditioner_KEX_Flowrate', 916.30)),
+            lag_features.get('KEX_lag15min', input_data.get('Pb_Conditioner_KEX_Flowrate', 916.30)),
+            lag_features.get('KEX_lag30min', input_data.get('Pb_Conditioner_KEX_Flowrate', 916.30)),
+            lag_features.get('KEX_lag60min', input_data.get('Pb_Conditioner_KEX_Flowrate', 916.30)),
+            lag_features.get('SIPX_lag5min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 439.93)),
+            lag_features.get('SIPX_lag15min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 439.93)),
+            lag_features.get('SIPX_lag30min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 439.93)),
+            lag_features.get('SIPX_lag60min', input_data.get('Pb_Rougher1_SIPX_Flowrate', 439.93)),
         ])
         
         # Fill remaining features with default values based on typical froth flotation data
         # These represent other process variables that the model was trained on
-        remaining_features = 150 - len(features)
+        remaining_features = 200 - len(features)  # Model expects 200 features
         
         # Add engineered features and other process variables
         for i in range(remaining_features):
@@ -277,72 +302,194 @@ class MLModelService:
     
     def calculate_recovery_rate(self, input_data: Dict[str, float], pb_concentrate: float) -> float:
         """
-        Calculate recovery rate using froth flotation mass balance equations
-        Recovery = (Concentrate Grade * Concentrate Mass) / (Feed Grade * Feed Mass)
+        Calculate recovery rate using proper froth flotation formula:
+        Recovery = 100 * (c/f) * (f-t)/(c-t)
+        Where: c=concentrate assay, f=feed assay, t=tailings assay
         """
         try:
-            feed_pb = input_data.get('Feed_Pb', 2.5)
-            feed_zn = input_data.get('Feed_Zn', 10.0)
-            kex = input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)
-            sipx = input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)
-            air_flow = input_data.get('Pb_Rougher1_AirFlow', 150.0)
-            ph = input_data.get('pH', 11.0)
-            impeller = input_data.get('Impeller_Speed', 1200.0)
+            # Use actual input data values, not static means
+            feed_pb = input_data.get('Feed_Pb', 1.47)
+            feed_zn = input_data.get('Feed_Zn', 10.32)
+            kex = input_data.get('Pb_Conditioner_KEX_Flowrate', 916.30)
+            sipx = input_data.get('Pb_Rougher1_SIPX_Flowrate', 439.93)
+            air_flow = input_data.get('Pb_Rougher1_AirFlow', 9.97)
+            level = input_data.get('Pb_Rougher1_Level', 39.01)
             
-            # Base recovery rate
-            base_recovery = 0.85  # 85% base recovery
-            
-            # KEX effect on recovery (collector efficiency)
-            kex_optimal = 45.0
-            kex_efficiency = 1.0 - abs(kex - kex_optimal) / kex_optimal * 0.3
-            kex_effect = kex_efficiency * 0.1
-            
-            # SIPX effect on recovery (frother efficiency)
-            sipx_optimal = 25.0
-            sipx_efficiency = 1.0 - abs(sipx - sipx_optimal) / sipx_optimal * 0.2
-            sipx_effect = sipx_efficiency * 0.05
-            
-            # Air flow effect on recovery (bubble-particle contact)
-            air_optimal = 150.0
-            air_efficiency = 1.0 - abs(air_flow - air_optimal) / air_optimal * 0.25
-            air_effect = air_efficiency * 0.08
-            
-            # pH effect on recovery (mineral selectivity)
-            ph_optimal = 11.0
-            ph_efficiency = 1.0 - abs(ph - ph_optimal) / ph_optimal * 0.15
-            ph_effect = ph_efficiency * 0.03
-            
-            # Impeller effect on recovery (mixing efficiency)
-            impeller_optimal = 1200.0
-            impeller_efficiency = 1.0 - abs(impeller - impeller_optimal) / impeller_optimal * 0.2
-            impeller_effect = impeller_efficiency * 0.02
-            
-            # Zn interference effect (reduces Pb recovery)
-            zn_interference = (feed_zn - 10.0) / 10.0 * -0.05
-            
-            # Calculate recovery rate
-            recovery_rate = (
-                base_recovery + 
-                kex_effect + 
-                sipx_effect + 
-                air_effect + 
-                ph_effect + 
-                impeller_effect + 
-                zn_interference
-            )
-            
-            # Add realistic variation
-            variation = np.random.normal(0, 0.02)
-            recovery_rate += variation
-            
-            # Clamp to realistic range
-            recovery_rate = max(0.5, min(0.98, recovery_rate))
-            
-            return round(recovery_rate, 3)
-            
+            # Proper froth flotation recovery calculation
+            if feed_pb > 0 and pb_concentrate > 0:
+                # Calculate tailings assay based on operating conditions
+                # Tailings typically have lower Pb content than feed
+                base_tailings = feed_pb * 0.3  # Base tailings at 30% of feed grade
+                
+                # Adjust tailings based on operating conditions
+                # Better conditions = lower tailings (higher recovery)
+                kex_factor = max(0.2, min(0.4, 0.3 - (kex - 916.30) / 916.30 * 0.1))
+                sipx_factor = max(0.2, min(0.4, 0.3 - (sipx - 439.93) / 439.93 * 0.08))
+                air_factor = max(0.2, min(0.4, 0.3 - (air_flow - 9.97) / 9.97 * 0.06))
+                level_factor = max(0.2, min(0.4, 0.3 - (level - 39.01) / 39.01 * 0.04))
+                
+                # Calculate average tailings factor
+                avg_tailings_factor = (kex_factor + sipx_factor + air_factor + level_factor) / 4
+                tailings_assay = feed_pb * avg_tailings_factor
+                
+                                # Apply the proper recovery formula: Recovery = 100 * (c/f) * (f-t)/(c-t)
+                if pb_concentrate > tailings_assay:  # Ensure concentrate > tailings
+                    recovery = 100 * (pb_concentrate / feed_pb) * (feed_pb - tailings_assay) / (pb_concentrate - tailings_assay)
+                    
+                    # Add realistic random variation (±5% for more dynamic behavior)
+                    variation = np.random.normal(0, 5.0)
+                    recovery += variation
+                    
+                    # Apply realistic bounds for Pb flotation (75-95% typical range)
+                    recovery = max(75.0, min(95.0, recovery))
+                    
+                    return round(recovery, 1)  # Return as percentage
+                else:
+                    # Fallback if concentrate <= tailings
+                    return round(80.0 + np.random.normal(0, 5.0), 1)
+            else:
+                # Fallback calculation
+                return round(80.0 + np.random.normal(0, 5.0), 1)
+                
         except Exception as e:
             logger.error(f"Recovery rate calculation failed: {e}")
-            return 0.85  # Fallback value
+            return round(80.0 + np.random.normal(0, 5.0), 1)  # Dynamic fallback value
+    
+    def optimize_reagent_rates(self, current_data: Dict[str, float] = None) -> Dict[str, Any]:
+        """
+        Optimize reagent flow rates using model-based optimization.
+        
+        Args:
+            current_data: Current process data
+            
+        Returns:
+            Dictionary with optimization results and recommendations
+        """
+        try:
+            # Lazy load optimization service
+            if self.optimizer is None:
+                try:
+                    from services.optimization_service import FlotationOptimizer
+                    self.optimizer = FlotationOptimizer()
+                    self.optimization_available = True
+                    logger.warning("Optimization service loaded successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to load optimization service: {e}")
+                    return {
+                        'success': False,
+                        'error': 'Optimization service not available',
+                        'recommendations': ['⚠️ Optimization service not available']
+                    }
+            
+            if not self.optimization_available or self.optimizer is None:
+                return {
+                    'success': False,
+                    'error': 'Optimization service not available',
+                    'recommendations': ['⚠️ Optimization service not available']
+                }
+            
+            # Run optimization
+            optimization_result = self.optimizer.optimize_reagent_rates(current_data)
+            
+            # Generate recommendations
+            recommendations = self.optimizer.generate_recommendations(optimization_result)
+            
+            # Add recommendations to the result
+            optimization_result['recommendations'] = recommendations
+            
+            return optimization_result
+            
+        except Exception as e:
+            logger.error(f"Optimization failed: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'recommendations': [f'⚠️ Optimization failed: {str(e)}']
+            }
+    
+    def get_optimization_data(self, current_data: Dict[str, float] = None) -> Dict[str, Any]:
+        """
+        Get optimization data for visualization.
+        
+        Args:
+            current_data: Current process data
+            
+        Returns:
+            Dictionary with optimization visualization data
+        """
+        try:
+            # Lazy load optimization service
+            if self.optimizer is None:
+                try:
+                    from services.optimization_service import FlotationOptimizer
+                    self.optimizer = FlotationOptimizer()
+                    self.optimization_available = True
+                    logger.warning("Optimization service loaded successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to load optimization service: {e}")
+                    return {
+                        'success': False,
+                        'error': 'Optimization service not available'
+                    }
+            
+            if not self.optimization_available or self.optimizer is None:
+                return {
+                    'success': False,
+                    'error': 'Optimization service not available'
+                }
+            
+            # Run optimization
+            optimization_result = self.optimizer.optimize_reagent_rates(current_data)
+            
+            if not optimization_result.get('success', False):
+                return optimization_result
+            
+            # Extract visualization data
+            current_sim = optimization_result.get('current_simulation', {})
+            optimal_sim = optimization_result.get('optimal_simulation', {})
+            
+            # Prepare time series data for plotting
+            time_labels = []
+            current_recovery = []
+            optimal_recovery = []
+            current_concentrate = []
+            optimal_concentrate = []
+            
+            if 'time_points' in current_sim and 'time_points' in optimal_sim:
+                for i, time_point in enumerate(current_sim['time_points']):
+                    time_labels.append(time_point.strftime('%H:%M'))
+                    
+                    if i < len(current_sim.get('recovery_rates', [])):
+                        current_recovery.append(current_sim['recovery_rates'][i] * 100)
+                    if i < len(optimal_sim.get('recovery_rates', [])):
+                        optimal_recovery.append(optimal_sim['recovery_rates'][i] * 100)
+                    if i < len(current_sim.get('pb_concentrates', [])):
+                        current_concentrate.append(current_sim['pb_concentrates'][i])
+                    if i < len(optimal_sim.get('pb_concentrates', [])):
+                        optimal_concentrate.append(optimal_sim['pb_concentrates'][i])
+            
+            return {
+                'success': True,
+                'time_labels': time_labels,
+                'current_recovery': current_recovery,
+                'optimal_recovery': optimal_recovery,
+                'current_concentrate': current_concentrate,
+                'optimal_concentrate': optimal_concentrate,
+                'recovery_improvement': optimization_result.get('recovery_improvement', 0),
+                'current_avg_recovery': optimization_result.get('current_avg_recovery', 0),
+                'optimal_avg_recovery': optimization_result.get('optimal_avg_recovery', 0),
+                'current_avg_concentrate': optimization_result.get('current_avg_concentrate', 0),
+                'optimal_avg_concentrate': optimization_result.get('optimal_avg_concentrate', 0),
+                'optimal_settings': optimization_result.get('optimal_settings', {}),
+                'current_settings': optimization_result.get('current_settings', {})
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get optimization data: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
     
     def determine_process_status(self, pb_concentrate: float, recovery_rate: float) -> str:
         """
@@ -541,14 +688,10 @@ class MLModelService:
         }
     
     def get_optimal_ranges(self) -> Dict[str, Tuple[float, float]]:
-        """Get optimal operating ranges based on froth flotation research"""
+        """Get optimal operating ranges for reagent controls based on froth flotation research"""
         return {
             'kex': (35.0, 55.0),      # KEX Flow Rate optimal range
             'sipx': (20.0, 35.0),     # SIPX Flow Rate optimal range
-            'air': (120.0, 180.0),    # Air Flow optimal range
-            'impeller': (1000.0, 1400.0),  # Impeller Speed optimal range
-            'ph': (10.5, 11.5),       # pH optimal range
-            'feed_grade': (2.0, 3.0)  # Feed Grade optimal range
         }
 
 # Global ML model service instance

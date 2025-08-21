@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FlotationData, ProcessControls, Prediction, OptimalRanges } from '../types';
+import { FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const AUTH_BASE_URL = process.env.REACT_APP_AUTH_URL || 'http://localhost:8051';
@@ -86,16 +86,12 @@ export const flotationAPI = {
     return response.data.data || [];
   },
   
-  // Get predictions (using current data for now)
-  getPredictions: async (controls: ProcessControls): Promise<Prediction> => {
-    // For now, return mock prediction data since there's no prediction endpoint
-    return {
-      predicted_pb: 45.2 + Math.random() * 5,
-      recovery_efficiency: 85.5 + Math.random() * 10,
-      confidence: 0.92,
-      status: 'optimal',
-      prediction_method: 'ML Model'
-    };
+
+  
+  // Get current control settings
+  getControlSettings: async (): Promise<ProcessControls> => {
+    const response = await api.get('/api/control-settings');
+    return response.data.controls;
   },
   
   // Update control settings
@@ -109,26 +105,19 @@ export const flotationAPI = {
     return response.data;
   },
   
-  // Get recommendations (mock data for now)
-  getRecommendations: async (): Promise<any[]> => {
-    // Return mock recommendations since there's no recommendations endpoint
-    return [
-      {
-        id: 1,
-        type: 'optimization',
-        message: 'Consider increasing KEX flowrate to 50 L/min for better recovery',
-        priority: 'medium',
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 2,
-        type: 'maintenance',
-        message: 'Check impeller condition - performance may be degrading',
-        priority: 'low',
-        timestamp: new Date().toISOString()
-      }
-    ];
+  // Get target ranges for prediction cards
+  getTargetRanges: async (): Promise<TargetRanges> => {
+    const response = await api.get('/api/target-ranges');
+    return response.data.target_ranges;
   },
+  
+  // Get optimization data
+  getOptimizationData: async (): Promise<any> => {
+    const response = await api.get('/api/optimization-data');
+    return response.data.optimization_data;
+  },
+  
+
   
   // WebSocket connection for real-time updates
   getWebSocketUrl: (): string => {
@@ -138,38 +127,42 @@ export const flotationAPI = {
 
 // Dashboard API
 export const dashboardAPI = {
-  // Get dashboard summary (mock data for now)
+  // Get dashboard summary from real data
   getSummary: async () => {
     const currentData = await api.get('/api/current-data');
     const optimalRanges = await api.get('/api/optimal-ranges');
+    const data = currentData.data;
+    
     return {
-      current_performance: 87.5,
+      current_performance: (data.Pb_Recovery || 0) * 100,
       target_performance: 90.0,
-      system_status: 'operational',
-      last_update: new Date().toISOString(),
-      current_data: currentData.data,
+      system_status: data.Process_Status || 'operational',
+      last_update: data.timestamp || new Date().toISOString(),
+      current_data: data,
       optimal_ranges: optimalRanges.data
     };
   },
   
-  // Get system status
+  // Get system status from real data
   getSystemStatus: async () => {
     const connections = await api.get('/api/connections');
+    const status = await api.get('/status');
     return {
-      status: 'operational',
-      uptime: '2h 15m',
-      active_connections: connections.data.active_connections,
+      status: status.data.status || 'operational',
+      uptime: status.data.uptime || 'unknown',
+      active_connections: connections.data.active_connections || 0,
       last_check: new Date().toISOString()
     };
   },
   
-  // Export data (mock for now)
+  // Export data using real endpoint
   exportData: async (format: 'csv' | 'json' | 'excel', dateRange?: { start: string; end: string }) => {
-    // Return mock export data
+    const response = await api.get(`/api/database/sensor-data?limit=1000`);
     return {
       success: true,
       message: `Data exported in ${format} format`,
-      download_url: `/api/database/sensor-data?limit=1000`
+      download_url: `/api/database/sensor-data?limit=1000`,
+      data: response.data
     };
   },
 };

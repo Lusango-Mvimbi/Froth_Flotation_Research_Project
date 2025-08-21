@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import { DashboardState, FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges } from '../types';
+import { DashboardState, FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges } from '../types';
 import { flotationAPI } from '../services/api';
 import PredictionCards from './PredictionCards';
 import ControlPanel from './ControlPanel';
 import RealTimeGraph from './RealTimeGraph';
-import RecommendationsPanel from './RecommendationsPanel';
+
 import ConnectionStatus from './ConnectionStatus';
 
 const Dashboard: React.FC = () => {
@@ -28,18 +28,19 @@ const Dashboard: React.FC = () => {
     controls: {
       kex: 47,
       sipx: 27,
-      feed_grade: 2.5,
-      impeller_speed: 1200,
-      air: 150,
-      ph: 11.25,
     },
     predictions: null,
     recommendations: [],
     optimalRanges: null,
+    targetRanges: null,
     loading: true,
     error: null,
     serverConnected: false,
   });
+
+
+
+
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -57,6 +58,24 @@ const Dashboard: React.FC = () => {
           console.log('✅ Optimal ranges fetched');
         } catch (error) {
           console.warn('⚠️ Could not fetch optimal ranges:', error);
+        }
+        
+        // Try to fetch target ranges
+        let targetRanges: TargetRanges | null = null;
+        try {
+          targetRanges = await flotationAPI.getTargetRanges();
+          console.log('✅ Target ranges fetched');
+        } catch (error) {
+          console.warn('⚠️ Could not fetch target ranges:', error);
+        }
+        
+        // Try to fetch current control settings
+        let currentControls: ProcessControls = { kex: 45.0, sipx: 25.0 }; // Default fallback
+        try {
+          currentControls = await flotationAPI.getControlSettings();
+          console.log('✅ Current control settings fetched:', currentControls);
+        } catch (error) {
+          console.warn('⚠️ Could not fetch current control settings:', error);
         }
         
         // Try to fetch historical data
@@ -77,13 +96,18 @@ const Dashboard: React.FC = () => {
           console.warn('⚠️ Could not fetch current data:', error);
         }
         
-        // Get predictions from ML model (this should work as it's mock data)
+
+        
+        // Create predictions from current data (which includes ML predictions)
         let predictions: Prediction | null = null;
-        try {
-          predictions = await flotationAPI.getPredictions(state.controls);
-          console.log('✅ ML Predictions fetched');
-        } catch (error) {
-          console.warn('⚠️ Could not fetch ML predictions:', error);
+        if (currentData) {
+          predictions = {
+            predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
+            recovery_efficiency: (currentData.Predicted_Pb_Recovery || currentData.Pb_Recovery || 0) * 100,
+            status: currentData.Process_Status || 'optimal',
+            prediction_method: 'ML Model' as const
+          };
+          console.log('✅ ML Predictions created from real data');
         }
         
         // Determine if server is connected based on successful API calls
@@ -94,11 +118,21 @@ const Dashboard: React.FC = () => {
           data: historicalData,
           currentData,
           predictions,
+          controls: currentControls,
           optimalRanges,
+          targetRanges,
+          recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
+            id: `rec-${index}`,
+            type: 'info' as const,
+            message: rec,
+            timestamp: new Date().toISOString()
+          })),
           loading: false,
           serverConnected,
           error: serverConnected ? null : 'Backend services not available'
         }));
+        
+
         
         if (serverConnected) {
           toast.success('Dashboard connected successfully!');
@@ -127,14 +161,38 @@ const Dashboard: React.FC = () => {
     const interval = setInterval(async () => {
       try {
         const currentData = await flotationAPI.getCurrentData();
-        const predictions = await flotationAPI.getPredictions(state.controls);
+        
+        // Create predictions from current data (which includes ML predictions)
+        const predictions = {
+          predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
+          recovery_efficiency: currentData.Predicted_Pb_Recovery ? (currentData.Predicted_Pb_Recovery * 100) : (currentData.Pb_Recovery || 0) * 100, // Convert from decimal to percentage
+          status: currentData.Process_Status || 'optimal',
+          prediction_method: 'ML Model' as const
+        };
+        
+        // Also fetch updated control settings
+        let updatedControls = state.controls;
+        try {
+          updatedControls = await flotationAPI.getControlSettings();
+        } catch (error) {
+          console.warn('Could not fetch updated control settings:', error);
+        }
         
         setState(prev => ({
           ...prev,
           currentData,
           predictions,
+          controls: updatedControls,
+          recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
+            id: `rec-${index}`,
+            type: 'info' as const,
+            message: rec,
+            timestamp: new Date().toISOString()
+          })),
           data: [...prev.data.slice(-99), currentData], // Keep last 100 points
         }));
+        
+        console.log('Dashboard - Updated data array length:', state.data.length + 1);
       } catch (error) {
         console.error('Failed to fetch real-time data:', error);
         setState(prev => ({ ...prev, serverConnected: false }));
@@ -153,9 +211,15 @@ const Dashboard: React.FC = () => {
       }
       setState(prev => ({ ...prev, controls }));
       
-      // Get updated predictions
-      const predictions = await flotationAPI.getPredictions(controls);
-      setState(prev => ({ ...prev, predictions }));
+      // Get updated current data and create predictions
+      const currentData = await flotationAPI.getCurrentData();
+      const predictions = {
+        predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
+        recovery_efficiency: currentData.Predicted_Pb_Recovery ? (currentData.Predicted_Pb_Recovery * 100) : (currentData.Pb_Recovery || 0) * 100,
+        status: currentData.Process_Status || 'optimal',
+        prediction_method: 'ML Model' as const
+      };
+      setState(prev => ({ ...prev, predictions, currentData }));
       
       toast.success('Controls updated successfully');
     } catch (error) {
@@ -174,7 +238,15 @@ const Dashboard: React.FC = () => {
 
       try {
         currentData = await flotationAPI.getCurrentData();
-        predictions = await flotationAPI.getPredictions(state.controls);
+        
+        // Create predictions from current data
+        predictions = {
+          predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
+          recovery_efficiency: currentData.Predicted_Pb_Recovery ? (currentData.Predicted_Pb_Recovery * 100) : (currentData.Pb_Recovery || 0) * 100,
+          status: currentData.Process_Status || 'optimal',
+          prediction_method: 'ML Model' as const
+        };
+        
         serverConnected = true;
       } catch (error) {
         console.warn('Refresh failed, staying in offline mode:', error);
@@ -184,6 +256,12 @@ const Dashboard: React.FC = () => {
         ...prev,
         currentData,
         predictions,
+        recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
+          id: `rec-${index}`,
+          type: 'info' as const,
+          message: rec,
+          timestamp: new Date().toISOString()
+        })),
         serverConnected,
         error: serverConnected ? null : 'Backend services not available'
       }));
@@ -200,6 +278,9 @@ const Dashboard: React.FC = () => {
       setIsRefreshing(false);
     }
   };
+
+  // Fetch optimization data on component mount and periodically
+
 
   // Handle logout
   const handleLogout = () => {
@@ -296,6 +377,7 @@ const Dashboard: React.FC = () => {
             <PredictionCards 
               predictions={state.predictions}
               currentData={state.currentData}
+              targetRanges={state.targetRanges}
             />
           </motion.div>
 
@@ -327,6 +409,8 @@ const Dashboard: React.FC = () => {
                 />
               </div>
            </motion.div>
+
+
         </AnimatePresence>
       </main>
     </div>

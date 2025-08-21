@@ -2,10 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Settings, 
-  Gauge, 
   Droplets, 
-  Wind, 
-  Activity,
   TrendingUp,
   AlertTriangle,
   CheckCircle
@@ -25,6 +22,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   const [localControls, setLocalControls] = useState<ProcessControls>(controls);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync local controls with backend controls when they change
+  React.useEffect(() => {
+    setLocalControls(controls);
+  }, [controls]);
 
   // Cleanup timeout on unmount
   React.useEffect(() => {
@@ -64,8 +66,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       label: 'KEX Flow Rate',
       unit: 'L/min',
       icon: Droplets,
-      min: 30,
-      max: 60,
+      min: optimalRanges?.kex?.min || 30,
+      max: optimalRanges?.kex?.max || 60,
       step: 0.5,
       description: 'Collector reagent flow rate'
     },
@@ -74,50 +76,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       label: 'SIPX Flow Rate',
       unit: 'L/min',
       icon: Droplets,
-      min: 15,
-      max: 40,
+      min: optimalRanges?.sipx?.min || 15,
+      max: optimalRanges?.sipx?.max || 40,
       step: 0.5,
       description: 'Frother reagent flow rate'
-    },
-    {
-      key: 'feed_grade' as keyof ProcessControls,
-      label: 'Feed Grade',
-      unit: '%',
-      icon: Activity,
-      min: 1.5,
-      max: 4.0,
-      step: 0.1,
-      description: 'Ore feed grade concentration'
-    },
-    {
-      key: 'impeller_speed' as keyof ProcessControls,
-      label: 'Impeller Speed',
-      unit: 'RPM',
-      icon: Gauge,
-      min: 800,
-      max: 1500,
-      step: 10,
-      description: 'Mixing impeller rotation speed'
-    },
-    {
-      key: 'air' as keyof ProcessControls,
-      label: 'Air Flow Rate',
-      unit: 'L/min',
-      icon: Wind,
-      min: 100,
-      max: 200,
-      step: 5,
-      description: 'Air injection flow rate'
-    },
-    {
-      key: 'ph' as keyof ProcessControls,
-      label: 'pH Level',
-      unit: '',
-      icon: Activity,
-      min: 9.0,
-      max: 12.0,
-      step: 0.1,
-      description: 'Process pH level'
     }
   ];
 
@@ -133,8 +95,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
         </div>
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-white">Process Controls</h2>
-          <p className="text-xs sm:text-sm text-dark-300">Adjust process parameters</p>
+          <h2 className="text-lg sm:text-xl font-bold text-white">Reagent Controls</h2>
+          <p className="text-xs sm:text-sm text-dark-300">Adjust reagent flow rates</p>
         </div>
       </div>
 
@@ -170,13 +132,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 </div>
               </div>
 
-              {/* Current Value */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-base sm:text-lg font-bold text-white">
-                  {value.toFixed(config.key === 'ph' ? 1 : 0)}
-                </span>
-                <span className="text-xs sm:text-sm text-dark-300">{config.unit}</span>
-              </div>
+                             {/* Current Value */}
+               <div className="flex items-center justify-between mb-2">
+                 <span className="text-base sm:text-lg font-bold text-white">
+                   {value.toFixed(1)}
+                 </span>
+                 <span className="text-xs sm:text-sm text-dark-300">{config.unit}</span>
+               </div>
 
               {/* Slider */}
               <div className="mb-3">
