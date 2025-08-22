@@ -7,6 +7,7 @@ This module orchestrates all the backend services following SOLID principles.
 
 import asyncio
 import logging
+import time
 from typing import Dict, Any, Optional
 from datetime import datetime
 
@@ -49,11 +50,22 @@ class FlotationServiceOrchestrator:
         self.res2_interval = 5  # 5 minutes
         self.res3_interval = 10  # 10 minutes
         
-        self.logger.warning("Flotation Service Orchestrator initialized with database and RES table timing")
+        # Initialize optimizer once
+        from services.optimization_service import FlotationOptimizer
+        self.optimizer = FlotationOptimizer()
+        
+        self.logger.info("Flotation Service Orchestrator initialized with database, RES table timing, and optimizer")
     
-    async def generate_and_process_data(self) -> Dict[str, Any]:
+    async def generate_and_process_data(self, use_cache: bool = True) -> Dict[str, Any]:
         """Generate data point and process it through the ML pipeline"""
         try:
+            # Check cache first if requested
+            if use_cache and hasattr(self, 'last_cached_data') and self.last_cached_data is not None:
+                current_time = time.time()
+                if (hasattr(self, 'last_cache_time') and 
+                    self.last_cache_time is not None and 
+                    current_time - self.last_cache_time < 2):  # 2 second cache
+                    return self.last_cached_data
             # Generate new data point
             raw_data = self.data_generator.generate_data_point()
             
@@ -90,13 +102,9 @@ class FlotationServiceOrchestrator:
             
             status = self.status_analyzer.analyze_status(predictions)
             
-            # Get optimization-based recommendations
-            from services.optimization_service import FlotationOptimizer
-            optimizer = FlotationOptimizer()
-            
             # Track prediction accuracy (compare predicted vs actual from previous cycle)
             if hasattr(self, 'last_predictions') and self.last_predictions:
-                optimizer.track_prediction_accuracy(self.last_predictions, {
+                self.optimizer.track_prediction_accuracy(self.last_predictions, {
                     'pb_concentrate': actual_pb_concentrate,
                     'recovery_rate': actual_recovery_rate_pct
                 })
@@ -107,10 +115,10 @@ class FlotationServiceOrchestrator:
                 'recovery_rate': predicted_recovery_rate_pct
             }
             
-            # Run optimization
-            optimization_result = optimizer.optimize_reagent_rates(raw_data)
-            recommendations = optimizer.generate_recommendations(optimization_result)
-            self.logger.info(f"Generated {len(recommendations)} optimization-based recommendations")
+            # Run optimization using the instance optimizer
+            optimization_result = self.optimizer.optimize_reagent_rates(raw_data)
+            recommendations = self.optimizer.generate_recommendations(optimization_result)
+            self.logger.debug(f"Generated {len(recommendations)} optimization-based recommendations")
             
             # Prepare final data point with both predicted and actual values
             processed_data = {
@@ -140,7 +148,7 @@ class FlotationServiceOrchestrator:
                 if (current_time - self.last_res1_save).total_seconds() >= self.res1_interval * 60:
                     res1_id = self.database.save_to_res1(raw_data)
                     self.last_res1_save = current_time
-                    self.logger.info(f"Saved to RES1 - ID: {res1_id}")
+                    self.logger.debug(f"Saved to RES1 - ID: {res1_id}")
                 
                 # Check if it's time to save to RES2 (every 5 minutes)
                 if (current_time - self.last_res2_save).total_seconds() >= self.res2_interval * 60:
@@ -153,7 +161,7 @@ class FlotationServiceOrchestrator:
                         'model_confidence': 0.85
                     })
                     self.last_res2_save = current_time
-                    self.logger.info(f"Saved to RES2 - ID: {res2_id}")
+                    self.logger.debug(f"Saved to RES2 - ID: {res2_id}")
                 
                 # Check if it's time to save to RES3 (every 10 minutes)
                 if (current_time - self.last_res3_save).total_seconds() >= self.res3_interval * 60:
@@ -167,17 +175,15 @@ class FlotationServiceOrchestrator:
                     optimization_confidence = 0.8
                     external_factors_changed = False
                     
-                    # Get optimization data for RES3
-                    from services.optimization_service import FlotationOptimizer
-                    optimizer = FlotationOptimizer()
-                    optimization_result = optimizer.optimize_reagent_rates(raw_data)
+                    # Get optimization data for RES3 using the instance optimizer
+                    optimization_result = self.optimizer.optimize_reagent_rates(raw_data)
                     
                     if optimization_result.get('success', False):
                         optimal_settings = optimization_result['optimal_settings']
                         recommended_kex = optimal_settings.get('KEX', current_kex)
                         recommended_sipx = optimal_settings.get('SIPX', current_sipx)
-                        optimization_confidence = optimizer.get_prediction_accuracy()
-                        external_factors_changed = optimizer.detect_external_changes(raw_data)
+                        optimization_confidence = self.optimizer.get_prediction_accuracy()
+                        external_factors_changed = self.optimizer.detect_external_changes(raw_data)
                     else:
                         # If optimization fails, use current settings
                         recommended_kex = current_kex
@@ -196,7 +202,7 @@ class FlotationServiceOrchestrator:
                         'external_factors_changed': external_factors_changed
                     })
                     self.last_res3_save = current_time
-                    self.logger.info(f"Saved to RES3 - ID: {res3_id}")
+                    self.logger.debug(f"Saved to RES3 - ID: {res3_id}")
                 
                 # Log save status
                 saved_tables = []
@@ -205,14 +211,14 @@ class FlotationServiceOrchestrator:
                 if res3_id: saved_tables.append(f"RES3({res3_id})")
                 
                 if saved_tables:
-                    self.logger.info(f"Data saved to: {', '.join(saved_tables)}")
+                    self.logger.debug(f"Data saved to: {', '.join(saved_tables)}")
                 else:
                     self.logger.debug("No RES tables saved this cycle (timing intervals not met)")
                 
             except Exception as e:
                 self.logger.error(f"Failed to save data to RES tables: {e}")
             
-            self.logger.info(f"Generated data point - Status: {status}, Pb: {predicted_pb_concentrate:.2f}, Recovery: {predicted_recovery_rate_pct:.1f}%")
+            self.logger.debug(f"Generated data point - Status: {status}, Pb: {predicted_pb_concentrate:.2f}, Recovery: {predicted_recovery_rate_pct:.1f}%")
             
             return processed_data
             
@@ -253,11 +259,21 @@ class FlotationServiceOrchestrator:
         """Update control settings for the flotation process"""
         try:
             # Update the data generator with new control settings
+            self.logger.warning(f"Attempting to update control settings: {controls}")
+            
             if hasattr(self.data_generator, 'update_control_settings'):
+                self.logger.warning("Calling data_generator.update_control_settings")
                 self.data_generator.update_control_settings(controls)
+                self.logger.warning("data_generator.update_control_settings completed")
+            else:
+                self.logger.error("data_generator does not have update_control_settings method")
+            
+            # Clear the data cache to force regeneration with new controls
+            self.last_cached_data = None
+            self.last_cache_time = None
             
             # Log the control settings update
-            self.logger.info(f"Control settings updated: {controls}")
+            self.logger.warning(f"Control settings updated: {controls}")
             
         except Exception as e:
             self.logger.error(f"Error updating control settings: {e}")
@@ -303,17 +319,36 @@ class FlotationServiceOrchestrator:
         
         return health_status
     
-    async def run_data_generation_loop(self, interval_seconds: int = 5) -> None:
-        """Run continuous data generation loop"""
+    async def run_data_generation_loop(self, interval_seconds: int = 5) -> None:  # Optimized for 5-second updates
+        """Run continuous data generation loop with optimized resource usage"""
         self.logger.warning(f"Starting data generation loop with {interval_seconds}s interval")
+        
+        # Cache the last data point to avoid regenerating on every request
+        self.last_cached_data = None
+        self.last_cache_time = None
+        cache_duration = 2  # Cache data for 2 seconds for fresher updates
         
         while True:
             try:
-                # Generate and process data
-                data_point = await self.generate_and_process_data()
+                current_time = time.time()
                 
-                # Broadcast to WebSocket clients
-                await self.broadcast_data(data_point)
+                # Only generate new data if cache is expired or doesn't exist
+                if (self.last_cached_data is None or 
+                    self.last_cache_time is None or 
+                    current_time - self.last_cache_time > cache_duration):
+                    
+                    # Generate and process data
+                    data_point = await self.generate_and_process_data()
+                    
+                    # Cache the data
+                    self.last_cached_data = data_point
+                    self.last_cache_time = current_time
+                    
+                    # Broadcast to WebSocket clients
+                    await self.broadcast_data(data_point)
+                else:
+                    # Use cached data for WebSocket broadcast
+                    await self.broadcast_data(self.last_cached_data)
                 
                 # Wait for next iteration
                 await asyncio.sleep(interval_seconds)

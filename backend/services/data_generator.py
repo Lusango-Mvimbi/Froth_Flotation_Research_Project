@@ -20,6 +20,7 @@ class FlotationDataGenerator(IDataGenerator):
         self.logger = logger
         self._initialize_base_values()
         self._calculate_optimal_balance()
+        self.logger.warning(f"Data generator initialized with KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
         
     def _initialize_base_values(self):
         """Initialize base values for flotation parameters - ONLY parameters from training data"""
@@ -31,19 +32,16 @@ class FlotationDataGenerator(IDataGenerator):
         
     def _calculate_optimal_balance(self):
         """Calculate optimal balance based on ACTUAL training data ranges"""
-        self.logger.info("Calculating dynamic optimal balance based on training data")
+        self.logger.debug("Calculating dynamic optimal balance based on training data")
         
         # Base feed characteristics - using ACTUAL training data ranges
         self.feed_pb = round(random.uniform(0.5, 2.5), 2)  # From training: 0.00 - 2.55
         self.feed_zn = round(random.uniform(8.0, 12.5), 2)  # From training: 0.00 - 14.20
         
-        # Calculate optimal KEX based on ACTUAL training data ranges
-        # Training data: -2.55 - 1499.97, Mean: 916.30 ± 300.58
-        self.optimal_kex = round(random.uniform(600, 1200), 1)  # Realistic range from training
-        
-        # Calculate optimal SIPX based on ACTUAL training data ranges  
-        # Training data: -1.31 - 1198.63, Mean: 439.93 ± 369.69
-        self.optimal_sipx = round(random.uniform(200, 700), 1)  # Realistic range from training
+        # Use control ranges for KEX and SIPX (operator-controlled parameters)
+        control_ranges = self.get_control_ranges()
+        self.optimal_kex = control_ranges['kex']['optimal']  # Use default optimal from control ranges
+        self.optimal_sipx = control_ranges['sipx']['optimal']  # Use default optimal from control ranges
         
         # Calculate optimal AirFlow based on ACTUAL training data ranges
         # Training data: 3.99 - 14.17, Mean: 9.97 ± 2.30
@@ -53,13 +51,12 @@ class FlotationDataGenerator(IDataGenerator):
         # Training data: 0.00 - 86.50, Mean: 39.01 ± 30.10
         self.optimal_level = round(random.uniform(20.0, 60.0), 1)  # Realistic range from training
         
-        self.logger.info(f"Optimal values calculated - KEX: {self.optimal_kex}, SIPX: {self.optimal_sipx}, AirFlow: {self.optimal_airflow}")
+        self.logger.debug(f"Optimal values calculated - KEX: {self.optimal_kex}, SIPX: {self.optimal_sipx}, AirFlow: {self.optimal_airflow}")
     
     def generate_data_point(self) -> Dict[str, Any]:
         """Generate a single flotation data point - ONLY parameters from training data"""
-        # Add realistic variations based on ACTUAL training data ranges
-        kex_variation = random.uniform(-100, 100)  # Large variation as per training data
-        sipx_variation = random.uniform(-150, 150)  # Large variation as per training data
+        # Use operator's control settings for KEX and SIPX (no random variation)
+        # Add small realistic variations for other parameters
         airflow_variation = random.uniform(-1.5, 1.5)  # Smaller variation as per training data
         level_variation = random.uniform(-15, 15)  # Moderate variation as per training data
         
@@ -68,8 +65,8 @@ class FlotationDataGenerator(IDataGenerator):
             'timestamp': datetime.now().isoformat(),
             'Feed_Pb': round(self.feed_pb + random.uniform(-0.2, 0.2), 2),  # Training: 0.00 - 2.55
             'Feed_Zn': round(self.feed_zn + random.uniform(-1.0, 1.0), 2),  # Training: 0.00 - 14.20
-            'Pb_Conditioner_KEX_Flowrate': round(self.optimal_kex + kex_variation, 1),  # Training: -2.55 - 1499.97
-            'Pb_Rougher1_SIPX_Flowrate': round(self.optimal_sipx + sipx_variation, 1),  # Training: -1.31 - 1198.63
+            'Pb_Conditioner_KEX_Flowrate': round(self.optimal_kex, 1),  # Use operator's control setting directly
+            'Pb_Rougher1_SIPX_Flowrate': round(self.optimal_sipx, 1),  # Use operator's control setting directly
             'Pb_Rougher1_AirFlow': round(self.optimal_airflow + airflow_variation, 2),  # Training: 3.99 - 14.17
             'Pb_Rougher1_Level': round(self.optimal_level + level_variation, 1),  # Training: 0.00 - 86.50
         }
@@ -85,6 +82,25 @@ class FlotationDataGenerator(IDataGenerator):
             'Pb_Rougher1_SIPX_Flowrate': (-1.31, 1198.63),  # From training data
             'Pb_Rougher1_AirFlow': (3.99, 14.17),  # From training data
             'Pb_Rougher1_Level': (0.0, 86.50),  # From training data
+        }
+    
+    def get_control_ranges(self) -> Dict[str, Dict[str, Any]]:
+        """Get control ranges based on realistic training data ranges"""
+        return {
+            'kex': {
+                'min': 0.0,  # Training data minimum: -2.55, but 0 is more realistic for control
+                'max': 1500.0,  # Training data maximum: 1499.97, expanded to 1500 for full range testing
+                'optimal': 45.0,  # Default optimal value
+                'unit': 'L/min',
+                'description': 'Collector reagent flow rate'
+            },
+            'sipx': {
+                'min': 0.0,  # Training data minimum: -1.31, but 0 is more realistic for control
+                'max': 1500.0,  # Training data maximum: 1198.63, expanded to 1500 for full range testing
+                'optimal': 25.0,  # Default optimal value
+                'unit': 'L/min',
+                'description': 'Frother reagent flow rate'
+            }
         }
     
     def get_target_ranges(self) -> Dict[str, Dict[str, Any]]:
@@ -134,15 +150,17 @@ class FlotationDataGenerator(IDataGenerator):
             # Update optimal values based on new control settings
             if 'kex' in controls:
                 self.optimal_kex = controls['kex']
-                self.logger.info(f"Updated optimal KEX to: {self.optimal_kex}")
+                self.logger.warning(f"Updated optimal KEX to: {self.optimal_kex}")
             
             if 'sipx' in controls:
                 self.optimal_sipx = controls['sipx']
-                self.logger.info(f"Updated optimal SIPX to: {self.optimal_sipx}")
+                self.logger.warning(f"Updated optimal SIPX to: {self.optimal_sipx}")
             
-            # Recalculate optimal balance if needed
-            if 'kex' in controls or 'sipx' in controls:
-                self._calculate_optimal_balance()
+            # Don't recalculate optimal balance - keep operator's chosen values
+            self.logger.warning(f"Control settings updated successfully: KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
+            
+            # Force the next data generation to use these values
+            self.logger.warning(f"Next data generation will use KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
                 
         except Exception as e:
             self.logger.error(f"Error updating control settings: {e}")

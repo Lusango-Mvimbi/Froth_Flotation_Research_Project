@@ -23,10 +23,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [localControls, setLocalControls] = useState<ProcessControls>(controls);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync local controls with backend controls when they change
+  // Only sync local controls with backend controls on initial load
   React.useEffect(() => {
     setLocalControls(controls);
-  }, [controls]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Cleanup timeout on unmount
   React.useEffect(() => {
@@ -66,8 +66,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       label: 'KEX Flow Rate',
       unit: 'L/min',
       icon: Droplets,
-      min: optimalRanges?.kex?.min || 30,
-      max: optimalRanges?.kex?.max || 60,
+      min: 0,  // Full range for testing
+      max: 1500,  // Full range for testing
+      optimal: optimalRanges?.kex?.optimal || 45,
       step: 0.5,
       description: 'Collector reagent flow rate'
     },
@@ -76,8 +77,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       label: 'SIPX Flow Rate',
       unit: 'L/min',
       icon: Droplets,
-      min: optimalRanges?.sipx?.min || 15,
-      max: optimalRanges?.sipx?.max || 40,
+      min: 0,  // Full range for testing
+      max: 1500,  // Full range for testing
+      optimal: optimalRanges?.sipx?.optimal || 25,
       step: 0.5,
       description: 'Frother reagent flow rate'
     }
@@ -106,7 +108,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           const value = localControls[config.key];
           const optimalRange = optimalRanges?.[config.key];
           const status = optimalRange 
-            ? getControlStatus(value, optimalRange.min, optimalRange.max)
+            ? getControlStatus(value, optimalRange.min, optimalRange.max)  // Use optimal ranges from backend
             : { status: 'unknown', color: 'text-dark-400', bgColor: 'bg-dark-700/20' };
 
           return (

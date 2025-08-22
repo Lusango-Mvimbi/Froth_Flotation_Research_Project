@@ -53,8 +53,8 @@ export interface PerformanceState {
 }
 
 export interface OptimalRanges {
-  kex: { min: number; max: number };
-  sipx: { min: number; max: number };
+  kex: { min: number; max: number; optimal: number; unit: string; description: string };
+  sipx: { min: number; max: number; optimal: number; unit: string; description: string };
 }
 
 export interface TargetRanges {

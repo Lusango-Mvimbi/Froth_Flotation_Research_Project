@@ -7,32 +7,57 @@ const AUTH_BASE_URL = process.env.REACT_APP_AUTH_URL || 'http://localhost:8051';
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 15000,  // Increased timeout
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor for authentication
+// Request interceptor for authentication and retry initialization
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Initialize retry count for new requests
+    if (!(config as any)._retryCount) {
+      (config as any)._retryCount = 0;
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling and retry logic
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Handle authentication errors
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       window.location.href = '/login';
+      return Promise.reject(error);
     }
+    
+    // Retry logic for network errors or 5xx errors
+    if ((!error.response || error.response.status >= 500) && 
+        !(originalRequest as any)._retry && 
+        (originalRequest as any)._retryCount < 3) {
+      
+      (originalRequest as any)._retry = true;
+      (originalRequest as any)._retryCount = ((originalRequest as any)._retryCount || 0) + 1;
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000 * (originalRequest as any)._retryCount));
+      
+      return api(originalRequest);
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -102,7 +127,7 @@ export const flotationAPI = {
   // Get optimal ranges
   getOptimalRanges: async (): Promise<OptimalRanges> => {
     const response = await api.get('/api/optimal-ranges');
-    return response.data;
+    return response.data.control_ranges;  // Use control_ranges instead of parameter_ranges
   },
   
   // Get target ranges for prediction cards

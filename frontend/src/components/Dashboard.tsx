@@ -195,10 +195,14 @@ const Dashboard: React.FC = () => {
         console.log('Dashboard - Updated data array length:', state.data.length + 1);
       } catch (error) {
         console.error('Failed to fetch real-time data:', error);
-        setState(prev => ({ ...prev, serverConnected: false }));
-        toast.error('Connection lost');
+        
+        // Only show connection lost if we were previously connected
+        if (state.serverConnected) {
+          setState(prev => ({ ...prev, serverConnected: false }));
+          toast.error('Connection lost - trying to reconnect...');
+        }
       }
-    }, 2000);
+    }, 5000); // Update every 5 seconds for better user experience
 
     return () => clearInterval(interval);
   }, [state.serverConnected, state.controls]);

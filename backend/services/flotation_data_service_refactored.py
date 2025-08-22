@@ -30,7 +30,7 @@ log_file = os.path.join(log_dir, 'flotation_data_service_refactored.log')
 
 # Configure logging - Only log errors and warnings
 logging.basicConfig(
-    level=logging.WARNING,
+    level=logging.ERROR,  # Changed from WARNING to ERROR to reduce noise
     format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s',
     handlers=[
         logging.FileHandler(log_file),
@@ -39,18 +39,50 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Log service startup (WARNING level for important startup info)
-logger.warning("Starting Refactored Froth Flotation Data Service")
-logger.warning(f"Log file: {log_file}")
-logger.warning(f"Service: FastAPI WebSocket Server (SOLID Architecture)")
-logger.warning(f"Port: 8000")
+# Log service startup (INFO level for important startup info)
+logger.info("Starting Refactored Froth Flotation Data Service")
+logger.info(f"Log file: {log_file}")
+logger.info(f"Service: FastAPI WebSocket Server (SOLID Architecture)")
+logger.info(f"Port: 8000")
 
-# Create FastAPI app
+# Create FastAPI app with connection limits
 app = FastAPI(
     title="Froth Flotation Digital Twin API",
     description="Real-time flotation data service with ML predictions",
     version="2.0.0"
 )
+
+# Add connection limiting middleware
+from fastapi import Request
+import time
+from collections import defaultdict
+
+# Simple rate limiting
+request_counts = defaultdict(list)
+MAX_REQUESTS_PER_MINUTE = 60
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Simple rate limiting middleware"""
+    client_ip = request.client.host
+    current_time = time.time()
+    
+    # Clean old requests (older than 1 minute)
+    request_counts[client_ip] = [req_time for req_time in request_counts[client_ip] 
+                                if current_time - req_time < 60]
+    
+    # Check if client has exceeded rate limit
+    if len(request_counts[client_ip]) >= MAX_REQUESTS_PER_MINUTE:
+        return JSONResponse(
+            status_code=429,
+            content={"error": "Rate limit exceeded", "message": "Too many requests"}
+        )
+    
+    # Add current request
+    request_counts[client_ip].append(current_time)
+    
+    response = await call_next(request)
+    return response
 
 # Enable CORS for React frontend
 app.add_middleware(
@@ -71,9 +103,9 @@ data_generation_task = None
 async def startup_event():
     """Initialize services on startup"""
     global data_generation_task
-    logger.warning("Starting background data generation task")
+    logger.info("Starting background data generation task")
     data_generation_task = asyncio.create_task(
-        orchestrator.run_data_generation_loop(interval_seconds=5)
+        orchestrator.run_data_generation_loop(interval_seconds=5)  # 5-second updates for real-time feel
     )
 
 @app.on_event("shutdown")
@@ -86,7 +118,7 @@ async def shutdown_event():
             await data_generation_task
         except asyncio.CancelledError:
             pass
-    logger.warning("Service shutdown complete")
+    logger.info("Service shutdown complete")
 
 @app.get("/")
 async def root():
@@ -140,7 +172,7 @@ async def get_model_info():
 async def get_current_data():
     """Get current flotation data (frontend endpoint)"""
     try:
-        data_point = await orchestrator.generate_and_process_data()
+        data_point = await orchestrator.generate_and_process_data(use_cache=True)  # Use caching
         return data_point
     except Exception as e:
         logger.error(f"Current data retrieval failed: {e}")
@@ -150,9 +182,13 @@ async def get_current_data():
 async def get_optimal_ranges():
     """Get optimal parameter ranges (frontend endpoint)"""
     try:
-        ranges = orchestrator.data_generator.get_parameter_ranges()
+        # Get both parameter ranges (for data generation) and control ranges (for manual control)
+        parameter_ranges = orchestrator.data_generator.get_parameter_ranges()
+        control_ranges = orchestrator.data_generator.get_control_ranges()
+        
         return {
-            "parameter_ranges": ranges,
+            "parameter_ranges": parameter_ranges,
+            "control_ranges": control_ranges,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
@@ -181,11 +217,14 @@ async def get_optimization_results():
         # Get current data for optimization
         current_data = await orchestrator.generate_and_process_data()
         
-        # Run optimization with timeout (30 seconds)
+        # Run optimization with timeout (10 seconds)
         loop = asyncio.get_event_loop()
-        optimization_result = await loop.run_in_executor(
-            None, 
-            lambda: orchestrator.ml_model.optimize_reagent_rates(current_data)
+        optimization_result = await asyncio.wait_for(
+            loop.run_in_executor(
+                None, 
+                lambda: orchestrator.optimizer.optimize_reagent_rates(current_data)
+            ),
+            timeout=10.0
         )
         
         return {
@@ -193,7 +232,7 @@ async def get_optimization_results():
             "timestamp": datetime.now().isoformat()
         }
     except asyncio.TimeoutError:
-        logger.error("Optimization timed out after 30 seconds")
+        logger.error("Optimization timed out after 10 seconds")
         raise HTTPException(status_code=408, detail="Optimization timed out")
     except Exception as e:
         logger.error(f"Optimization results retrieval failed: {e}")
@@ -208,11 +247,14 @@ async def get_optimization_data():
         # Get current data for optimization
         current_data = await orchestrator.generate_and_process_data()
         
-        # Get optimization visualization data with timeout (30 seconds)
+        # Get optimization visualization data with timeout (10 seconds)
         loop = asyncio.get_event_loop()
-        optimization_data = await loop.run_in_executor(
-            None, 
-            lambda: orchestrator.ml_model.get_optimization_data(current_data)
+        optimization_data = await asyncio.wait_for(
+            loop.run_in_executor(
+                None, 
+                lambda: orchestrator.optimizer.get_optimization_data(current_data)
+            ),
+            timeout=10.0
         )
         
         return {
@@ -220,7 +262,7 @@ async def get_optimization_data():
             "timestamp": datetime.now().isoformat()
         }
     except asyncio.TimeoutError:
-        logger.error("Optimization data retrieval timed out after 30 seconds")
+        logger.error("Optimization data retrieval timed out after 10 seconds")
         raise HTTPException(status_code=408, detail="Optimization data retrieval timed out")
     except Exception as e:
         logger.error(f"Optimization data retrieval failed: {e}")
@@ -230,12 +272,10 @@ async def get_optimization_data():
 async def get_control_settings():
     """Get current control settings (frontend endpoint)"""
     try:
-        # Get current control settings from the orchestrator
-        current_data = await orchestrator.generate_and_process_data()
-        
+        # Get current control settings from the data generator (not from generated data)
         current_controls = {
-            "kex": current_data.get('Pb_Conditioner_KEX_Flowrate', 45.0),
-            "sipx": current_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)
+            "kex": orchestrator.data_generator.optimal_kex,
+            "sipx": orchestrator.data_generator.optimal_sipx
         }
         
         logger.info(f"Current control settings retrieved: KEX={current_controls['kex']}, SIPX={current_controls['sipx']}")
@@ -291,11 +331,15 @@ async def get_connections():
 async def get_sensor_data(limit: int = 100):
     """Get historical sensor data (frontend endpoint)"""
     try:
-        # Generate multiple data points for historical data
-        historical_data = []
-        for _ in range(min(limit, 1000)):  # Limit to 1000 points max
-            data_point = await orchestrator.generate_and_process_data()
-            historical_data.append(data_point)
+        # Get data from RES1 table (real-time flotation data)
+        historical_data = orchestrator.database.get_latest_res1_data(limit)
+        
+        # If no database data, generate a few recent data points
+        if not historical_data:
+            historical_data = []
+            for _ in range(min(limit, 10)):  # Only generate 10 points max
+                data_point = await orchestrator.generate_and_process_data()
+                historical_data.append(data_point)
         
         return {
             "data": historical_data,

@@ -1,564 +1,269 @@
-2025-08-19 14:48:37,550 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-19 14:48:37,551 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-19 14:48:37,551 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-19 14:48:37,554 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-19 14:48:37,558 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-19 14:48:37,558 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-19 14:48:37,558 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-19 14:48:37,587 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.199:8051
-2025-08-19 14:48:37,588 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-19 14:48:55,974 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:48:55] "GET /login HTTP/1.1" 200 -
-2025-08-19 14:49:05,430 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 14:49:05] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:10:48,926 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-19 15:10:48,927 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-19 15:10:48,927 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-19 15:10:48,930 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-19 15:10:48,930 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-19 15:10:48,930 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-19 15:10:48,930 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-19 15:10:48,964 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.199:8051
-2025-08-19 15:10:48,965 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-19 15:11:07,277 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:11:07] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:11:15,321 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:11:15] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:11:58,038 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:11:58] "[32mGET / HTTP/1.1[0m" 302 -
-2025-08-19 15:11:58,065 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:11:58] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:11:58,381 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:11:58] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-2025-08-19 15:12:37,137 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:12:37] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-19 15:12:37,412 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:12:37] "POST /login HTTP/1.1" 200 -
-2025-08-19 15:13:48,070 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:13:48] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-19 15:13:48,332 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:13:48] "POST /login HTTP/1.1" 200 -
-2025-08-19 15:16:02,222 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:16:02] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-19 15:16:02,477 - __main__ - WARNING - [authentication_service.py:552] - login() - Authentication failed - invalid credentials
-2025-08-19 15:16:02,478 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:16:02] "[31m[1mPOST /login HTTP/1.1[0m" 401 -
-2025-08-19 15:16:19,311 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:16:19] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-19 15:16:19,645 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:16:19] "POST /login HTTP/1.1" 200 -
-2025-08-19 15:29:24,689 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-19 15:29:24,690 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-19 15:29:24,690 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-19 15:29:24,693 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-19 15:29:24,693 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-19 15:29:24,693 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-19 15:29:24,693 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-19 15:29:24,717 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.199:8051
-2025-08-19 15:29:24,718 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-19 15:29:43,060 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:29:43] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:29:56,103 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:29:56] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:30:02,105 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:30:02] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-19 15:30:02,374 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:30:02] "POST /login HTTP/1.1" 200 -
-2025-08-19 15:38:58,312 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-19 15:38:58,312 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-19 15:38:58,313 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-19 15:38:58,316 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-19 15:38:58,316 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-19 15:38:58,316 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-19 15:38:58,316 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-19 15:38:58,363 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.199:8051
-2025-08-19 15:38:58,363 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-19 15:39:11,835 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:39:11] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:39:16,464 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:39:16] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:39:22,885 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:39:22] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:39:30,663 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:39:30] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:39:31,046 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:39:31] "GET /login HTTP/1.1" 200 -
-2025-08-19 15:40:44,497 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:40:44] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-19 15:40:44,774 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [19/Aug/2025 15:40:44] "POST /login HTTP/1.1" 200 -
-2025-08-21 13:16:30,491 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 13:16:30,497 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 13:16:30,497 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 13:16:30,516 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 13:16:30,517 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 13:16:30,517 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 13:16:30,518 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 13:16:31,411 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:23:22,845 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 08:23:22,845 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 08:23:22,846 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 08:23:22,851 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 08:23:22,853 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 08:23:22,853 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 08:23:22,854 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 08:23:22,891 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 13:16:31,411 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 13:16:48,450 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:16:48] "GET /login HTTP/1.1" 200 -
-2025-08-21 13:17:06,898 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:17:06] "GET /login HTTP/1.1" 200 -
-2025-08-21 13:17:23,822 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:17:23] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 13:17:24,093 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:17:24] "POST /login HTTP/1.1" 200 -
-2025-08-21 13:49:55,831 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 13:49:55,832 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 13:49:55,832 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 13:49:55,850 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 13:49:55,851 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 13:49:55,851 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 13:49:55,851 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 13:49:56,822 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:23:22,891 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 08:23:35,981 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:23:35] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:23:50,346 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:23:50] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:27:19,358 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:27:19] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-22 08:27:19,382 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:27:19] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:27:19,606 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:27:19] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-22 08:27:53,587 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:27:53] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 08:27:53,852 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:27:53] "POST /login HTTP/1.1" 200 -
+2025-08-22 08:34:27,857 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 08:34:27,858 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 08:34:27,858 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 08:34:27,863 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 08:34:27,863 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 08:34:27,863 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 08:34:27,863 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 08:34:27,934 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 13:49:56,822 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 13:50:13,868 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:50:13] "GET /login HTTP/1.1" 200 -
-2025-08-21 13:50:31,939 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:50:31] "GET /login HTTP/1.1" 200 -
-2025-08-21 13:54:22,595 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:54:22] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 13:54:22,882 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 13:54:22] "POST /login HTTP/1.1" 200 -
-2025-08-21 14:18:07,355 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 14:18:07,356 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 14:18:07,356 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 14:18:07,360 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 14:18:07,361 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 14:18:07,361 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 14:18:07,361 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 14:18:08,229 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:34:27,982 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 08:34:45,366 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:34:45] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:34:57,486 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:34:57] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:38:26,494 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:38:26] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 08:38:26,771 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:38:26] "POST /login HTTP/1.1" 200 -
+2025-08-22 08:42:34,983 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 08:42:34,983 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 08:42:34,984 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 08:42:34,989 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 08:42:34,989 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 08:42:34,990 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 08:42:34,990 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 08:42:35,064 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 14:18:08,229 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 14:18:25,682 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:18:25] "GET /login HTTP/1.1" 200 -
-2025-08-21 14:18:34,059 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:18:34] "GET /login HTTP/1.1" 200 -
-2025-08-21 14:18:44,943 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:18:44] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 14:18:45,215 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:18:45] "POST /login HTTP/1.1" 200 -
-2025-08-21 14:31:50,538 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 14:31:50,539 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 14:31:50,540 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 14:31:50,543 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 14:31:50,543 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 14:31:50,544 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 14:31:50,544 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 14:31:51,405 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:42:35,064 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 08:42:47,786 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:42:47] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:43:03,475 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:43:03] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:44:22,777 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:44:22] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-22 08:44:23,024 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:44:23] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:44:36,811 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:44:36] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 08:44:37,103 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:44:37] "POST /login HTTP/1.1" 200 -
+2025-08-22 08:47:37,111 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 08:47:37,112 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 08:47:37,112 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 08:47:37,123 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 08:47:37,123 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 08:47:37,124 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 08:47:37,124 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 08:47:37,172 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 14:31:51,405 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 14:32:08,839 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:32:08] "GET /login HTTP/1.1" 200 -
-2025-08-21 14:32:16,895 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:32:16] "GET /login HTTP/1.1" 200 -
-2025-08-21 14:45:15,645 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 14:45:15,645 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 14:45:15,646 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 14:45:15,651 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 14:45:15,651 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 14:45:15,651 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 14:45:15,652 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 14:45:16,522 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:47:37,172 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 08:47:50,047 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:47:50] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:48:17,198 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:48:17] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:49:08,457 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:49:08] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-22 08:49:08,711 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:49:08] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:49:19,807 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:49:19] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 08:49:20,073 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:49:20] "POST /login HTTP/1.1" 200 -
+2025-08-22 08:50:42,769 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 08:50:42,770 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 08:50:42,770 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 08:50:42,778 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 08:50:42,779 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 08:50:42,779 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 08:50:42,779 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 08:50:42,876 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 14:45:16,523 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 14:46:48,226 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 14:46:48,227 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 14:46:48,227 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 14:46:48,231 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 14:46:48,231 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 14:46:48,232 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 14:46:48,232 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 14:46:49,115 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:50:42,878 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 08:51:00,347 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:51:00] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:51:14,082 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:51:14] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:51:26,991 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:51:26] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 08:51:27,264 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:51:27] "POST /login HTTP/1.1" 200 -
+2025-08-22 08:57:13,713 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 08:57:13,713 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 08:57:13,713 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 08:57:13,718 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 08:57:13,718 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 08:57:13,718 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 08:57:13,718 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 08:57:13,768 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 14:46:49,116 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 14:47:06,381 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:47:06] "GET /login HTTP/1.1" 200 -
-2025-08-21 14:47:14,515 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:47:14] "GET /login HTTP/1.1" 200 -
-2025-08-21 14:47:30,555 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:47:30] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 14:47:30,826 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 14:47:30] "POST /login HTTP/1.1" 200 -
-2025-08-21 15:17:46,660 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 15:17:46,661 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 15:17:46,661 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 15:17:46,664 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 15:17:46,664 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 15:17:46,665 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 15:17:46,665 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 15:17:47,559 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 08:57:13,769 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 08:57:31,490 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:57:31] "GET /login HTTP/1.1" 200 -
+2025-08-22 08:57:49,544 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 08:57:49] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:00:51,121 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:00:51,122 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:00:51,122 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:00:51,126 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:00:51,126 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:00:51,126 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:00:51,131 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:00:51,171 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 15:17:47,559 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 15:18:00,035 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:18:00] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:18:09,811 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:18:09] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:18:38,743 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:18:38] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 15:18:39,010 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:18:39] "POST /login HTTP/1.1" 200 -
-2025-08-21 15:29:44,798 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:29:44] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 15:29:45,066 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:29:45] "POST /login HTTP/1.1" 200 -
-2025-08-21 15:32:46,489 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:32:46] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 15:32:46,768 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:32:46] "POST /login HTTP/1.1" 200 -
-2025-08-21 15:38:51,536 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 15:38:51,537 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 15:38:51,537 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 15:38:51,543 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 15:38:51,544 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 15:38:51,545 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 15:38:51,546 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 15:38:52,426 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:00:51,171 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:01:09,057 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:01:09] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:01:24,994 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:01:24] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:05:02,401 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:05:02] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:05:02,675 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:05:02] "POST /login HTTP/1.1" 200 -
+2025-08-22 09:11:12,279 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:11:12,280 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:11:12,280 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:11:12,287 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:11:12,287 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:11:12,287 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:11:12,287 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:11:12,348 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 15:38:52,426 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 15:39:09,997 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:39:09] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:39:18,179 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:39:18] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:40:20,509 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 15:40:20,510 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 15:40:20,511 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 15:40:20,514 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 15:40:20,515 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 15:40:20,516 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 15:40:20,516 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 15:40:21,391 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:11:12,348 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:11:24,830 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:11:24] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:11:40,356 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:11:40] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:13:42,910 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:13:42] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:13:43,204 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:13:43] "POST /login HTTP/1.1" 200 -
+2025-08-22 09:28:09,877 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:28:09,878 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:28:09,878 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:28:09,884 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:28:09,884 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:28:09,885 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:28:09,885 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:28:09,925 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 15:40:21,392 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 15:40:38,805 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:40:38] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:40:46,919 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:40:46] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:45:35,617 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 15:45:35,617 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 15:45:35,618 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 15:45:35,623 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 15:45:35,624 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 15:45:35,624 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 15:45:35,625 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 15:45:36,495 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:28:09,926 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:28:23,446 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:28:23] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:28:40,640 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:28:40] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:28:52,206 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:28:52] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:28:52,505 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:28:52] "POST /login HTTP/1.1" 200 -
+2025-08-22 09:35:22,526 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:35:22,526 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:35:22,526 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:35:22,531 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:35:22,531 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:35:22,531 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:35:22,531 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:35:22,591 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 15:45:36,495 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 15:45:53,909 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:45:53] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:46:02,035 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:46:02] "GET /login HTTP/1.1" 200 -
-2025-08-21 15:46:19,099 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:46:19] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 15:46:19,371 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 15:46:19] "POST /login HTTP/1.1" 200 -
-2025-08-21 16:00:20,705 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 16:00:20,705 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 16:00:20,705 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 16:00:20,709 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 16:00:20,709 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 16:00:20,709 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 16:00:20,710 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 16:00:21,579 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:35:22,593 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:35:40,532 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:35:40] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:35:54,645 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:35:54] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:36:08,690 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:36:08] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:36:08,986 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:36:08] "POST /login HTTP/1.1" 200 -
+2025-08-22 09:38:43,691 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:38:43,691 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:38:43,691 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:38:43,696 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:38:43,696 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:38:43,696 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:38:43,696 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:38:43,738 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 16:00:21,580 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 16:00:38,856 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:00:38] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:00:47,031 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:00:47] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:02:30,080 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 16:02:30,080 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 16:02:30,081 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 16:02:30,084 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 16:02:30,084 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 16:02:30,084 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 16:02:30,084 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 16:02:30,941 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:38:43,739 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:39:01,666 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:39:01] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:39:11,740 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:39:11] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:39:20,222 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:39:20] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:39:20,522 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:39:20] "POST /login HTTP/1.1" 200 -
+2025-08-22 09:50:38,395 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:50:38,396 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:50:38,396 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:50:38,403 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:50:38,403 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:50:38,404 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:50:38,404 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:50:38,458 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 16:02:30,942 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 16:02:48,264 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:02:48] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:03:01,381 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:03:01] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:04:10,098 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:04:10] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 16:04:10,375 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:04:10] "POST /login HTTP/1.1" 200 -
-2025-08-21 16:20:46,096 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 16:20:46,096 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 16:20:46,096 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 16:20:46,099 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 16:20:46,099 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 16:20:46,100 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 16:20:46,100 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 16:20:46,141 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:50:38,463 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:50:56,012 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:50:56] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:51:07,396 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:51:07] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:51:10,809 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:51:10] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:51:11,081 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:51:11] "POST /login HTTP/1.1" 200 -
+2025-08-22 09:52:00,434 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 09:52:00,435 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 09:52:00,435 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 09:52:00,441 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 09:52:00,441 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 09:52:00,441 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 09:52:00,442 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 09:52:00,493 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 16:20:46,141 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 16:21:04,334 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:21:04] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:21:12,503 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:21:12] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:23:32,844 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 16:23:32,845 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 16:23:32,845 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 16:23:32,848 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 16:23:32,848 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 16:23:32,849 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 16:23:32,849 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 16:23:32,902 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 09:52:00,494 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 09:52:17,917 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:52:17] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:52:34,287 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:52:34] "GET /login HTTP/1.1" 200 -
+2025-08-22 09:55:22,542 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:55:22] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-22 09:55:22,846 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 09:55:22] "POST /login HTTP/1.1" 200 -
+2025-08-22 10:03:24,801 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 10:03:24,801 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 10:03:24,802 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 10:03:24,806 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 10:03:24,806 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 10:03:24,806 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 10:03:24,807 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 10:03:24,849 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 16:23:32,903 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 16:23:51,156 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:23:51] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:24:00,503 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:24:00] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:24:27,926 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:24:27] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 16:24:28,209 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:24:28] "POST /login HTTP/1.1" 200 -
-2025-08-21 16:38:37,467 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 16:38:37,467 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 16:38:37,468 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 16:38:37,471 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 16:38:37,472 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 16:38:37,472 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 16:38:37,473 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 16:38:37,508 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 10:03:24,849 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 10:03:38,110 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:03:38] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:03:47,267 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:03:47] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:12:51,942 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 10:12:51,942 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 10:12:51,943 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 10:12:51,946 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 10:12:51,946 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 10:12:51,946 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 10:12:51,946 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 10:12:51,972 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 16:38:37,508 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 16:38:55,767 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:38:55] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:39:08,909 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:39:08] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:39:25,785 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:39:25] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 16:39:26,045 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:39:26] "POST /login HTTP/1.1" 200 -
-2025-08-21 16:52:29,866 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 16:52:29,867 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 16:52:29,867 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 16:52:29,870 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 16:52:29,870 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 16:52:29,870 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 16:52:29,871 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 16:52:29,926 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 10:12:51,972 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 10:13:10,214 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:13:10] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:13:20,048 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:13:20] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:15:36,818 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 10:15:36,818 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 10:15:36,818 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 10:15:36,822 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 10:15:36,823 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 10:15:36,823 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 10:15:36,823 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 10:15:36,847 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 16:52:29,927 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 16:52:48,095 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:52:48] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:52:56,171 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:52:56] "GET /login HTTP/1.1" 200 -
-2025-08-21 16:53:01,534 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:53:01] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 16:53:01,803 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:53:01] "POST /login HTTP/1.1" 200 -
-2025-08-21 16:53:36,304 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:53:36] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 16:53:36,643 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 16:53:36] "POST /login HTTP/1.1" 200 -
-2025-08-21 17:02:01,785 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 17:02:01,786 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 17:02:01,787 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 17:02:01,791 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 17:02:01,791 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 17:02:01,791 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 17:02:01,792 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 17:02:01,827 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-08-22 10:15:36,847 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 10:15:55,181 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:15:55] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:16:04,740 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:16:04] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:18:39,382 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-22 10:18:39,382 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-22 10:18:39,383 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-22 10:18:39,386 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-22 10:18:39,386 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-22 10:18:39,386 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-22 10:18:39,386 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-22 10:18:39,416 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8051
  * Running on http://172.17.144.176:8051
-2025-08-21 17:02:01,828 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 17:02:20,104 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:02:20] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:29:10,646 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 17:29:10,646 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 17:29:10,646 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 17:29:10,650 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 17:29:10,651 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 17:29:10,651 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 17:29:10,651 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 17:29:10,682 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 17:29:10,683 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 17:29:29,012 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:29:29] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:29:38,596 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:29:38] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:30:56,927 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:30:56] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 17:30:57,215 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:30:57] "POST /login HTTP/1.1" 200 -
-2025-08-21 17:37:55,639 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 17:37:55,639 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 17:37:55,640 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 17:37:55,643 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 17:37:55,643 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 17:37:55,644 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 17:37:55,644 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 17:37:55,683 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 17:37:55,684 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 17:38:13,968 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:38:13] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:38:22,084 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:38:22] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:38:30,587 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:38:30] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 17:38:30,870 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:38:30] "POST /login HTTP/1.1" 200 -
-2025-08-21 17:50:32,134 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 17:50:32,135 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 17:50:32,135 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 17:50:32,140 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 17:50:32,141 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 17:50:32,141 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 17:50:32,142 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 17:50:32,180 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 17:50:32,181 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 17:50:50,377 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:50:50] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:51:03,506 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:51:03] "GET /login HTTP/1.1" 200 -
-2025-08-21 17:51:40,464 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:51:40] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 17:51:40,728 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 17:51:40] "POST /login HTTP/1.1" 200 -
-2025-08-21 18:00:23,703 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 18:00:23,704 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 18:00:23,704 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 18:00:23,707 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 18:00:23,707 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 18:00:23,707 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 18:00:23,708 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 18:00:23,752 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 18:00:23,753 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 18:00:36,911 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:00:36] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:00:45,289 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:00:45] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:03:40,831 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 18:03:40,832 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 18:03:40,832 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 18:03:40,836 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 18:03:40,836 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 18:03:40,837 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 18:03:40,837 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 18:03:40,881 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 18:03:40,882 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 18:03:58,973 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:03:58] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:04:07,076 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:04:07] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:05:03,362 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:05:03] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 18:05:03,628 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:05:03] "POST /login HTTP/1.1" 200 -
-2025-08-21 18:21:08,408 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 18:21:08,409 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 18:21:08,409 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 18:21:08,412 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 18:21:08,412 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 18:21:08,412 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 18:21:08,413 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 18:21:08,445 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 18:21:08,445 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 18:21:26,729 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:21:26] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:21:36,737 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:21:36] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:24:45,423 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:24:45] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 18:24:45,696 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:24:45] "POST /login HTTP/1.1" 200 -
-2025-08-21 18:29:34,757 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 18:29:34,758 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 18:29:34,758 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 18:29:34,766 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 18:29:34,767 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 18:29:34,767 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 18:29:34,767 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 18:29:34,805 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 18:29:34,806 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 18:29:53,068 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:29:53] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:30:01,161 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:30:01] "GET /login HTTP/1.1" 200 -
-2025-08-21 18:30:09,906 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:30:09] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 18:30:10,174 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 18:30:10] "POST /login HTTP/1.1" 200 -
-2025-08-21 19:19:17,289 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:19:17,290 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:19:17,290 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:19:17,293 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 19:19:17,294 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 19:19:17,294 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 19:19:17,294 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 19:19:17,326 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 19:19:17,326 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 19:19:35,560 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:19:35] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:24:02,010 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:24:02,011 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:24:02,011 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:24:04,757 - services.ml_model_service - WARNING - [ml_model_service.py:100] - load_trained_model() - Loaded 200 feature names from model
-2025-08-21 19:24:04,757 - services.ml_model_service - WARNING - [ml_model_service.py:108] - load_trained_model() - Loaded trained model: RF
-2025-08-21 19:24:04,757 - services.ml_model_service - WARNING - [ml_model_service.py:109] - load_trained_model() - Model Performance - R²: 0.9729, RMSE: 1.2323
-2025-08-21 19:24:04,757 - services.ml_model_service - WARNING - [ml_model_service.py:57] - __init__() - Optimization service will be loaded on demand
-2025-08-21 19:24:04,758 - services.ml_model_service - WARNING - [ml_model_service.py:59] - __init__() - ML Model Service initialized with froth flotation specifications
-2025-08-21 19:24:04,759 - backend.services.flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:43] - <module>() - Starting Refactored Froth Flotation Data Service
-2025-08-21 19:24:04,759 - backend.services.flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:44] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\flotation_data_service_refactored.log
-2025-08-21 19:24:04,760 - backend.services.flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:45] - <module>() - Service: FastAPI WebSocket Server (SOLID Architecture)
-2025-08-21 19:24:04,760 - backend.services.flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:46] - <module>() - Port: 8000
-2025-08-21 19:24:06,663 - services.ml_model_service - WARNING - [ml_model_service.py:100] - load_trained_model() - Loaded 200 feature names from model
-2025-08-21 19:24:06,664 - services.ml_model_service - WARNING - [ml_model_service.py:108] - load_trained_model() - Loaded trained model: RF
-2025-08-21 19:24:06,664 - services.ml_model_service - WARNING - [ml_model_service.py:109] - load_trained_model() - Model Performance - R²: 0.9729, RMSE: 1.2323
-2025-08-21 19:24:06,664 - services.ml_model_service - WARNING - [ml_model_service.py:57] - __init__() - Optimization service will be loaded on demand
-2025-08-21 19:24:06,664 - services.ml_model_service - WARNING - [ml_model_service.py:59] - __init__() - ML Model Service initialized with froth flotation specifications
-2025-08-21 19:24:06,667 - backend.services.flotation_data_service_refactored - WARNING - [service_orchestrator.py:52] - __init__() - Flotation Service Orchestrator initialized with database and RES table timing
-2025-08-21 19:24:06,671 - backend.services.flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:74] - startup_event() - Starting background data generation task
-2025-08-21 19:24:06,671 - backend.services.flotation_data_service_refactored - WARNING - [service_orchestrator.py:307] - run_data_generation_loop() - Starting data generation loop with 5s interval
-2025-08-21 19:24:08,333 - services.ml_model_service - WARNING - [ml_model_service.py:100] - load_trained_model() - Loaded 200 feature names from model
-2025-08-21 19:24:08,333 - services.ml_model_service - WARNING - [ml_model_service.py:108] - load_trained_model() - Loaded trained model: RF
-2025-08-21 19:24:08,334 - services.ml_model_service - WARNING - [ml_model_service.py:109] - load_trained_model() - Model Performance - R²: 0.9729, RMSE: 1.2323
-2025-08-21 19:24:08,334 - services.ml_model_service - WARNING - [ml_model_service.py:57] - __init__() - Optimization service will be loaded on demand
-2025-08-21 19:24:08,334 - services.ml_model_service - WARNING - [ml_model_service.py:59] - __init__() - ML Model Service initialized with froth flotation specifications
-2025-08-21 19:24:08,335 - services.optimization_service - WARNING - [optimization_service.py:88] - __init__() - Flotation Optimizer initialized
-2025-08-21 19:24:09,046 - backend.services.flotation_data_service_refactored - WARNING - [service_orchestrator.py:321] - run_data_generation_loop() - Data generation loop cancelled
-2025-08-21 19:24:09,046 - backend.services.flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:89] - shutdown_event() - Service shutdown complete
-2025-08-21 19:24:45,234 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:24:45] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:24:56,282 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:24:56] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:25:54,961 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:25:54,961 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:25:54,961 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:25:54,964 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 19:25:54,965 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 19:25:54,965 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 19:25:54,965 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 19:25:54,997 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 19:25:54,997 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 19:26:08,367 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:26:08] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:26:19,866 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:26:19] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:27:02,376 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:27:02,377 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:27:02,377 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:27:02,383 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 19:27:02,383 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 19:27:02,383 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 19:27:02,383 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 19:27:02,406 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 19:27:02,407 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 19:27:20,788 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:27:20] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:27:31,871 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:27:31] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 19:27:32,152 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:27:32] "POST /login HTTP/1.1" 200 -
-2025-08-21 19:31:24,174 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:31:24,174 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:31:24,175 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:31:24,178 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 19:31:24,178 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 19:31:24,179 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 19:31:24,179 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 19:31:24,209 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 19:31:24,210 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 19:31:42,525 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:31:42] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:32:46,134 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:32:46] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 19:32:46,414 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:32:46] "POST /login HTTP/1.1" 200 -
-2025-08-21 19:38:05,431 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:38:05,432 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:38:05,432 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:38:05,438 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 19:38:05,443 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 19:38:05,443 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 19:38:05,444 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 19:38:05,483 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 19:38:05,483 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 19:38:23,669 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:38:23] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:40:27,762 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
-2025-08-21 19:40:27,762 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
-2025-08-21 19:40:27,762 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
-2025-08-21 19:40:27,766 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
-2025-08-21 19:40:27,766 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
-2025-08-21 19:40:27,766 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
-2025-08-21 19:40:27,766 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
-2025-08-21 19:40:27,795 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8051
- * Running on http://172.17.144.176:8051
-2025-08-21 19:40:27,796 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
-2025-08-21 19:40:46,140 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:40:46] "GET /login HTTP/1.1" 200 -
-2025-08-21 19:41:05,069 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:41:05] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 19:41:05,322 - __main__ - WARNING - [authentication_service.py:552] - login() - Authentication failed - invalid credentials
-2025-08-21 19:41:05,324 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:41:05] "[31m[1mPOST /login HTTP/1.1[0m" 401 -
-2025-08-21 19:41:14,088 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:41:14] "OPTIONS /login HTTP/1.1" 200 -
-2025-08-21 19:41:14,415 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [21/Aug/2025 19:41:14] "POST /login HTTP/1.1" 200 -
+2025-08-22 10:18:39,417 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-22 10:18:57,744 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:18:57] "GET /login HTTP/1.1" 200 -
+2025-08-22 10:19:06,412 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [22/Aug/2025 10:19:06] "GET /login HTTP/1.1" 200 -

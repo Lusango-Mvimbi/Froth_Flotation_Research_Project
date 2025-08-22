@@ -54,9 +54,9 @@ class MLModelService:
         # Initialize optimization service (lazy loading to avoid circular imports)
         self.optimizer = None
         self.optimization_available = False
-        logger.warning("Optimization service will be loaded on demand")
+        logger.info("Optimization service will be loaded on demand")
         
-        logger.warning("ML Model Service initialized with froth flotation specifications")
+        logger.info("ML Model Service initialized with froth flotation specifications")
     
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the loaded model"""
@@ -97,16 +97,16 @@ class MLModelService:
                 try:
                     if hasattr(self.model, 'feature_names_in_'):
                         self.model_feature_names = list(self.model.feature_names_in_)
-                        logger.warning(f"Loaded {len(self.model_feature_names)} feature names from model")
+                        logger.info(f"Loaded {len(self.model_feature_names)} feature names from model")
                     else:
                         self.model_feature_names = None
-                        logger.warning("Model does not have feature names, will use generic names")
+                        logger.info("Model does not have feature names, will use generic names")
                 except:
                     self.model_feature_names = None
-                    logger.warning("Could not extract feature names from model")
+                    logger.info("Could not extract feature names from model")
                 
-                logger.warning(f"Loaded trained model: {self.model_metadata['model_name'].upper()}")
-                logger.warning(f"Model Performance - R²: {self.model_metadata['test_r2']:.4f}, RMSE: {self.model_metadata['test_rmse']:.4f}")
+                logger.info(f"Loaded trained model: {self.model_metadata['model_name'].upper()}")
+                logger.info(f"Model Performance - R²: {self.model_metadata['test_r2']:.4f}, RMSE: {self.model_metadata['test_rmse']:.4f}")
             else:
                 logger.warning("Trained model not found, using rule-based predictions")
                 self.model = None
