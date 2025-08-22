@@ -642,3 +642,158 @@
 2025-08-23 00:44:23,727 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
 2025-08-23 00:44:41,245 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 00:44:41] "GET /login HTTP/1.1" 200 -
 2025-08-23 00:44:49,285 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 00:44:49] "GET /login HTTP/1.1" 200 -
+2025-08-23 01:15:26,317 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:15:26,317 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:15:26,317 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:15:28,660 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:15:31,797 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:15:31,892 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:15:35,581 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:15:35,584 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:18:23,690 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:18:23,690 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:18:23,691 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:18:26,652 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:18:31,311 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:18:31,461 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:18:33,111 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:397] - run_data_generation_loop() - Data generation loop cancelled
+2025-08-23 01:18:36,631 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:18:36,634 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:19:22,445 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:397] - run_data_generation_loop() - Data generation loop cancelled
+2025-08-23 01:21:30,541 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:21:30,541 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:21:30,542 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:22:22,830 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:22:22,830 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:22:22,830 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:23:10,668 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:23:10,668 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:23:10,668 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:23:54,044 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:23:54,044 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:23:54,045 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:25:18,832 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:25:18,832 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:25:18,833 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:25:21,144 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:25:24,115 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:25:24,229 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:25:27,737 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:25:27,739 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:27:23,406 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:27:23,406 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:27:23,406 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:27:26,242 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:28:15,759 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:28:15,759 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:28:15,760 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:28:19,716 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:28:23,235 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:28:23,357 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:28:27,930 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:28:27,935 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:32:03,647 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:32:03,647 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:32:03,648 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:32:05,989 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:32:06,584 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:32:06,584 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:32:06,585 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:32:06,589 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-23 01:32:06,589 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-23 01:32:06,589 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-23 01:32:06,590 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-23 01:32:07,477 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://192.168.8.108:8051
+2025-08-23 01:32:07,478 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-23 01:32:09,053 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:32:09,119 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:32:12,411 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:32:12,414 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:32:26,475 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:32:26] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-23 01:32:26,501 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:32:26] "GET /login HTTP/1.1" 200 -
+2025-08-23 01:32:26,719 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:32:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-23 01:34:36,009 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:34:36,009 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:34:36,010 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:34:38,237 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:34:38,907 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:34:38,908 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:34:38,908 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:34:38,911 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-23 01:34:38,911 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-23 01:34:38,911 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-23 01:34:38,911 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-23 01:34:39,772 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://192.168.8.108:8051
+2025-08-23 01:34:39,773 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-23 01:34:41,272 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:34:41,339 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:34:44,546 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:34:44,549 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:34:50,367 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:34:50] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-23 01:34:52,390 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:34:52] "GET /login HTTP/1.1" 200 -
+2025-08-23 01:35:06,312 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:35:06] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-23 01:35:06,602 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:35:06] "POST /login HTTP/1.1" 200 -
+2025-08-23 01:35:06,991 - asyncio - ERROR - [base_events.py:1871] - default_exception_handler() - Exception in callback _ProactorBasePipeTransport._call_connection_lost()
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost()>
+Traceback (most recent call last):
+  File "C:\Program Files\Python313\Lib\asyncio\events.py", line 89, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2025-08-23 01:35:13,734 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:35:13] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-23 01:35:13,747 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:35:13] "GET /login HTTP/1.1" 200 -
+2025-08-23 01:35:13,986 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:35:13] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-23 01:36:28,325 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:36:28,325 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:36:28,325 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:36:30,558 - __main__ - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:36:31,211 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-08-23 01:36:31,211 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-08-23 01:36:31,211 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-08-23 01:36:31,214 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-08-23 01:36:31,214 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-08-23 01:36:31,214 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-08-23 01:36:31,215 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-08-23 01:36:32,070 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://192.168.8.108:8051
+2025-08-23 01:36:32,071 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-08-23 01:36:33,655 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:36:33,721 - flotation_data_service_refactored - WARNING - [data_generator.py:23] - __init__() - Data generator initialized with KEX=60.0, SIPX=30.0
+2025-08-23 01:36:36,784 - services.optimization_service - WARNING - [optimization_service.py:67] - __init__() - Flotation Optimizer initialized
+2025-08-23 01:36:36,786 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:364] - run_data_generation_loop() - Starting data generation loop with 4s interval
+2025-08-23 01:36:42,671 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:36:42] "[32mGET / HTTP/1.1[0m" 302 -
+2025-08-23 01:36:44,694 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:36:44] "GET /login HTTP/1.1" 200 -
+2025-08-23 01:37:19,018 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:37:19] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-23 01:37:19,273 - __main__ - WARNING - [authentication_service.py:552] - login() - Authentication failed - invalid credentials
+2025-08-23 01:37:19,276 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:37:19] "[31m[1mPOST /login HTTP/1.1[0m" 401 -
+2025-08-23 01:37:34,063 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:37:34] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-23 01:37:34,412 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [23/Aug/2025 01:37:34] "POST /login HTTP/1.1" 200 -
+2025-08-23 01:37:43,444 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:302] - update_control_settings() - Attempting to update control settings: {'kex': 0.0, 'sipx': 30.0}
+2025-08-23 01:37:43,445 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:305] - update_control_settings() - Calling data_generator.update_control_settings
+2025-08-23 01:37:43,446 - flotation_data_service_refactored - WARNING - [data_generator.py:175] - update_control_settings() - Updated optimal KEX to: 0.0
+2025-08-23 01:37:43,447 - flotation_data_service_refactored - WARNING - [data_generator.py:179] - update_control_settings() - Updated optimal SIPX to: 30.0
+2025-08-23 01:37:43,448 - flotation_data_service_refactored - WARNING - [data_generator.py:182] - update_control_settings() - Control settings updated successfully: KEX=0.0, SIPX=30.0
+2025-08-23 01:37:43,448 - flotation_data_service_refactored - WARNING - [data_generator.py:185] - update_control_settings() - Next data generation will use KEX=0.0, SIPX=30.0
+2025-08-23 01:37:43,449 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:307] - update_control_settings() - data_generator.update_control_settings completed
+2025-08-23 01:37:43,451 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:316] - update_control_settings() - Control settings updated: {'kex': 0.0, 'sipx': 30.0}
+2025-08-23 01:37:43,452 - flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:302] - update_control_settings() - Control settings updated: KEX=0.0, SIPX=30.0
+2025-08-23 01:37:46,975 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:302] - update_control_settings() - Attempting to update control settings: {'kex': 0.0, 'sipx': 0.0}
+2025-08-23 01:37:46,976 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:305] - update_control_settings() - Calling data_generator.update_control_settings
+2025-08-23 01:37:46,976 - flotation_data_service_refactored - WARNING - [data_generator.py:175] - update_control_settings() - Updated optimal KEX to: 0.0
+2025-08-23 01:37:46,977 - flotation_data_service_refactored - WARNING - [data_generator.py:179] - update_control_settings() - Updated optimal SIPX to: 0.0
+2025-08-23 01:37:46,977 - flotation_data_service_refactored - WARNING - [data_generator.py:182] - update_control_settings() - Control settings updated successfully: KEX=0.0, SIPX=0.0
+2025-08-23 01:37:46,978 - flotation_data_service_refactored - WARNING - [data_generator.py:185] - update_control_settings() - Next data generation will use KEX=0.0, SIPX=0.0
+2025-08-23 01:37:46,978 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:307] - update_control_settings() - data_generator.update_control_settings completed
+2025-08-23 01:37:46,978 - flotation_data_service_refactored - WARNING - [service_orchestrator.py:316] - update_control_settings() - Control settings updated: {'kex': 0.0, 'sipx': 0.0}
+2025-08-23 01:37:46,979 - flotation_data_service_refactored - WARNING - [flotation_data_service_refactored.py:302] - update_control_settings() - Control settings updated: KEX=0.0, SIPX=0.0
