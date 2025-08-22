@@ -57,9 +57,9 @@ from fastapi import Request
 import time
 from collections import defaultdict
 
-# Simple rate limiting
+# Simple rate limiting - increased for better performance
 request_counts = defaultdict(list)
-MAX_REQUESTS_PER_MINUTE = 60
+MAX_REQUESTS_PER_MINUTE = 120  # Increased from 60 to 120 requests per minute
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -105,7 +105,7 @@ async def startup_event():
     global data_generation_task
     logger.info("Starting background data generation task")
     data_generation_task = asyncio.create_task(
-        orchestrator.run_data_generation_loop(interval_seconds=5)  # 5-second updates for real-time feel
+        orchestrator.run_data_generation_loop(interval_seconds=4)  # 4-second updates for better stability
     )
 
 @app.on_event("shutdown")
@@ -296,8 +296,8 @@ async def update_control_settings(controls: Dict[str, float]):
         if 'kex' not in controls or 'sipx' not in controls:
             raise HTTPException(status_code=400, detail="Missing required control parameters: kex, sipx")
         
-        # Update the orchestrator's control settings
-        orchestrator.update_control_settings(controls)
+        # Update the orchestrator's control settings (FIXED: Added await)
+        await orchestrator.update_control_settings(controls)
         
         logger.warning(f"Control settings updated: KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
         

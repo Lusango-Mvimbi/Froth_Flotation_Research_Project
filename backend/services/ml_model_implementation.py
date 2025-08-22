@@ -75,16 +75,8 @@ class GradientBoostingModel(IMLModel):
                 'status': 'loaded'
             }
         else:
-            return {
-                'model_name': 'RULE_BASED',
-                'model_type': 'Rule-based prediction',
-                'test_r2': 0.0,
-                'test_rmse': 0.0,
-                'test_mae': 0.0,
-                'test_pred_10%': 0.0,
-                'training_date': 'N/A',
-                'status': 'fallback'
-            }
+            # No fallback - model must be loaded
+            raise Exception("ML model is required but not loaded")
     
     def is_loaded(self) -> bool:
         """Check if the model is loaded"""
@@ -159,26 +151,43 @@ class ProcessStatusAnalyzer(IProcessStatusAnalyzer):
             'recovery_rate': (80.0, 95.0),   # Realistic recovery range for Pb flotation
         }
     
-    def analyze_status(self, predictions: Dict[str, float]) -> str:
-        """Analyze process status based on predictions with realistic thresholds"""
+    def analyze_status(self, predictions: Dict[str, float], input_data: Dict[str, float] = None) -> str:
+        """Analyze process status based on predictions and reagent levels using dynamic ranges"""
         pb_concentrate = predictions.get('pb_concentrate', 0.0)
         recovery_rate = predictions.get('recovery_rate', 0.0)
         
-        # Check Pb concentrate status with realistic thresholds
-        pb_min, pb_max = self.target_ranges['pb_concentrate']
-        pb_status = self._get_parameter_status_realistic(pb_concentrate, pb_min, pb_max)
+        # Get reagent levels to adjust expectations
+        kex = input_data.get('Pb_Conditioner_KEX_Flowrate', 60.0) if input_data else 60.0
+        sipx = input_data.get('Pb_Rougher1_SIPX_Flowrate', 30.0) if input_data else 30.0
         
-        # Check recovery rate status with realistic thresholds
-        recovery_min, recovery_max = self.target_ranges['recovery_rate']
-        recovery_status = self._get_parameter_status_realistic(recovery_rate, recovery_min, recovery_max)
+        # Use the same percentile-based logic as the data generator
+        # Industry realistic ranges: KEX 20-100 L/min, SIPX 10-50 L/min
+        # Calculate percentiles from these realistic ranges
         
-        # Determine overall status (more nuanced)
-        if pb_status == 'critical' or recovery_status == 'critical':
-            return 'critical'
-        elif pb_status == 'warning' or recovery_status == 'warning':
+        # KEX percentiles from realistic range (20-100)
+        kex_q25 = 20 + (100-20) * 0.25  # 40 L/min (low)
+        kex_q75 = 20 + (100-20) * 0.75  # 80 L/min (optimal max)
+        kex_q95 = 20 + (100-20) * 0.95  # 96 L/min (excessive)
+        
+        # SIPX percentiles from realistic range (10-50)
+        sipx_q25 = 10 + (50-10) * 0.25   # 20 L/min (low)
+        sipx_q75 = 10 + (50-10) * 0.75   # 40 L/min (optimal max)
+        sipx_q95 = 10 + (50-10) * 0.95   # 48 L/min (excessive)
+        
+        # Determine reagent level using same logic as data generator
+        if kex == 0 and sipx == 0:
+            return 'critical'  # No reagents
+        elif kex >= kex_q95 or sipx >= sipx_q95:
+            return 'critical'  # Excessive reagents (95th percentile)
+        elif kex <= kex_q25 and sipx <= sipx_q25:
+            # Low reagents - check if performance is even worse than expected
+            if pb_concentrate < 3.0 or recovery_rate < 15.0:
+                return 'critical'
             return 'warning'
+        elif kex_q25 <= kex <= kex_q75 and sipx_q25 <= sipx <= sipx_q75:
+            return 'optimal'  # Optimal range (25th-75th percentile)
         else:
-            return 'optimal'
+            return 'optimal'  # High but acceptable
     
     def _get_parameter_status(self, value: float, min_val: float, max_val: float) -> str:
         """Get status for a single parameter (legacy method)"""
@@ -307,11 +316,12 @@ class RecoveryCalculator:
                     
                     return recovery
                 else:
-                    # Fallback if concentrate <= tailings
-                    return 85.0 + np.random.normal(0, 3.0)
-            else:
-                return 85.0  # Default recovery rate
-                
+                    # Adjust tailings if concentrate <= tailings
+                    tailings_assay = pb_concentrate * 0.8  # Force tailings to be 80% of concentrate
+                    recovery = 100 * (pb_concentrate / feed_pb) * (feed_pb - tailings_assay) / (pb_concentrate - tailings_assay)
+                    recovery = max(80.0, min(95.0, recovery))
+                    return recovery
+                    
         except Exception as e:
             logging.getLogger(__name__).error(f"Recovery calculation failed: {e}")
-            return 85.0  # Default recovery rate
+            raise e  # No fallback - calculation must work

@@ -64,7 +64,7 @@ class FlotationServiceOrchestrator:
                 current_time = time.time()
                 if (hasattr(self, 'last_cache_time') and 
                     self.last_cache_time is not None and 
-                    current_time - self.last_cache_time < 2):  # 2 second cache
+                    current_time - self.last_cache_time < 4):  # 4 second cache
                     return self.last_cached_data
             # Generate new data point
             raw_data = self.data_generator.generate_data_point()
@@ -85,14 +85,54 @@ class FlotationServiceOrchestrator:
             import numpy as np
             # Actual values should be close to predicted but with realistic process variation
             actual_pb_concentrate = predicted_pb_concentrate + np.random.normal(0, 1.5)  # ±1.5% variation
-            actual_pb_concentrate = max(10.0, min(40.0, actual_pb_concentrate))  # Realistic bounds
             
             # Calculate predicted recovery rate (returns percentage)
             predicted_recovery_rate_pct = self.ml_model.calculate_recovery_rate(raw_data, predicted_pb_concentrate)
             
             # Generate actual recovery rate (with realistic variation)
             actual_recovery_rate_pct = predicted_recovery_rate_pct + np.random.normal(0, 2.0)  # ±2% variation
-            actual_recovery_rate_pct = max(75.0, min(95.0, actual_recovery_rate_pct))  # Realistic bounds
+            
+            # Apply the same bounds logic as predicted values based on reagent levels
+            kex_value = raw_data.get('Pb_Conditioner_KEX_Flowrate', 60.0)
+            sipx_value = raw_data.get('Pb_Rougher1_SIPX_Flowrate', 30.0)
+            
+            # Use the same percentile-based logic as the data generator
+            # Industry realistic ranges: KEX 20-100 L/min, SIPX 10-50 L/min
+            # Calculate percentiles from these realistic ranges
+            
+            # KEX percentiles from realistic range (20-100)
+            kex_q25 = 20 + (100-20) * 0.25  # 40 L/min (low)
+            kex_q75 = 20 + (100-20) * 0.75  # 80 L/min (optimal max)
+            kex_q95 = 20 + (100-20) * 0.95  # 96 L/min (excessive)
+            
+            # SIPX percentiles from realistic range (10-50)
+            sipx_q25 = 10 + (50-10) * 0.25   # 20 L/min (low)
+            sipx_q75 = 10 + (50-10) * 0.75   # 40 L/min (optimal max)
+            sipx_q95 = 10 + (50-10) * 0.95   # 48 L/min (excessive)
+            
+            # Clamp actual Pb concentrate based on reagent levels (same logic as predicted)
+            if kex_value == 0 and sipx_value == 0:
+                actual_pb_concentrate = max(0.5, min(2.5, actual_pb_concentrate))  # Feed grade range
+            elif kex_value <= kex_q25 and sipx_value <= sipx_q25:
+                actual_pb_concentrate = max(5.0, min(15.0, actual_pb_concentrate))  # Low reagent range
+            elif kex_value >= kex_q95 or sipx_value >= sipx_q95:
+                actual_pb_concentrate = max(30.0, min(40.0, actual_pb_concentrate))  # Excessive reagent range
+            elif kex_value > kex_q75 or sipx_value > sipx_q75:
+                actual_pb_concentrate = max(25.0, min(35.0, actual_pb_concentrate))  # High reagent range
+            else:
+                actual_pb_concentrate = max(15.0, min(25.0, actual_pb_concentrate))  # Normal range
+            
+            # Clamp actual recovery based on reagent levels (same logic as predicted)
+            if kex_value == 0 and sipx_value == 0:
+                actual_recovery_rate_pct = max(0.0, min(10.0, actual_recovery_rate_pct))  # Very low recovery
+            elif kex_value <= kex_q25 and sipx_value <= sipx_q25:
+                actual_recovery_rate_pct = max(20.0, min(50.0, actual_recovery_rate_pct))  # Low recovery
+            elif kex_value >= kex_q95 or sipx_value >= sipx_q95:
+                actual_recovery_rate_pct = max(90.0, min(98.0, actual_recovery_rate_pct))  # Excessive recovery (unstable)
+            elif kex_value > kex_q75 or sipx_value > sipx_q75:
+                actual_recovery_rate_pct = max(80.0, min(95.0, actual_recovery_rate_pct))  # High recovery
+            else:
+                actual_recovery_rate_pct = max(75.0, min(90.0, actual_recovery_rate_pct))  # Normal recovery
             
             # Analyze process status using predicted values
             predictions = {
@@ -100,7 +140,7 @@ class FlotationServiceOrchestrator:
                 'recovery_rate': predicted_recovery_rate_pct
             }
             
-            status = self.status_analyzer.analyze_status(predictions)
+            status = self.status_analyzer.analyze_status(predictions, raw_data)
             
             # Track prediction accuracy (compare predicted vs actual from previous cycle)
             if hasattr(self, 'last_predictions') and self.last_predictions:
@@ -319,14 +359,14 @@ class FlotationServiceOrchestrator:
         
         return health_status
     
-    async def run_data_generation_loop(self, interval_seconds: int = 5) -> None:  # Optimized for 5-second updates
+    async def run_data_generation_loop(self, interval_seconds: int = 4) -> None:  # Optimized for 4-second updates for better stability
         """Run continuous data generation loop with optimized resource usage"""
         self.logger.warning(f"Starting data generation loop with {interval_seconds}s interval")
         
         # Cache the last data point to avoid regenerating on every request
         self.last_cached_data = None
         self.last_cache_time = None
-        cache_duration = 2  # Cache data for 2 seconds for fresher updates
+        cache_duration = 3  # Cache data for 3 seconds to reduce processing load
         
         while True:
             try:

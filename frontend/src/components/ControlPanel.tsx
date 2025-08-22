@@ -66,8 +66,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       label: 'KEX Flow Rate',
       unit: 'L/min',
       icon: Droplets,
-      min: 0,  // Full range for testing
-      max: 1500,  // Full range for testing
+      min: 0,  // Realistic range
+      max: 100,  // Realistic maximum for KEX
       optimal: optimalRanges?.kex?.optimal || 45,
       step: 0.5,
       description: 'Collector reagent flow rate'
@@ -77,8 +77,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       label: 'SIPX Flow Rate',
       unit: 'L/min',
       icon: Droplets,
-      min: 0,  // Full range for testing
-      max: 1500,  // Full range for testing
+      min: 0,  // Realistic range
+      max: 60,  // Realistic maximum for SIPX
       optimal: optimalRanges?.sipx?.optimal || 25,
       step: 0.5,
       description: 'Frother reagent flow rate'
@@ -108,7 +108,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           const value = localControls[config.key];
           const optimalRange = optimalRanges?.[config.key];
           const status = optimalRange 
-            ? getControlStatus(value, optimalRange.min, optimalRange.max)  // Use optimal ranges from backend
+            ? getControlStatus(value, optimalRange.optimal_min || optimalRange.min, optimalRange.optimal_max || optimalRange.max)  // Use optimal ranges from backend
             : { status: 'unknown', color: 'text-dark-400', bgColor: 'bg-dark-700/20' };
 
           return (
@@ -163,7 +163,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <span className="text-dark-400">Min: {config.min}</span>
                 {optimalRange && (
                   <span className={`font-medium ${status.color} hidden sm:inline`}>
-                    Optimal: {optimalRange.min}-{optimalRange.max}
+                    Optimal: {optimalRange.optimal_min || optimalRange.min}-{optimalRange.optimal_max || optimalRange.max}
                   </span>
                 )}
                 <span className="text-dark-400">Max: {config.max}</span>

@@ -154,8 +154,8 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
           <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <defs>
               <linearGradient id="predictedPbGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1}/>
               </linearGradient>
               <linearGradient id="actualPbGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
@@ -189,11 +189,11 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
             <Area
               type="monotone"
               dataKey="Predicted Pb Concentrate"
-              stroke="#3b82f6"
+              stroke="#f59e0b"
               strokeWidth={2}
               fill="url(#predictedPbGradient)"
-              dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
-              activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+              dot={{ fill: '#f59e0b', strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 6, stroke: '#f59e0b', strokeWidth: 2 }}
             />
             
             <Area

@@ -48,41 +48,20 @@ class FlotationOptimizer:
         self.simulation_horizon = 60  # minutes to simulate into future
         self.time_steps = 6  # 10-minute intervals for 60 minutes (reduced from 12)
         
-        # Reagent flow rate bounds (L/min)
+        # ONLY controllable parameters from ML model training data
         self.bounds = {
-            'KEX': (20.0, 80.0),      # Collector flow rate
-            'SIPX': (10.0, 50.0),     # Frother flow rate
-            'AirFlow': (100.0, 200.0), # Air flow rate
-            'pH': (9.0, 12.0),        # pH level
-            'ImpellerSpeed': (800.0, 1500.0)  # Impeller speed (RPM)
+            'KEX': (20.0, 100.0),     # Collector flow rate (Pb_Conditioner_KEX_Flowrate)
+            'SIPX': (10.0, 60.0),     # Frother flow rate (Pb_Rougher1_SIPX_Flowrate)
         }
         
-        # Current process state (will be updated with real data)
+        # Current process state - ONLY parameters from ML model training data
         self.current_state = {
             'Feed_Pb': 2.5,
             'Feed_Zn': 10.0,
-            'Feed_Cu': 0.8,
-            'Feed_Fe': 15.0,
-            'Feed_SiO2': 45.0,
-            'Feed_S': 2.1,
-            'Feed_CaO': 8.5,
-            'Feed_MgO': 2.3,
-            'Feed_Al2O3': 12.0,
-            'Feed_As': 0.15,
-            'Feed_Sb': 0.08,
-            'Feed_Bi': 0.02,
-            'Feed_Cd': 0.05,
-            'Feed_Au': 0.8,
-            'Feed_Ag': 12.0,
-            'Feed_Sn': 0.1,
-            'Feed_Mo': 0.02,
-            'Feed_W': 0.01,
-            'Feed_Co': 0.05,
-            'Feed_Ni': 0.1,
-            'Temperature': 25.0,
-            'Pulp_Density': 35.0,
-            'Pb_Rougher1_Level': 60.0,
-            'Froth_Height': 15.0
+            'Pb_Conditioner_KEX_Flowrate': 60.0,
+            'Pb_Rougher1_SIPX_Flowrate': 30.0,
+            'Pb_Rougher1_AirFlow': 9.97,
+            'Pb_Rougher1_Level': 39.01
         }
         
         logger.warning("Flotation Optimizer initialized")
@@ -133,7 +112,7 @@ class FlotationOptimizer:
         Simulate the process response over the next 60 minutes.
         
         Args:
-            reagent_settings: Dictionary with KEX, SIPX, AirFlow, pH, ImpellerSpeed
+            reagent_settings: Dictionary with KEX, SIPX - ONLY controllable parameters from ML model
             
         Returns:
             Dictionary with time series of predicted values
@@ -154,14 +133,12 @@ class FlotationOptimizer:
                 sim_time = current_time + timedelta(minutes=step * 10)
                 time_points.append(sim_time)
                 
-                # Create input data for this time step
+                # Create input data for this time step - ONLY parameters from ML model
                 input_data = self.current_state.copy()
                 input_data.update({
                     'Pb_Conditioner_KEX_Flowrate': reagent_settings['KEX'],
-                    'Pb_Rougher1_SIPX_Flowrate': reagent_settings['SIPX'],
-                    'Pb_Rougher1_AirFlow': reagent_settings['AirFlow'],
-                    'pH': reagent_settings['pH'],
-                    'Impeller_Speed': reagent_settings['ImpellerSpeed']
+                    'Pb_Rougher1_SIPX_Flowrate': reagent_settings['SIPX']
+                    # AirFlow, pH, and ImpellerSpeed are not in the ML model training data
                 })
                 
                 # Add time delay effects (reagents take time to affect the process)
@@ -180,13 +157,14 @@ class FlotationOptimizer:
                 pb_concentrate = self.ml_service.predict_pb_concentrate(input_data)
                 pb_concentrates.append(pb_concentrate)
                 
-                # Calculate recovery rate
+                # Calculate recovery rate (returns as percentage, convert to decimal for optimization)
                 recovery_rate = self.ml_service.calculate_recovery_rate(input_data, pb_concentrate)
-                recovery_rates.append(recovery_rate)
+                recovery_rate_decimal = recovery_rate / 100.0  # Convert percentage to decimal
+                recovery_rates.append(recovery_rate_decimal)
                 
                 # Estimate flow rate (simplified model)
                 base_flow = 100.0  # L/min base flow
-                flow_factor = 1.0 + (recovery_rate - 0.85) * 0.5  # Flow increases with recovery
+                flow_factor = 1.0 + (recovery_rate_decimal - 0.85) * 0.5  # Flow increases with recovery
                 flow_rate = base_flow * flow_factor
                 flow_rates.append(flow_rate)
                 
@@ -198,7 +176,7 @@ class FlotationOptimizer:
                     
                     # Recovery can have delayed effects but keep realistic bounds
                     if step > 6:  # After 30 minutes
-                        recovery_rates[-1] = min(0.95, recovery_rates[-1] * 1.01)  # Max 95% recovery
+                        recovery_rates[-1] = min(0.95, recovery_rates[-1] * 1.01)  # Max 95% recovery (as decimal)
             
             return {
                 'time_points': time_points,
@@ -209,32 +187,23 @@ class FlotationOptimizer:
             
         except Exception as e:
             logger.error(f"Future simulation failed: {e}")
-            # Return fallback values
-            return {
-                'time_points': [datetime.now() + timedelta(minutes=i*10) for i in range(self.time_steps)],
-                'pb_concentrates': [10.0] * self.time_steps,
-                'recovery_rates': [0.85] * self.time_steps,
-                'flow_rates': [100.0] * self.time_steps
-            }
+            raise e  # No fallback - optimization must work
     
     def objective_function(self, x: np.ndarray) -> float:
         """
         Objective function for optimization: maximize recovery while maintaining grade targets.
         
         Args:
-            x: Array of [KEX, SIPX, AirFlow, pH, ImpellerSpeed]
+            x: Array of [KEX, SIPX] - ONLY controllable parameters from ML model
             
         Returns:
             Negative recovery rate (minimization problem)
         """
         try:
-            # Extract reagent settings
+            # Extract reagent settings - ONLY KEX and SIPX
             reagent_settings = {
                 'KEX': x[0],
-                'SIPX': x[1],
-                'AirFlow': x[2],
-                'pH': x[3],
-                'ImpellerSpeed': x[4]
+                'SIPX': x[1]
             }
             
             # Simulate future response
@@ -281,13 +250,10 @@ class FlotationOptimizer:
             if current_data:
                 self.update_current_state(current_data)
             
-            # Get current settings
+            # Get current settings - ONLY KEX and SIPX
             current_settings = {
-                'KEX': self.current_state.get('Pb_Conditioner_KEX_Flowrate', 45.0),
-                'SIPX': self.current_state.get('Pb_Rougher1_SIPX_Flowrate', 25.0),
-                'AirFlow': self.current_state.get('Pb_Rougher1_AirFlow', 150.0),
-                'pH': self.current_state.get('pH', 11.0),
-                'ImpellerSpeed': self.current_state.get('Impeller_Speed', 1200.0)
+                'KEX': self.current_state.get('Pb_Conditioner_KEX_Flowrate', 60.0),
+                'SIPX': self.current_state.get('Pb_Rougher1_SIPX_Flowrate', 30.0)
             }
             
             logger.info("Starting simplified optimization...")
@@ -296,13 +262,15 @@ class FlotationOptimizer:
             best_recovery = 0.0
             optimal_settings = current_settings.copy()
             
-            # Test a few key combinations
+            # Test a few key combinations - ONLY KEX and SIPX
             test_combinations = [
-                {'KEX': 50.0, 'SIPX': 30.0, 'AirFlow': 160.0, 'pH': 11.0, 'ImpellerSpeed': 1200.0},
-                {'KEX': 60.0, 'SIPX': 25.0, 'AirFlow': 150.0, 'pH': 10.5, 'ImpellerSpeed': 1300.0},
-                {'KEX': 40.0, 'SIPX': 35.0, 'AirFlow': 170.0, 'pH': 11.5, 'ImpellerSpeed': 1100.0},
-                {'KEX': 55.0, 'SIPX': 28.0, 'AirFlow': 155.0, 'pH': 10.8, 'ImpellerSpeed': 1250.0},
-                {'KEX': 45.0, 'SIPX': 32.0, 'AirFlow': 165.0, 'pH': 11.2, 'ImpellerSpeed': 1150.0},
+                {'KEX': 50.0, 'SIPX': 30.0},
+                {'KEX': 60.0, 'SIPX': 25.0},
+                {'KEX': 40.0, 'SIPX': 35.0},
+                {'KEX': 55.0, 'SIPX': 28.0},
+                {'KEX': 45.0, 'SIPX': 32.0},
+                {'KEX': 70.0, 'SIPX': 20.0},
+                {'KEX': 30.0, 'SIPX': 40.0},
             ]
             
             for test_settings in test_combinations:
@@ -397,29 +365,17 @@ class FlotationOptimizer:
             direction = "increase" if sipx_diff > 0 else "decrease"
             recommendations.append(f"💡 {direction.capitalize()} SIPX flow rate from {current['SIPX']:.1f} to {optimal['SIPX']:.1f} L/min")
         
-        # Air flow recommendations
-        air_diff = optimal['AirFlow'] - current['AirFlow']
-        if abs(air_diff) > 5.0:
-            direction = "increase" if air_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} air flow from {current['AirFlow']:.1f} to {optimal['AirFlow']:.1f} L/min")
-        
-        # pH recommendations
-        ph_diff = optimal['pH'] - current['pH']
-        if abs(ph_diff) > 0.2:
-            direction = "increase" if ph_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} pH from {current['pH']:.1f} to {optimal['pH']:.1f}")
-        
-        # Impeller speed recommendations
-        impeller_diff = optimal['ImpellerSpeed'] - current['ImpellerSpeed']
-        if abs(impeller_diff) > 50.0:
-            direction = "increase" if impeller_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} impeller speed from {current['ImpellerSpeed']:.0f} to {optimal['ImpellerSpeed']:.0f} RPM")
+        # Only recommend KEX and SIPX changes - these are the controllable parameters
+        # Other parameters (AirFlow, pH, ImpellerSpeed) are not in the ML model training data
         
         # Add expected outcomes
         optimal_recovery = optimization_result.get('optimal_avg_recovery', 0)
         optimal_concentrate = optimization_result.get('optimal_avg_concentrate', 0)
         
-        recommendations.append(f"📊 Expected outcomes: {optimal_recovery:.1%} recovery, {optimal_concentrate:.1f}% Pb concentrate")
+        # Convert recovery to percentage (it's stored as decimal)
+        optimal_recovery_pct = optimal_recovery * 100
+        
+        recommendations.append(f"📊 Expected outcomes: {optimal_recovery_pct:.1f}% recovery, {optimal_concentrate:.1f}% Pb concentrate")
         
         return recommendations
 

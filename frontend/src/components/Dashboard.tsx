@@ -69,14 +69,10 @@ const Dashboard: React.FC = () => {
           console.warn('⚠️ Could not fetch target ranges:', error);
         }
         
-        // Try to fetch current control settings
-        let currentControls: ProcessControls = { kex: 45.0, sipx: 25.0 }; // Default fallback
-        try {
-          currentControls = await flotationAPI.getControlSettings();
-          console.log('✅ Current control settings fetched:', currentControls);
-        } catch (error) {
-          console.warn('⚠️ Could not fetch current control settings:', error);
-        }
+        // Fetch current control settings - must succeed
+        console.log('🔄 Fetching current control settings...');
+        const currentControls = await flotationAPI.getControlSettings();
+        console.log('✅ Current control settings fetched:', currentControls);
         
         // Try to fetch historical data
         let historicalData: FlotationData[] = [];
@@ -137,7 +133,7 @@ const Dashboard: React.FC = () => {
         if (serverConnected) {
           toast.success('Dashboard connected successfully!');
         } else {
-          toast.error('Dashboard loaded in offline mode');
+          throw new Error('Backend connection failed - dashboard requires real-time data');
         }
       } catch (error) {
         console.error('❌ Failed to initialize dashboard:', error);
@@ -202,7 +198,7 @@ const Dashboard: React.FC = () => {
           toast.error('Connection lost - trying to reconnect...');
         }
       }
-    }, 5000); // Update every 5 seconds for better user experience
+    }, 4000); // Update every 4 seconds for better stability
 
     return () => clearInterval(interval);
   }, [state.serverConnected, state.controls]);
@@ -253,7 +249,8 @@ const Dashboard: React.FC = () => {
         
         serverConnected = true;
       } catch (error) {
-        console.warn('Refresh failed, staying in offline mode:', error);
+        console.error('Refresh failed - backend required:', error);
+        throw error;
       }
       
       setState(prev => ({
@@ -273,7 +270,8 @@ const Dashboard: React.FC = () => {
       if (serverConnected) {
         toast.success('Data refreshed successfully');
       } else {
-        toast.error('Refresh failed - offline mode');
+        toast.error('Refresh failed - backend connection required');
+        throw new Error('Backend connection failed');
       }
     } catch (error) {
       console.error('Failed to refresh data:', error);
@@ -356,15 +354,15 @@ const Dashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Connection Status Banner */}
-        {!state.serverConnected && (
+        {state.error && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-warning-900/20 border border-warning-700 rounded-lg flex items-center space-x-2"
+            className="mb-6 p-4 bg-danger-900/20 border border-danger-700 rounded-lg flex items-center space-x-2"
           >
-            <WifiOff className="h-5 w-5 text-warning-400" />
-            <span className="text-warning-400 text-sm">
-              Dashboard is running in offline mode. Backend services are not available.
+            <WifiOff className="h-5 w-5 text-danger-400" />
+            <span className="text-danger-400 text-sm">
+              {state.error}
             </span>
           </motion.div>
         )}
