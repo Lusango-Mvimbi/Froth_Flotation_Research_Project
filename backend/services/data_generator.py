@@ -20,7 +20,7 @@ class FlotationDataGenerator(IDataGenerator):
         self.logger = logger
         self._initialize_base_values()
         self._calculate_optimal_balance()
-        self.logger.warning(f"Data generator initialized with KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
+        self.logger.info(f"Data generator initialized with KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
         
     def _initialize_base_values(self):
         """Initialize base values for flotation parameters - ONLY parameters from training data"""
@@ -172,17 +172,17 @@ class FlotationDataGenerator(IDataGenerator):
             # Update optimal values based on new control settings
             if 'kex' in controls:
                 self.optimal_kex = controls['kex']
-                self.logger.warning(f"Updated optimal KEX to: {self.optimal_kex}")
+                self.logger.info(f"Updated optimal KEX to: {self.optimal_kex}")
             
             if 'sipx' in controls:
                 self.optimal_sipx = controls['sipx']
-                self.logger.warning(f"Updated optimal SIPX to: {self.optimal_sipx}")
+                self.logger.info(f"Updated optimal SIPX to: {self.optimal_sipx}")
             
             # Don't recalculate optimal balance - keep operator's chosen values
-            self.logger.warning(f"Control settings updated successfully: KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
+            self.logger.info(f"Control settings updated successfully: KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
             
             # Force the next data generation to use these values
-            self.logger.warning(f"Next data generation will use KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
+            self.logger.info(f"Next data generation will use KEX={self.optimal_kex}, SIPX={self.optimal_sipx}")
                 
         except Exception as e:
             self.logger.error(f"Error updating control settings: {e}")

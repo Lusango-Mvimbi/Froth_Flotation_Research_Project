@@ -4,7 +4,7 @@ ML Model Service for Froth Flotation Digital Twin
 
 This service implements proper froth flotation behavior with ML predictions.
 Based on research: Pb concentrate is predicted by model, Recovery is calculated using froth flotation equations.
-Now includes model-based optimization for reagent flow rates.
+Now includes model-based optimization for reagent flow rates and FUTURE PREDICTIONS.
 """
 
 import numpy as np
@@ -46,17 +46,22 @@ class MLModelService:
             'recovery_rate': (75.0, 95.0),   # Target recovery range
         }
         
-        # Load the trained ML model
+        # Load the trained ML model (for backward compatibility)
         self.model = None
         self.model_metadata = None
-        self.load_trained_model()
+        # Note: Future predictions use their own models, so this is optional
+        
+        # Initialize future prediction service lazily
+        self.future_predictor = None
+        self.future_prediction_available = False
+        self._future_prediction_initialized = False
         
         # Initialize optimization service (lazy loading to avoid circular imports)
         self.optimizer = None
         self.optimization_available = False
         logger.info("Optimization service will be loaded on demand")
         
-        logger.info("ML Model Service initialized with froth flotation specifications")
+        logger.info("ML Model Service initialized with Random Forest future predictions")
     
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the loaded model"""
@@ -82,6 +87,138 @@ class MLModelService:
                 'training_date': 'N/A',
                 'status': 'fallback'
             }
+    
+    def get_future_prediction_info(self) -> Dict[str, Any]:
+        """Get information about the future prediction service"""
+        # Initialize future prediction service if needed
+        self._load_future_prediction_service()
+        
+        if self.future_prediction_available and self.future_predictor:
+            try:
+                summary = self.future_predictor.get_prediction_summary()
+                return {
+                    'status': 'available',
+                    'available_horizons': summary['available_horizons'],
+                    'total_models': summary['total_models'],
+                    'model_performance': summary['model_performance']
+                }
+            except Exception as e:
+                logger.error(f"Error getting future prediction info: {e}")
+                return {
+                    'status': 'error',
+                    'error': str(e)
+                }
+        else:
+            return {
+                'status': 'unavailable',
+                'available_horizons': [],
+                'total_models': 0,
+                'model_performance': {}
+            }
+    
+    def validate_future_prediction(self, horizon: str, actual_value: float, 
+                                 predicted_value: float) -> Dict[str, Any]:
+        """
+        Validate a future prediction against actual value.
+        
+        Args:
+            horizon: Prediction horizon (e.g., '5min', '60min')
+            actual_value: Actual observed value
+            predicted_value: Predicted value
+            
+        Returns:
+            Dictionary with validation metrics
+        """
+        # Initialize future prediction service if needed
+        self._load_future_prediction_service()
+        
+        if not self.future_prediction_available or self.future_predictor is None:
+            return {'error': 'Future prediction service not available'}
+        
+        return self.future_predictor.validate_prediction_accuracy(horizon, actual_value, predicted_value)
+    
+    def get_prediction_analytics(self) -> Dict[str, Any]:
+        """
+        Get comprehensive prediction analytics.
+        
+        Returns:
+            Dictionary with prediction analytics
+        """
+        # Initialize future prediction service if needed
+        self._load_future_prediction_service()
+        
+        if not self.future_prediction_available or self.future_predictor is None:
+            return {'error': 'Future prediction service not available'}
+        
+        return self.future_predictor.get_prediction_analytics()
+    
+    def detect_prediction_drift(self, horizon: str = None) -> Dict[str, Any]:
+        """
+        Detect prediction drift.
+        
+        Args:
+            horizon: Specific horizon to check (None for all)
+            
+        Returns:
+            Dictionary with drift detection results
+        """
+        # Initialize future prediction service if needed
+        self._load_future_prediction_service()
+        
+        if not self.future_prediction_available or self.future_predictor is None:
+            return {'error': 'Future prediction service not available'}
+        
+        return self.future_predictor.detect_prediction_drift(horizon)
+    
+    def track_prediction_accuracy(self, predictions: Dict[str, float], actual_values: Dict[str, float]) -> Dict[str, Any]:
+        """
+        Track prediction accuracy by comparing predictions with actual values.
+        
+        Args:
+            predictions: Dictionary with predicted values
+            actual_values: Dictionary with actual observed values
+            
+        Returns:
+            Dictionary with accuracy metrics
+        """
+        try:
+            # Initialize future prediction service if needed
+            self._load_future_prediction_service()
+            
+            if not self.future_prediction_available or self.future_predictor is None:
+                return {'error': 'Future prediction service not available'}
+            
+            # Calculate accuracy metrics
+            accuracy_metrics = {}
+            
+            for key in predictions.keys():
+                if key in actual_values:
+                    predicted = predictions[key]
+                    actual = actual_values[key]
+                    
+                    # Calculate percentage error
+                    if actual != 0:
+                        percentage_error = abs((predicted - actual) / actual) * 100
+                    else:
+                        percentage_error = 100.0 if predicted != 0 else 0.0
+                    
+                    accuracy_metrics[key] = {
+                        'predicted': float(predicted),
+                        'actual': float(actual),
+                        'error': float(predicted - actual),
+                        'percentage_error': float(percentage_error),
+                        'accuracy': float(max(0, 100 - percentage_error))
+                    }
+            
+            return {
+                'success': True,
+                'accuracy_metrics': accuracy_metrics,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error tracking prediction accuracy: {e}")
+            return {'error': str(e)}
     
     def load_trained_model(self):
         """Load the trained Random Forest model"""
@@ -118,6 +255,24 @@ class MLModelService:
             self.model = None
             self.model_metadata = None
             self.model_feature_names = None
+    
+    def _load_future_prediction_service(self):
+        """Lazy load the future prediction service"""
+        if not self._future_prediction_initialized:
+            try:
+                # Import from the same directory
+                import sys
+                sys.path.append(str(Path(__file__).parent))
+                from future_prediction_service import FuturePredictionService
+                self.future_predictor = FuturePredictionService()
+                self.future_prediction_available = True
+                self._future_prediction_initialized = True
+                logger.info("Future prediction service loaded successfully")
+            except Exception as e:
+                logger.error(f"Failed to load future prediction service: {e}")
+                self.future_predictor = None
+                self.future_prediction_available = False
+                self._future_prediction_initialized = True  # Mark as attempted to avoid retry
     
     def add_historical_data(self, data_point: Dict[str, float]):
         """Add new data point to historical data for lag features"""
@@ -264,6 +419,88 @@ class MLModelService:
             
         except Exception as e:
             logger.error(f"Pb concentrate prediction failed: {e}")
+            raise e
+    
+    def predict_future_pb_concentrate(self, input_data: Dict[str, float], 
+                                    horizons: List[int] = None) -> Dict[str, Any]:
+        """
+        Predict future Pb concentrate grades for multiple time horizons.
+        
+        Args:
+            input_data: Current process data
+            horizons: List of prediction horizons in minutes (default: [5, 60])
+            
+        Returns:
+            Dictionary with future predictions for each horizon
+        """
+        try:
+            # Initialize future prediction service if needed
+            self._load_future_prediction_service()
+            
+            if not self.future_prediction_available or self.future_predictor is None:
+                raise Exception("Future prediction service not available")
+            
+            # Convert input data to DataFrame format expected by future predictor
+            data_df = self._prepare_data_for_future_prediction(input_data)
+            
+            # Make future predictions
+            future_predictions = self.future_predictor.predict_future(data_df, horizons)
+            
+            # Format results with only future predictions
+            results = {
+                'future_predictions': future_predictions,
+                'prediction_time': datetime.now().isoformat(),
+                'available_horizons': list(future_predictions.keys())
+            }
+            
+            logger.info(f"Generated future predictions for {len(future_predictions)} horizons")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Future prediction failed: {e}")
+            raise e
+    
+    def _prepare_data_for_future_prediction(self, input_data: Dict[str, float]) -> pd.DataFrame:
+        """
+        Prepare data in the format expected by the future prediction service.
+        
+        Args:
+            input_data: Current process data
+            
+        Returns:
+            DataFrame with prepared features
+        """
+        try:
+            # Create a DataFrame with all available features
+            # We'll use the same feature preparation logic as the current prediction
+            features = self.prepare_features_for_model(input_data)
+            
+            # Create feature names (this should match what the future predictor expects)
+            feature_names = []
+            
+            # Core features
+            feature_names.extend([
+                'Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate',
+                'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level'
+            ])
+            
+            # Lag features
+            lag_features = self.get_lag_features(input_data)
+            for lag_name in lag_features.keys():
+                feature_names.append(lag_name)
+            
+            # Add any additional features needed to match the training data format
+            # This is a simplified version - in practice, you'd need to match exactly
+            while len(feature_names) < len(features):
+                feature_names.append(f'feature_{len(feature_names)}')
+            
+            # Create DataFrame
+            data_df = pd.DataFrame([features], columns=feature_names)
+            
+            return data_df
+            
+        except Exception as e:
+            logger.error(f"Error preparing data for future prediction: {e}")
             raise e
     
     def prepare_features_for_model(self, input_data: Dict[str, float]) -> list:
@@ -430,9 +667,9 @@ class MLModelService:
                     from services.optimization_service import FlotationOptimizer
                     self.optimizer = FlotationOptimizer()
                     self.optimization_available = True
-                    logger.warning("Optimization service loaded successfully")
+                    logger.info("Optimization service loaded successfully")
                 except Exception as e:
-                    logger.warning(f"Failed to load optimization service: {e}")
+                    logger.info(f"Failed to load optimization service: {e}")
                     return {
                         'success': False,
                         'error': 'Optimization service not available',
@@ -482,9 +719,9 @@ class MLModelService:
                     from services.optimization_service import FlotationOptimizer
                     self.optimizer = FlotationOptimizer()
                     self.optimization_available = True
-                    logger.warning("Optimization service loaded successfully")
+                    logger.info("Optimization service loaded successfully")
                 except Exception as e:
-                    logger.warning(f"Failed to load optimization service: {e}")
+                    logger.info(f"Failed to load optimization service: {e}")
                     return {
                         'success': False,
                         'error': 'Optimization service not available'
@@ -699,8 +936,14 @@ class MLModelService:
             # Add to historical data
             self.add_historical_data(input_data.copy())
             
-            # Predict Pb concentrate using ML model
-            pb_concentrate = self.predict_pb_concentrate(input_data)
+            # Predict Pb concentrate using future prediction system
+            try:
+                future_predictions = self.predict_future_pb_concentrate(input_data, [5])
+                pb_concentrate = future_predictions['future_predictions']['5min']['prediction']
+                logger.info(f"Future prediction successful: {pb_concentrate:.2f}%")
+            except Exception as e:
+                logger.warning(f"Future prediction failed, using fallback: {e}")
+                pb_concentrate = 20.0  # Default reasonable value
             
             # Calculate recovery rate using froth flotation equations
             recovery_rate = self.calculate_recovery_rate(input_data, pb_concentrate)

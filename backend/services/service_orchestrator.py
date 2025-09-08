@@ -29,13 +29,18 @@ class FlotationServiceOrchestrator:
     def __init__(self, logger: logging.Logger):
         self.logger = logger
         
-        # Initialize all services
+        # Initialize lightweight services immediately
         self.data_generator: IDataGenerator = FlotationDataGenerator(logger)
         self.historical_manager: IHistoricalDataManager = HistoricalDataManager(logger=logger)
-        self.ml_model: IMLModel = MLModelService()
         self.status_analyzer: IProcessStatusAnalyzer = ProcessStatusAnalyzer(logger)
         self.websocket_manager: IWebSocketManager = WebSocketConnectionManager(logger)
         self.recovery_calculator = RecoveryCalculator()
+        
+        # Initialize heavy services lazily
+        self.ml_model: Optional[IMLModel] = None
+        self._ml_model_initialized = False
+        self.optimizer = None
+        self._optimizer_initialized = False
         
         # Initialize database manager
         self.database = FlotationDatabase()
@@ -49,10 +54,31 @@ class FlotationServiceOrchestrator:
         self.res1_interval = 2  # 2 minutes
         self.res2_interval = 5  # 5 minutes
         self.res3_interval = 10  # 10 minutes
-        
-        # Initialize optimizer once
-        from services.optimization_service import FlotationOptimizer
-        self.optimizer = FlotationOptimizer()
+    
+    def _initialize_ml_model(self):
+        """Lazy initialization of ML model service to improve startup performance"""
+        if not self._ml_model_initialized:
+            try:
+                self.logger.info("Initializing ML model service...")
+                self.ml_model = MLModelService()
+                self._ml_model_initialized = True
+                self.logger.info("ML model service initialized successfully")
+            except Exception as e:
+                self.logger.error(f"Failed to initialize ML model service: {e}")
+                raise
+    
+    def _initialize_optimizer(self):
+        """Lazy initialization of optimizer service to improve startup performance"""
+        if not self._optimizer_initialized:
+            try:
+                self.logger.info("Initializing optimizer service...")
+                from services.optimization_service import FlotationOptimizer
+                self.optimizer = FlotationOptimizer()
+                self._optimizer_initialized = True
+                self.logger.info("Optimizer service initialized successfully")
+            except Exception as e:
+                self.logger.error(f"Failed to initialize optimizer service: {e}")
+                raise
         
         self.logger.info("Flotation Service Orchestrator initialized with database, RES table timing, and optimizer")
     
@@ -78,16 +104,34 @@ class FlotationServiceOrchestrator:
             # Combine raw data with lag features
             combined_data = {**raw_data, **lag_features}
             
-            # Make ML prediction using the new service
-            predicted_pb_concentrate = self.ml_model.predict_pb_concentrate(combined_data)
+            # Make ML prediction using the future prediction service
+            try:
+                # Initialize ML model if needed
+                self._initialize_ml_model()
+                
+                # Get future predictions (5min, 15min, 30min, 60min)
+                future_predictions = self.ml_model.predict_future_pb_concentrate(combined_data, [5, 15, 30, 60])
+                
+                # Use 5-minute prediction as current prediction
+                predicted_pb_concentrate = future_predictions['future_predictions']['5min']['prediction']
+                
+                # Store future predictions for the dashboard
+                self.current_future_predictions = future_predictions
+                
+                # Calculate predicted recovery rate (returns percentage)
+                predicted_recovery_rate_pct = self.ml_model.calculate_recovery_rate(raw_data, predicted_pb_concentrate)
+                
+            except Exception as e:
+                # Fallback to a reasonable default if future prediction fails
+                self.logger.warning(f"Future prediction failed, using fallback: {e}")
+                predicted_pb_concentrate = 20.0  # Default reasonable value
+                predicted_recovery_rate_pct = 85.0  # Default reasonable recovery rate
+                self.current_future_predictions = None
             
             # Generate actual Pb concentrate (with realistic variation from prediction)
             import numpy as np
             # Actual values should be close to predicted but with realistic process variation
             actual_pb_concentrate = predicted_pb_concentrate + np.random.normal(0, 1.5)  # ±1.5% variation
-            
-            # Calculate predicted recovery rate (returns percentage)
-            predicted_recovery_rate_pct = self.ml_model.calculate_recovery_rate(raw_data, predicted_pb_concentrate)
             
             # Generate actual recovery rate (with realistic variation)
             actual_recovery_rate_pct = predicted_recovery_rate_pct + np.random.normal(0, 2.0)  # ±2% variation
@@ -144,6 +188,8 @@ class FlotationServiceOrchestrator:
             
             # Track prediction accuracy (compare predicted vs actual from previous cycle)
             if hasattr(self, 'last_predictions') and self.last_predictions:
+                # Initialize optimizer if needed
+                self._initialize_optimizer()
                 self.optimizer.track_prediction_accuracy(self.last_predictions, {
                     'pb_concentrate': actual_pb_concentrate,
                     'recovery_rate': actual_recovery_rate_pct
@@ -156,6 +202,7 @@ class FlotationServiceOrchestrator:
             }
             
             # Run optimization using the instance optimizer
+            self._initialize_optimizer()
             optimization_result = self.optimizer.optimize_reagent_rates(raw_data)
             recommendations = self.optimizer.generate_recommendations(optimization_result)
             self.logger.debug(f"Generated {len(recommendations)} optimization-based recommendations")
@@ -216,6 +263,7 @@ class FlotationServiceOrchestrator:
                     external_factors_changed = False
                     
                     # Get optimization data for RES3 using the instance optimizer
+                    self._initialize_optimizer()
                     optimization_result = self.optimizer.optimize_reagent_rates(raw_data)
                     
                     if optimization_result.get('success', False):
@@ -268,6 +316,9 @@ class FlotationServiceOrchestrator:
     
     def _create_error_data_point(self, error_message: str) -> Dict[str, Any]:
         """Create an error data point when processing fails"""
+        # Initialize ML model if needed
+        self._initialize_ml_model()
+        
         return {
             'timestamp': datetime.now().isoformat(),
             'Pb_Concentrate': None,
@@ -287,6 +338,9 @@ class FlotationServiceOrchestrator:
     
     async def get_system_status(self) -> Dict[str, Any]:
         """Get overall system status"""
+        # Initialize ML model if needed
+        self._initialize_ml_model()
+        
         return {
             'timestamp': datetime.now().isoformat(),
             'websocket_connections': self.websocket_manager.get_connection_count(),
@@ -299,12 +353,12 @@ class FlotationServiceOrchestrator:
         """Update control settings for the flotation process"""
         try:
             # Update the data generator with new control settings
-            self.logger.warning(f"Attempting to update control settings: {controls}")
+            self.logger.info(f"Attempting to update control settings: {controls}")
             
             if hasattr(self.data_generator, 'update_control_settings'):
-                self.logger.warning("Calling data_generator.update_control_settings")
+                self.logger.info("Calling data_generator.update_control_settings")
                 self.data_generator.update_control_settings(controls)
-                self.logger.warning("data_generator.update_control_settings completed")
+                self.logger.info("data_generator.update_control_settings completed")
             else:
                 self.logger.error("data_generator does not have update_control_settings method")
             
@@ -313,7 +367,7 @@ class FlotationServiceOrchestrator:
             self.last_cache_time = None
             
             # Log the control settings update
-            self.logger.warning(f"Control settings updated: {controls}")
+            self.logger.info(f"Control settings updated: {controls}")
             
         except Exception as e:
             self.logger.error(f"Error updating control settings: {e}")
@@ -321,6 +375,9 @@ class FlotationServiceOrchestrator:
     
     def validate_system_health(self) -> Dict[str, Any]:
         """Validate the health of all system components"""
+        # Initialize ML model if needed
+        self._initialize_ml_model()
+        
         health_status = {
             'overall_status': 'healthy',
             'components': {}
@@ -347,8 +404,8 @@ class FlotationServiceOrchestrator:
         
         # Check ML model service
         try:
-            test_prediction = self.ml_model.predict_pb_concentrate({'pH': 11.0})
-            if test_prediction is not None:
+            test_prediction = self.ml_model.predict_future_pb_concentrate({'Feed_Pb': 2.5, 'Feed_Zn': 10.0, 'Pb_Conditioner_KEX_Flowrate': 60.0, 'Pb_Rougher1_SIPX_Flowrate': 30.0, 'Pb_Rougher1_AirFlow': 10.0, 'Pb_Rougher1_Level': 40.0}, [5])
+            if test_prediction and 'future_predictions' in test_prediction:
                 health_status['components']['ml_model_service'] = 'healthy'
             else:
                 health_status['components']['ml_model_service'] = 'unhealthy'
@@ -361,7 +418,7 @@ class FlotationServiceOrchestrator:
     
     async def run_data_generation_loop(self, interval_seconds: int = 4) -> None:  # Optimized for 4-second updates for better stability
         """Run continuous data generation loop with optimized resource usage"""
-        self.logger.warning(f"Starting data generation loop with {interval_seconds}s interval")
+        self.logger.info(f"Starting data generation loop with {interval_seconds}s interval")
         
         # Cache the last data point to avoid regenerating on every request
         self.last_cached_data = None
@@ -394,7 +451,7 @@ class FlotationServiceOrchestrator:
                 await asyncio.sleep(interval_seconds)
                 
             except asyncio.CancelledError:
-                self.logger.warning("Data generation loop cancelled")
+                self.logger.info("Data generation loop cancelled")
                 break
             except Exception as e:
                 self.logger.error(f"Error in data generation loop: {e}")

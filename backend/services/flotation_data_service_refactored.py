@@ -299,7 +299,7 @@ async def update_control_settings(controls: Dict[str, float]):
         # Update the orchestrator's control settings (FIXED: Added await)
         await orchestrator.update_control_settings(controls)
         
-        logger.warning(f"Control settings updated: KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
+        logger.info(f"Control settings updated: KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
         
         return {
             "message": "Control settings updated successfully",
@@ -309,6 +309,38 @@ async def update_control_settings(controls: Dict[str, float]):
     except Exception as e:
         logger.error(f"Control settings update failed: {e}")
         raise HTTPException(status_code=500, detail="Control settings update failed")
+
+@app.post("/api/optimize-reagent-rates")
+async def optimize_reagent_rates(reagent_settings: Dict[str, float]):
+    """Optimize reagent rates for simulation (frontend endpoint)"""
+    try:
+        # Validate reagent parameters
+        if 'kex' not in reagent_settings or 'sipx' not in reagent_settings:
+            raise HTTPException(status_code=400, detail="Missing required reagent parameters: kex, sipx")
+        
+        # Create current data with the provided reagent settings
+        current_data = {
+            'Pb_Conditioner_KEX_Flowrate': reagent_settings['kex'],
+            'Pb_Rougher1_SIPX_Flowrate': reagent_settings['sipx'],
+            'Feed_Pb': 1.5,  # Default values for simulation
+            'Feed_Zn': 0.8,
+            'Pb_Rougher1_AirFlow': 12.0,
+            'Pb_Rougher1_Level': 45.0
+        }
+        
+        # Run optimization
+        optimization_result = orchestrator.optimizer.optimize_reagent_rates(current_data)
+        
+        logger.info(f"Reagent optimization completed: KEX={reagent_settings['kex']}, SIPX={reagent_settings['sipx']}")
+        
+        return {
+            "message": "Reagent optimization completed successfully",
+            "optimization_result": optimization_result,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Reagent optimization failed: {e}")
+        raise HTTPException(status_code=500, detail="Reagent optimization failed")
 
 @app.get("/api/connections")
 async def get_connections():
@@ -472,6 +504,89 @@ async def get_res_tables_timing():
         logger.error(f"Failed to retrieve RES tables timing status: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve RES tables timing status")
 
+@app.get("/api/future-predictions")
+async def get_future_predictions():
+    """
+    Get future predictions for multiple time horizons (GET endpoint for health checks)
+    """
+    try:
+        # Use default values for health check
+        prediction_data = {
+            'Feed_Pb': 2.5,
+            'Feed_Zn': 10.0,
+            'Pb_Conditioner_KEX_Flowrate': 45.0,
+            'Pb_Rougher1_SIPX_Flowrate': 25.0,
+            'Pb_Rougher1_AirFlow': 150.0,
+            'Pb_Rougher1_Level': 65.0
+        }
+        future_predictions = orchestrator.ml_model.predict_future_pb_concentrate(prediction_data, [5, 15, 30, 60])
+        
+        # Convert NumPy types to Python native types for JSON serialization
+        def convert_numpy_types(obj):
+            if hasattr(obj, 'item'):  # NumPy scalar
+                return obj.item()
+            elif isinstance(obj, dict):
+                return {k: convert_numpy_types(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_numpy_types(item) for item in obj]
+            else:
+                return obj
+        
+        converted_predictions = convert_numpy_types(future_predictions['future_predictions'])
+        
+        return {
+            "success": True,
+            "future_predictions": converted_predictions,
+            "prediction_time": future_predictions['prediction_time'],
+            "available_horizons": future_predictions['available_horizons'],
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting future predictions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/predict-future")
+async def predict_future(input_data: Dict[str, Any]):
+    """
+    Get future predictions for multiple time horizons
+    """
+    try:
+        # Convert input data to the format expected by the ML service
+        prediction_data = {
+            'Feed_Pb': float(input_data.get('Feed_Pb', 2.5)),
+            'Feed_Zn': float(input_data.get('Feed_Zn', 10.0)),
+            'Pb_Conditioner_KEX_Flowrate': float(input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
+            'Pb_Rougher1_SIPX_Flowrate': float(input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
+            'Pb_Rougher1_AirFlow': float(input_data.get('Pb_Rougher1_AirFlow', 150.0)),
+            'Pb_Rougher1_Level': float(input_data.get('Pb_Rougher1_Level', 65.0))
+        }
+        
+        # Get future predictions for all horizons
+        future_predictions = orchestrator.ml_model.predict_future_pb_concentrate(prediction_data, [5, 15, 30, 60])
+        
+        # Convert NumPy types to Python native types for JSON serialization
+        def convert_numpy_types(obj):
+            if hasattr(obj, 'item'):  # NumPy scalar
+                return obj.item()
+            elif isinstance(obj, dict):
+                return {k: convert_numpy_types(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_numpy_types(item) for item in obj]
+            else:
+                return obj
+        
+        converted_predictions = convert_numpy_types(future_predictions['future_predictions'])
+        
+        return {
+            "success": True,
+            "future_predictions": converted_predictions,
+            "prediction_time": future_predictions['prediction_time'],
+            "available_horizons": future_predictions['available_horizons'],
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting future predictions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
