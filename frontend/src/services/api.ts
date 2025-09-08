@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges } from '../types';
+import { FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges, FuturePredictionResponse } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const AUTH_BASE_URL = process.env.REACT_APP_AUTH_URL || 'http://localhost:8051';
@@ -115,7 +115,7 @@ export const flotationAPI = {
   
   // Get current control settings
   getControlSettings: async (): Promise<ProcessControls> => {
-    const response = await api.get('/api/control-settings');
+    const response = await api.get(`/api/control-settings?t=${Date.now()}`);
     return response.data.controls;
   },
   
@@ -140,6 +140,18 @@ export const flotationAPI = {
   getOptimizationData: async (): Promise<any> => {
     const response = await api.get('/api/optimization-data');
     return response.data.optimization_data;
+  },
+  
+  // Get future predictions
+  getFuturePredictions: async (inputData: Partial<FlotationData>): Promise<FuturePredictionResponse> => {
+    const response = await api.post('/api/predict-future', inputData);
+    return response.data;
+  },
+  
+  // Optimize reagent rates (for simulation)
+  optimizeReagentRates: async (reagentSettings: { kex: number; sipx: number }): Promise<any> => {
+    const response = await api.post('/api/optimize-reagent-rates', reagentSettings);
+    return response.data;
   },
   
 

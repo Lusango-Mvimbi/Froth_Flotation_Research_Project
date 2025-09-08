@@ -1,0 +1,526 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  Area,
+  AreaChart
+} from 'recharts';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Clock, 
+  Target, 
+  Settings,
+  Play,
+  Pause,
+  RotateCcw
+} from 'lucide-react';
+import { FlotationData, FuturePredictionResponse } from '../types';
+import { flotationAPI } from '../services/api';
+
+interface FuturePredictionChartProps {
+  currentData: FlotationData | null;
+  historicalData: FlotationData[];
+}
+
+interface ChartDataPoint {
+  timestamp: string;
+  current: number | null;
+  predicted_5min?: number;
+  predicted_15min?: number;
+  predicted_30min?: number;
+  predicted_60min?: number;
+  confidence_lower_5min?: number;
+  confidence_upper_5min?: number;
+  confidence_lower_15min?: number;
+  confidence_upper_15min?: number;
+  confidence_lower_30min?: number;
+  confidence_upper_30min?: number;
+  confidence_lower_60min?: number;
+  confidence_upper_60min?: number;
+  [key: string]: any; // Allow dynamic property access
+}
+
+const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({ 
+  currentData, 
+  historicalData 
+}) => {
+  const [futurePredictions, setFuturePredictions] = useState<FuturePredictionResponse | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [selectedHorizons, setSelectedHorizons] = useState<Set<string>>(new Set(['5min', '15min', '30min', '60min']));
+  const [showConfidenceIntervals, setShowConfidenceIntervals] = useState(true);
+  const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h'>('1h');
+
+  // Fetch future predictions when current data changes (with debouncing)
+  useEffect(() => {
+    if (currentData && autoRefresh) {
+      // Debounce the fetch to prevent excessive API calls
+      const timeoutId = setTimeout(() => {
+        fetchFuturePredictions();
+      }, 1500); // 1.5 second delay
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentData, autoRefresh]);
+
+  // Update chart data when predictions or historical data changes
+  useEffect(() => {
+    updateChartData();
+  }, [futurePredictions, historicalData, currentData]);
+
+  const fetchFuturePredictions = async () => {
+    if (!currentData) return;
+    
+    // Only show loading if we don't have existing predictions
+    if (!futurePredictions) {
+      setLoading(true);
+    }
+    
+    try {
+      const inputData = {
+        Feed_Pb: currentData.Feed_Pb,
+        Feed_Zn: currentData.Feed_Zn,
+        Pb_Conditioner_KEX_Flowrate: currentData.Pb_Conditioner_KEX_Flowrate,
+        Pb_Rougher1_SIPX_Flowrate: currentData.Pb_Rougher1_SIPX_Flowrate,
+        Pb_Rougher1_AirFlow: currentData.Pb_Rougher1_AirFlow,
+        Pb_Rougher1_Level: currentData.Pb_Rougher1_Level,
+      };
+      
+      const futureData = await flotationAPI.getFuturePredictions(inputData);
+      setFuturePredictions(futureData);
+    } catch (error) {
+      console.error('Failed to fetch future predictions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateChartData = () => {
+    if (!currentData) return;
+
+    // Get current value with proper scaling
+    let currentValue = 0;
+    
+    if (currentData.Actual_Pb_Concentrate !== undefined && currentData.Actual_Pb_Concentrate !== null) {
+      currentValue = currentData.Actual_Pb_Concentrate;
+    } else if (currentData.Predicted_Pb_Concentrate !== undefined && currentData.Predicted_Pb_Concentrate !== null) {
+      currentValue = currentData.Predicted_Pb_Concentrate;
+    } else if (currentData.Pb_Concentrate !== undefined && currentData.Pb_Concentrate !== null) {
+      currentValue = currentData.Pb_Concentrate;
+    }
+    
+    // Ensure the value is in the correct range (should be 0-50% for Pb concentrate)
+    // If the value is very small (like 0.02), it might be in decimal form and needs to be converted to percentage
+    if (currentValue > 0 && currentValue < 1) {
+      currentValue = currentValue * 100; // Convert decimal to percentage
+    }
+    
+    // Clamp to reasonable range
+    currentValue = Math.max(0, Math.min(50, currentValue));
+    
+    const now = new Date();
+    
+    // Create base data point for current time
+    const basePoint: ChartDataPoint = {
+      timestamp: now.toISOString(),
+      current: currentValue,
+    };
+
+    // Add future predictions to the current point
+    if (futurePredictions) {
+      const horizons = ['5min', '15min', '30min', '60min'] as const;
+      
+      for (const horizon of horizons) {
+        const prediction = futurePredictions.future_predictions[horizon];
+        if (prediction && selectedHorizons.has(horizon)) {
+          (basePoint as any)[`predicted_${horizon}`] = prediction.prediction;
+          (basePoint as any)[`confidence_lower_${horizon}`] = prediction.confidence_interval.lower;
+          (basePoint as any)[`confidence_upper_${horizon}`] = prediction.confidence_interval.upper;
+        }
+      }
+    }
+
+    // Create future data points for each prediction horizon
+    const futurePoints: ChartDataPoint[] = [];
+    if (futurePredictions) {
+      const horizons = ['5min', '15min', '30min', '60min'] as const;
+      
+      for (const horizon of horizons) {
+        const prediction = futurePredictions.future_predictions[horizon];
+        if (prediction && selectedHorizons.has(horizon)) {
+          // Create a future timestamp based on the horizon
+          const futureTime = new Date(now.getTime() + (parseInt(horizon) * 60 * 1000));
+          
+          const futurePoint: ChartDataPoint = {
+            timestamp: futureTime.toISOString(),
+            current: null, // No current value for future points
+          };
+          
+          // Add the prediction for this horizon
+          (futurePoint as any)[`predicted_${horizon}`] = prediction.prediction;
+          (futurePoint as any)[`confidence_lower_${horizon}`] = prediction.confidence_interval.lower;
+          (futurePoint as any)[`confidence_upper_${horizon}`] = prediction.confidence_interval.upper;
+          
+          futurePoints.push(futurePoint);
+        }
+      }
+    }
+
+    // Create historical data points with proper scaling
+    const historicalPoints: ChartDataPoint[] = historicalData
+      .slice(-getDataLimit())
+      .map(data => {
+        // Get the Pb concentrate value, ensuring it's in the correct scale
+        let pbValue = 0;
+        
+        // Try different possible field names and ensure proper scaling
+        if (data.Actual_Pb_Concentrate !== undefined && data.Actual_Pb_Concentrate !== null) {
+          pbValue = data.Actual_Pb_Concentrate;
+        } else if (data.Predicted_Pb_Concentrate !== undefined && data.Predicted_Pb_Concentrate !== null) {
+          pbValue = data.Predicted_Pb_Concentrate;
+        } else if (data.Pb_Concentrate !== undefined && data.Pb_Concentrate !== null) {
+          pbValue = data.Pb_Concentrate;
+        }
+        
+        // Ensure the value is in the correct range (should be 0-50% for Pb concentrate)
+        // If the value is very small (like 0.02), it might be in decimal form and needs to be converted to percentage
+        if (pbValue > 0 && pbValue < 1) {
+          pbValue = pbValue * 100; // Convert decimal to percentage
+        }
+        
+        // Clamp to reasonable range
+        pbValue = Math.max(0, Math.min(50, pbValue));
+        
+        return {
+          timestamp: data.timestamp,
+          current: pbValue,
+        };
+      });
+
+    // Combine historical, current, and future data
+    const allData = [...historicalPoints, basePoint, ...futurePoints];
+    
+    // Debug: Log the data structure to ensure future predictions are included
+    if (futurePredictions && allData.length > 0) {
+      const lastPoint = allData[allData.length - 1];
+      console.log('Chart data structure:', {
+        totalDataPoints: allData.length,
+        current: lastPoint.current,
+        predictions: {
+          '5min': lastPoint.predicted_5min,
+          '15min': lastPoint.predicted_15min,
+          '30min': lastPoint.predicted_30min,
+          '60min': lastPoint.predicted_60min
+        },
+        selectedHorizons: Array.from(selectedHorizons),
+        futurePointsCount: futurePoints.length,
+        historicalPointsCount: historicalPoints.length
+      });
+      
+      // Log all data points to see the structure and check for any large numbers
+      console.log('All chart data points:', allData.map((point, index) => ({
+        index,
+        timestamp: point.timestamp,
+        current: point.current,
+        hasPredictions: {
+          '5min': !!point.predicted_5min,
+          '15min': !!point.predicted_15min,
+          '30min': !!point.predicted_30min,
+          '60min': !!point.predicted_60min
+        },
+        allValues: Object.keys(point).filter(key => typeof point[key] === 'number').map(key => ({ [key]: point[key] }))
+      })));
+    }
+    
+    setChartData(allData);
+  };
+
+  const getDataLimit = () => {
+    switch (timeRange) {
+      case '1h': return 60; // 60 data points for 1 hour
+      case '6h': return 360; // 360 data points for 6 hours
+      case '24h': return 1440; // 1440 data points for 24 hours
+      default: return 60;
+    }
+  };
+
+  const toggleHorizon = (horizon: string) => {
+    const newSelected = new Set(selectedHorizons);
+    if (newSelected.has(horizon)) {
+      newSelected.delete(horizon);
+    } else {
+      newSelected.add(horizon);
+    }
+    setSelectedHorizons(newSelected);
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-dark-800 border border-dark-600 rounded-lg p-3 shadow-lg">
+          <p className="text-dark-300 text-sm mb-2">
+            {formatTimestamp(label)}
+          </p>
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center space-x-2 mb-1">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-sm font-medium text-white">
+                {entry.name}: {entry.value?.toFixed(2)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const getTrendIcon = (current: number, predicted: number) => {
+    if (predicted > current) {
+      return <TrendingUp className="h-4 w-4 text-success-400" />;
+    } else if (predicted < current) {
+      return <TrendingDown className="h-4 w-4 text-danger-400" />;
+    }
+    return <div className="h-4 w-4 text-dark-400">—</div>;
+  };
+
+  return (
+    <div className="bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <Target className="h-6 w-6 text-primary-400" />
+          <div>
+            <h3 className="text-lg font-semibold text-white">Future Predictions</h3>
+            <p className="text-sm text-dark-300">Time-series analysis with ML predictions</p>
+          </div>
+        </div>
+        
+        {/* Controls */}
+        <div className="flex items-center space-x-3">
+          {/* Auto-refresh toggle */}
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              autoRefresh 
+                ? 'bg-primary-600 text-white' 
+                : 'bg-dark-700 text-dark-300 hover:text-white'
+            }`}
+          >
+            {autoRefresh ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            <span>{autoRefresh ? 'Auto' : 'Manual'}</span>
+          </button>
+
+          {/* Refresh button */}
+          <button
+            onClick={fetchFuturePredictions}
+            disabled={loading}
+            className="flex items-center space-x-2 px-3 py-2 bg-dark-700 text-dark-300 hover:text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50"
+          >
+            <RotateCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Controls Panel */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Horizon Selection */}
+        <div className="bg-dark-700/50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-dark-300 mb-3">Prediction Horizons</h4>
+                     <div className="space-y-2">
+             {['5min', '15min', '30min', '60min'].map((horizon) => (
+               <label key={horizon} className="flex items-center space-x-2 cursor-pointer">
+                 <input
+                   type="checkbox"
+                   checked={selectedHorizons.has(horizon)}
+                   onChange={() => toggleHorizon(horizon)}
+                   className="rounded border-dark-500 text-primary-600 focus:ring-primary-500"
+                 />
+                 <span className="text-sm text-white">{horizon}</span>
+               </label>
+             ))}
+           </div>
+        </div>
+
+        {/* Time Range */}
+        <div className="bg-dark-700/50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-dark-300 mb-3">Time Range</h4>
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as any)}
+            className="w-full bg-dark-600 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="1h">Last Hour</option>
+            <option value="6h">Last 6 Hours</option>
+            <option value="24h">Last 24 Hours</option>
+          </select>
+        </div>
+
+        {/* Display Options */}
+        <div className="bg-dark-700/50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-dark-300 mb-3">Display Options</h4>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showConfidenceIntervals}
+              onChange={(e) => setShowConfidenceIntervals(e.target.checked)}
+              className="rounded border-dark-500 text-primary-600 focus:ring-primary-500"
+            />
+            <span className="text-sm text-white">Show Confidence Intervals</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="h-96 mb-6">
+        {chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="2 2" stroke="#4B5563" strokeOpacity={0.3} />
+              <XAxis 
+                dataKey="timestamp" 
+                tickFormatter={formatTimestamp}
+                stroke="#9CA3AF"
+                fontSize={12}
+              />
+              <YAxis 
+                stroke="#9CA3AF"
+                fontSize={12}
+                label={{ value: 'Pb Concentrate (%)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#9CA3AF' } }}
+                domain={[0, 50]} // Fixed range for Pb concentrate (0-50%)
+                tickCount={11} // Show 11 ticks: 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
+                tick={{ fontSize: 10 }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              
+              {/* Current values */}
+              <Line
+                type="monotone"
+                dataKey="current"
+                stroke="#EF4444"
+                strokeWidth={3}
+                dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
+                connectNulls={true}
+                name="Current Pb"
+              />
+
+              {/* Dynamic horizon predictions */}
+              {(() => {
+                const horizonColors: Record<string, string> = {
+                  '5min': '#10B981',   // Green
+                  '15min': '#F59E0B',  // Orange
+                  '30min': '#8B5CF6',  // Purple
+                  '60min': '#3B82F6'   // Blue (changed from red to avoid conflict with current Pb)
+                };
+                
+                console.log('Rendering prediction lines for horizons:', Array.from(selectedHorizons));
+                
+                return ['5min', '15min', '30min', '60min'].map(horizon => {
+                  if (!selectedHorizons.has(horizon)) {
+                    console.log(`Skipping ${horizon} - not selected`);
+                    return null;
+                  }
+                  
+                  const color = horizonColors[horizon];
+                  const dataKey = `predicted_${horizon}`;
+                  
+                  console.log(`Creating Line component for ${horizon} with dataKey: ${dataKey}, color: ${color}`);
+                  
+                  return (
+                    <React.Fragment key={horizon}>
+                      <Line
+                        type="monotone"
+                        dataKey={dataKey}
+                        stroke={color}
+                        strokeWidth={3}
+                        strokeDasharray="8 4" // More visible dashed line for predictions
+                        dot={{ fill: color, strokeWidth: 2, r: 4 }}
+                        connectNulls={true}
+                        name={`${horizon} Prediction`}
+                      />
+                    </React.Fragment>
+                  );
+                });
+              })()}
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <Clock className="h-12 w-12 text-dark-400 mx-auto mb-4" />
+              <p className="text-dark-300">No data available</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Prediction Summary */}
+      {futurePredictions && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Object.entries(futurePredictions.future_predictions).map(([horizon, prediction]) => {
+            const currentValue = currentData?.Actual_Pb_Concentrate || currentData?.Predicted_Pb_Concentrate || 0;
+            const trendIcon = getTrendIcon(currentValue, prediction.prediction);
+            
+            return (
+              <motion.div
+                key={horizon}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-dark-700/50 rounded-lg p-4 border border-dark-600"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-dark-300">{horizon} Prediction</h4>
+                  {trendIcon}
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {prediction.prediction.toFixed(2)}%
+                </div>
+                <div className="text-xs text-dark-400 mb-2">
+                  Confidence: {(prediction.model_performance.r2_score * 100).toFixed(1)}%
+                </div>
+                <div className="text-xs text-dark-400">
+                  {prediction.confidence_interval.lower.toFixed(2)}% - {prediction.confidence_interval.upper.toFixed(2)}%
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="absolute inset-0 bg-dark-800/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400 mx-auto mb-4"></div>
+            <p className="text-dark-300">Updating predictions...</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FuturePredictionChart;

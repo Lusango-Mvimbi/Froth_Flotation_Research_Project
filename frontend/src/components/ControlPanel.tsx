@@ -22,11 +22,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   const [localControls, setLocalControls] = useState<ProcessControls>(controls);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const localControlsRef = useRef<ProcessControls>(controls);
 
-  // Only sync local controls with backend controls on initial load
+  // Sync local controls with backend controls when they change
   React.useEffect(() => {
     setLocalControls(controls);
-  }, []); // Empty dependency array - only run once on mount
+    localControlsRef.current = controls;
+  }, [controls]); // Update when controls prop changes
 
   // Cleanup timeout on unmount
   React.useEffect(() => {
@@ -46,8 +48,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   // Handle slider change with debouncing
   const handleSliderChange = useCallback((key: keyof ProcessControls, value: number) => {
-    const newControls = { ...localControls, [key]: value };
+    const newControls = { ...localControlsRef.current, [key]: value };
     setLocalControls(newControls);
+    localControlsRef.current = newControls;
     
     // Clear existing timeout
     if (debounceTimeoutRef.current) {
@@ -57,8 +60,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     // Set new timeout to debounce the API call
     debounceTimeoutRef.current = setTimeout(() => {
       onControlChange(newControls);
-    }, 500); // 500ms delay
-  }, [localControls, onControlChange]);
+    }, 100); // 100ms delay (reduced for faster response)
+  }, [onControlChange]);
 
   const controlConfigs = [
     {
@@ -150,7 +153,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   max={config.max}
                   step={config.step}
                   value={value}
-                  onChange={(e) => handleSliderChange(config.key, parseFloat(e.target.value))}
+                  onInput={(e) => handleSliderChange(config.key, parseFloat((e.target as HTMLInputElement).value))}
+                  onChange={(e) => handleSliderChange(config.key, parseFloat((e.target as HTMLInputElement).value))}
                   className="w-full h-2 bg-dark-600 rounded-lg appearance-none cursor-pointer slider-track"
                   style={{
                     background: `linear-gradient(to right, ${status.color.replace('text-', '')} 0%, ${status.color.replace('text-', '')} ${((value - config.min) / (config.max - config.min)) * 100}%, #475569 ${((value - config.min) / (config.max - config.min)) * 100}%, #475569 100%)`

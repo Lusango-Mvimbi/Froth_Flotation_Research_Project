@@ -36,6 +36,31 @@ export interface Prediction {
   prediction_method: 'ML Model' | 'Engineering-Based';
 }
 
+export interface FuturePrediction {
+  prediction: number;
+  confidence_interval: {
+    lower: number;
+    upper: number;
+  };
+  model: string;
+  model_performance: {
+    r2_score: number;
+    rmse: number;
+    mae: number;
+    accuracy_10_percent: number;
+  };
+  prediction_time: string;
+  horizon_minutes: number;
+}
+
+export interface FuturePredictionResponse {
+  future_predictions: {
+    [horizon: string]: FuturePrediction;
+  };
+  prediction_time: string;
+  available_horizons: string[];
+}
+
 export interface Recommendation {
   id: string;
   type: 'danger' | 'warning' | 'success' | 'info';

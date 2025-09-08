@@ -17,7 +17,8 @@ import { DashboardState, FlotationData, ProcessControls, Prediction, Recommendat
 import { flotationAPI } from '../services/api';
 import PredictionCards from './PredictionCards';
 import ControlPanel from './ControlPanel';
-import RealTimeGraph from './RealTimeGraph';
+import FuturePredictionChart from './FuturePredictionChart';
+import PredictiveRecommendations from './PredictiveRecommendations';
 
 import ConnectionStatus from './ConnectionStatus';
 
@@ -26,8 +27,8 @@ const Dashboard: React.FC = () => {
     data: [],
     currentData: null,
     controls: {
-      kex: 47,
-      sipx: 27,
+      kex: 0,
+      sipx: 0,
     },
     predictions: null,
     recommendations: [],
@@ -37,6 +38,10 @@ const Dashboard: React.FC = () => {
     error: null,
     serverConnected: false,
   });
+  
+  // Track if controls were manually changed
+  const [controlsManuallyChanged, setControlsManuallyChanged] = useState(false);
+  const [lastManualChangeTime, setLastManualChangeTime] = useState<number | null>(null);
 
 
 
@@ -74,6 +79,11 @@ const Dashboard: React.FC = () => {
         const currentControls = await flotationAPI.getControlSettings();
         console.log('✅ Current control settings fetched:', currentControls);
         
+        
+        // Use the API controls as the initial values
+        const preservedControls = currentControls;
+        
+        
         // Try to fetch historical data
         let historicalData: FlotationData[] = [];
         try {
@@ -92,6 +102,8 @@ const Dashboard: React.FC = () => {
           console.warn('⚠️ Could not fetch current data:', error);
         }
         
+        
+        
 
         
         // Create predictions from current data (which includes ML predictions)
@@ -109,12 +121,14 @@ const Dashboard: React.FC = () => {
         // Determine if server is connected based on successful API calls
         const serverConnected = !!(currentData || historicalData.length > 0);
         
+        
+        
         setState(prev => ({
           ...prev,
           data: historicalData,
           currentData,
           predictions,
-          controls: currentControls,
+          controls: preservedControls,
           optimalRanges,
           targetRanges,
           recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
@@ -154,6 +168,8 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (!state.serverConnected) return;
 
+    // Polling enabled with proper manual change preservation
+
     const interval = setInterval(async () => {
       try {
         const currentData = await flotationAPI.getCurrentData();
@@ -166,13 +182,31 @@ const Dashboard: React.FC = () => {
           prediction_method: 'ML Model' as const
         };
         
-        // Also fetch updated control settings
+        // Keep current control settings - don't fetch from API to avoid overriding manual changes
         let updatedControls = state.controls;
-        try {
-          updatedControls = await flotationAPI.getControlSettings();
-        } catch (error) {
-          console.warn('Could not fetch updated control settings:', error);
+        
+        // Only fetch from API if controls were not manually changed recently
+        const timeSinceLastManualChange = lastManualChangeTime ? Date.now() - lastManualChangeTime : Infinity;
+        const shouldPreserveManualChanges = controlsManuallyChanged && timeSinceLastManualChange < 30000; // 30 seconds
+        
+        if (!shouldPreserveManualChanges && state.controls.kex === 0 && state.controls.sipx === 0) {
+          try {
+            updatedControls = await flotationAPI.getControlSettings();
+          } catch (error) {
+            console.warn('Could not fetch control settings:', error);
+          }
         }
+        
+        // Disabled random control fetching to prevent overriding Quick Action updates
+        // if (Math.random() < 0.1) { // Only 10% chance to check controls
+        //   try {
+        //     updatedControls = await flotationAPI.getControlSettings();
+        //   } catch (error) {
+        //     console.warn('Could not fetch updated control settings:', error);
+        //   }
+        // }
+        
+        
         
         setState(prev => ({
           ...prev,
@@ -188,7 +222,6 @@ const Dashboard: React.FC = () => {
           data: [...prev.data.slice(-99), currentData], // Keep last 100 points
         }));
         
-        console.log('Dashboard - Updated data array length:', state.data.length + 1);
       } catch (error) {
         console.error('Failed to fetch real-time data:', error);
         
@@ -198,10 +231,10 @@ const Dashboard: React.FC = () => {
           toast.error('Connection lost - trying to reconnect...');
         }
       }
-    }, 4000); // Update every 4 seconds for better stability
+    }, 10000); // Increased to 10 seconds to give manual changes time to take effect
 
     return () => clearInterval(interval);
-  }, [state.serverConnected, state.controls]);
+  }, [state.serverConnected]); // Removed state.controls dependency to reduce re-renders
 
   // Handle control changes
   const handleControlChange = useCallback(async (controls: ProcessControls) => {
@@ -210,16 +243,11 @@ const Dashboard: React.FC = () => {
         await flotationAPI.updateControls(controls);
       }
       setState(prev => ({ ...prev, controls }));
+      setControlsManuallyChanged(true); // Mark that controls were manually changed
+      setLastManualChangeTime(Date.now()); // Record when the change was made
       
-      // Get updated current data and create predictions
-      const currentData = await flotationAPI.getCurrentData();
-      const predictions = {
-        predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
-        recovery_efficiency: currentData.Predicted_Pb_Recovery ? (currentData.Predicted_Pb_Recovery * 100) : (currentData.Pb_Recovery || 0) * 100,
-        status: currentData.Process_Status || 'optimal',
-        prediction_method: 'ML Model' as const
-      };
-      setState(prev => ({ ...prev, predictions, currentData }));
+      // Don't fetch current data here to avoid overriding control values
+      // The polling will handle updating current data
       
       toast.success('Controls updated successfully');
     } catch (error) {
@@ -376,41 +404,66 @@ const Dashboard: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="mb-6"
           >
-            <PredictionCards 
-              predictions={state.predictions}
+            {(() => {
+              console.log('Dashboard: Passing data to PredictionCards:', {
+                predictions: state.predictions,
+                currentData: state.currentData,
+                targetRanges: state.targetRanges
+              });
+              return (
+                <PredictionCards 
+                  predictions={state.predictions}
+                  currentData={state.currentData}
+                  targetRanges={state.targetRanges}
+                />
+              );
+            })()}
+          </motion.div>
+
+          {/* Future Prediction Chart */}
+          <motion.div
+            key="future-prediction-chart"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-6"
+          >
+            <FuturePredictionChart
               currentData={state.currentData}
-              targetRanges={state.targetRanges}
+              historicalData={state.data}
             />
           </motion.div>
 
-                     {/* Main Dashboard Grid */}
-           <motion.div
-             key="dashboard-grid"
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ delay: 0.2 }}
-             className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6"
-           >
-                           {/* Control Panel */}
-              <div className="xl:col-span-1 order-2 xl:order-1">
-                <ControlPanel
-                  controls={state.controls}
-                  optimalRanges={state.optimalRanges}
-                  onControlChange={handleControlChange}
-                />
-              </div>
+          {/* Predictive Recommendations */}
+          <motion.div
+            key="predictive-recommendations"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-6"
+          >
+            <PredictiveRecommendations
+              currentData={state.currentData}
+              targetRanges={state.targetRanges}
+              onControlChange={handleControlChange}
+              currentControls={state.controls}
+            />
+          </motion.div>
 
-                           {/* Graph */}
-              <div className="xl:col-span-3 order-1 xl:order-2">
-                {/* Real-time Graph */}
-                <RealTimeGraph
-                  data={state.data}
-                  currentData={state.currentData}
-                  predictions={state.predictions}
-                  recommendations={state.recommendations}
-                />
-              </div>
-           </motion.div>
+          {/* Control Panel */}
+          <motion.div
+            key="control-panel"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mb-6"
+          >
+            <ControlPanel
+              controls={state.controls}
+              optimalRanges={state.optimalRanges}
+              onControlChange={handleControlChange}
+            />
+          </motion.div>
 
 
         </AnimatePresence>
