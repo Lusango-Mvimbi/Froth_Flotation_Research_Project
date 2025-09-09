@@ -62,7 +62,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
       // Debounce the fetch to prevent excessive API calls
       const timeoutId = setTimeout(() => {
         fetchPredictions(currentData, !futurePredictions);
-      }, 1500); // 1.5 second delay
+      }, 500); // 500ms delay for synchronized updates
       
       return () => clearTimeout(timeoutId);
     }
@@ -279,15 +279,6 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
             <span>{autoRefresh ? 'Auto' : 'Manual'}</span>
           </button>
 
-          {/* Refresh button */}
-          <button
-            onClick={() => fetchPredictions(currentData, false)}
-            disabled={loading}
-            className="flex items-center space-x-2 px-3 py-2 bg-dark-700 text-dark-300 hover:text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50"
-          >
-            <RotateCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
         </div>
       </div>
 

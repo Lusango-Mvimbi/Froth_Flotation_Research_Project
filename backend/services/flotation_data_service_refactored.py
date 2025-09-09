@@ -546,7 +546,7 @@ async def get_future_predictions():
             "future_predictions": converted_predictions,
             "prediction_time": future_predictions['prediction_time'],
             "available_horizons": future_predictions['available_horizons'],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": future_predictions['prediction_time']  # Use same timestamp as prediction_time for consistency
         }
     except Exception as e:
         logger.error(f"Error getting future predictions: {e}")
@@ -589,7 +589,7 @@ async def predict_future(input_data: Dict[str, Any]):
             "future_predictions": converted_predictions,
             "prediction_time": future_predictions['prediction_time'],
             "available_horizons": future_predictions['available_horizons'],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": future_predictions['prediction_time']  # Use same timestamp as prediction_time for consistency
         }
     except Exception as e:
         logger.error(f"Error getting future predictions: {e}")

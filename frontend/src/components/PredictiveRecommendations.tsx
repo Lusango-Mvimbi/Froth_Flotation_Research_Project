@@ -74,9 +74,13 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
   // Fetch future predictions when current data changes
   useEffect(() => {
     if (currentData) {
-      // Only show loading on initial load, not on subsequent updates
-      const isInitialLoad = !futurePredictions;
-      fetchPredictions(currentData, isInitialLoad);
+      // Debounce the fetch to prevent excessive API calls and synchronize with other components
+      const timeoutId = setTimeout(() => {
+        const isInitialLoad = !futurePredictions;
+        fetchPredictions(currentData, isInitialLoad);
+      }, 500); // 500ms delay for synchronized updates
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [currentData]);
 
@@ -484,14 +488,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           </div>
         </div>
         
-        <button
-          onClick={() => fetchPredictions(currentData, false)}
-          disabled={loading || refreshing}
-          className="flex items-center space-x-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium transition-all duration-200 hover:bg-primary-700 disabled:opacity-50"
-        >
-          <RotateCcw className={`h-4 w-4 ${(loading || refreshing) ? 'animate-spin' : ''}`} />
-          <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
-        </button>
       </div>
 
       {/* Loading State */}

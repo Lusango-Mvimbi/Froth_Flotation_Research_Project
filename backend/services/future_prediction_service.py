@@ -358,7 +358,9 @@ class FuturePredictionService:
                 enhanced_features['day_of_week'] = enhanced_features.index.dayofweek
                 enhanced_features['day_of_year'] = enhanced_features.index.dayofyear
             else:
-                now = datetime.now()
+                # Use a consistent time for feature preparation to ensure deterministic predictions
+                # Use the current hour but with fixed minute/second to avoid microsecond differences
+                now = datetime.now().replace(minute=0, second=0, microsecond=0)
                 enhanced_features['hour_of_day'] = now.hour
                 enhanced_features['day_of_week'] = now.weekday()
                 enhanced_features['day_of_year'] = now.timetuple().tm_yday
@@ -478,6 +480,7 @@ class FuturePredictionService:
             latest_features = features.iloc[-1:].values
             
             results = {}
+            prediction_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')  # Generate once for consistency
             
             for horizon in horizons:
                  horizon_key = f'{horizon}min'
@@ -539,7 +542,7 @@ class FuturePredictionService:
                          'mae': model_metadata.get('test_mae', 0),
                          'accuracy_10_percent': model_metadata.get('test_pred_10%', 0)
                      },
-                     'prediction_time': datetime.now().isoformat(),
+                     'prediction_time': prediction_time,  # Use consistent timestamp
                      'horizon_minutes': horizon
                  }
             

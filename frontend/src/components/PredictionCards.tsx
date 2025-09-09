@@ -32,7 +32,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
       // Debounce the fetch to prevent excessive API calls
       const timeoutId = setTimeout(() => {
         fetchPredictions(currentData, !futurePredictions);
-      }, 1000); // 1 second delay
+      }, 500); // 500ms delay for synchronized updates
       
       return () => clearTimeout(timeoutId);
     }

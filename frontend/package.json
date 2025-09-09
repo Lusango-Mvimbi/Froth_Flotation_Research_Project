@@ -1,6 +1,6 @@
 {
   "name": "froth-flotation-dashboard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Modern React.js Dashboard for Froth Flotation Digital Twin",
   "private": true,
   "dependencies": {
@@ -9,7 +9,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "autoprefixer": "^10.4.14",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "framer-motion": "^10.16.0",
