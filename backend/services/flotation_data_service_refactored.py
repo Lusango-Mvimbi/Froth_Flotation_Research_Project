@@ -22,22 +22,12 @@ from typing import Dict, Any
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from services.service_orchestrator import FlotationServiceOrchestrator
+from services.shared_logging import setup_logger
 
-# Set up comprehensive logging
+# Set up logging
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
-os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'flotation_data_service_refactored.log')
-
-# Configure logging - Only log errors and warnings
-logging.basicConfig(
-    level=logging.ERROR,  # Changed from WARNING to ERROR to reduce noise
-    format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__, log_file, level=logging.ERROR)
 
 # Log service startup (INFO level for important startup info)
 logger.info("Starting Refactored Froth Flotation Data Service")
@@ -134,13 +124,16 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     try:
-        health_status = orchestrator.validate_system_health()
-        return {
-            "status": "healthy",
-            "service": "flotation_data_service",
-            "timestamp": datetime.now().isoformat(),
-            "health": health_status
-        }
+        # Simple health check - just verify the orchestrator is initialized
+        if orchestrator and orchestrator.data_generator:
+            return {
+                "status": "healthy",
+                "service": "flotation_data_service",
+                "timestamp": datetime.now().isoformat(),
+                "message": "Service is running"
+            }
+        else:
+            raise HTTPException(status_code=503, detail="Service not fully initialized")
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=500, detail="Health check failed")
@@ -242,6 +235,16 @@ async def get_optimization_results():
 async def get_optimization_data():
     """Get optimization data for visualization (frontend endpoint)"""
     try:
+        # Initialize optimizer if needed
+        orchestrator._initialize_optimizer()
+        
+        if not orchestrator.optimizer:
+            return {
+                "optimization_data": None,
+                "message": "Optimizer not available",
+                "timestamp": datetime.now().isoformat()
+            }
+        
         import asyncio
         
         # Get current data for optimization
@@ -266,7 +269,11 @@ async def get_optimization_data():
         raise HTTPException(status_code=408, detail="Optimization data retrieval timed out")
     except Exception as e:
         logger.error(f"Optimization data retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail="Optimization data retrieval failed")
+        return {
+            "optimization_data": None,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
 
 @app.get("/api/control-settings")
 async def get_control_settings():

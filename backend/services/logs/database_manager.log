@@ -18711,3 +18711,107 @@ ConnectionResetError: [WinError 10054] An existing connection was forcibly close
 2025-09-08 16:08:33,413 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [08/Sep/2025 16:08:33] "POST /login HTTP/1.1" 200 -
 2025-09-08 16:09:37,935 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [08/Sep/2025 16:09:37] "POST /login HTTP/1.1" 200 -
 2025-09-08 16:09:46,322 - services.optimization_service - WARNING - [optimization_service.py:121] - detect_external_changes() - Significant external changes detected in feed composition
+2025-09-09 08:23:30,302 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-09-09 08:23:30,302 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 08:23:30,302 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-09-09 08:23:32,357 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-09-09 08:23:32,357 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 08:23:32,358 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-09-09 08:23:32,367 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-09-09 08:23:32,367 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-09-09 08:23:32,368 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-09-09 08:23:32,368 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-09-09 08:23:32,452 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.177:8051
+2025-09-09 08:23:32,453 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-09-09 08:23:59,511 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:23:59] "[32mGET / HTTP/1.1[0m" 302 -
+2025-09-09 08:24:01,529 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:24:01] "GET /login HTTP/1.1" 200 -
+2025-09-09 08:25:58,460 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:25:58] "OPTIONS /login HTTP/1.1" 200 -
+2025-09-09 08:25:58,763 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:25:58] "POST /login HTTP/1.1" 200 -
+2025-09-09 08:33:33,605 - services.optimization_service - WARNING - [optimization_service.py:121] - detect_external_changes() - Significant external changes detected in feed composition
+2025-09-09 08:43:34,607 - services.optimization_service - WARNING - [optimization_service.py:121] - detect_external_changes() - Significant external changes detected in feed composition
+2025-09-09 08:44:55,830 - models.database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-09-09 08:44:55,831 - models.database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 08:44:55,831 - models.database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-09-09 08:44:57,840 - database_manager - WARNING - [database_manager.py:36] - <module>() - Starting Froth Flotation Database Manager
+2025-09-09 08:44:57,840 - database_manager - WARNING - [database_manager.py:37] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 08:44:57,841 - database_manager - WARNING - [database_manager.py:38] - <module>() - Service: SQLite Database Manager
+2025-09-09 08:44:57,845 - __main__ - WARNING - [authentication_service.py:37] - <module>() - Starting Froth Flotation Authentication Service
+2025-09-09 08:44:57,845 - __main__ - WARNING - [authentication_service.py:38] - <module>() - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\logs\authentication_service.log
+2025-09-09 08:44:57,845 - __main__ - WARNING - [authentication_service.py:39] - <module>() - Service: Flask Authentication Server
+2025-09-09 08:44:57,846 - __main__ - WARNING - [authentication_service.py:40] - <module>() - Port: 8051
+2025-09-09 08:44:57,892 - werkzeug - INFO - [_internal.py:97] - _log() - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8051
+ * Running on http://172.17.144.177:8051
+2025-09-09 08:44:57,893 - werkzeug - INFO - [_internal.py:97] - _log() - [33mPress CTRL+C to quit[0m
+2025-09-09 08:45:23,665 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:45:23] "[32mGET / HTTP/1.1[0m" 302 -
+2025-09-09 08:45:25,744 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:45:25] "GET /login HTTP/1.1" 200 -
+2025-09-09 08:45:52,475 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:45:52] "OPTIONS /login HTTP/1.1" 200 -
+2025-09-09 08:45:52,758 - werkzeug - INFO - [_internal.py:97] - _log() - 127.0.0.1 - - [09/Sep/2025 08:45:52] "POST /login HTTP/1.1" 200 -
+2025-09-09 08:54:58,799 - services.optimization_service - WARNING - [optimization_service.py:121] - detect_external_changes() - Significant external changes detected in feed composition
+2025-09-09 09:14:26,562 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:14:26,562 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:14:26,562 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:14:28,625 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:14:28,625 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:14:28,626 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:32:23,381 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:32:23,382 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:32:23,382 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:32:25,981 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:32:25,981 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:32:25,981 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:49:04,126 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:49:04,127 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:49:04,127 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:49:05,654 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:49:05,655 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:49:05,655 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:56:19,759 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:56:19,759 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:56:19,759 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:56:21,361 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:56:21,362 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:56:21,363 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:59:07,442 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:59:07,444 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:59:07,445 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 09:59:10,006 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 09:59:10,006 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 09:59:10,007 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:03:38,255 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:03:38,255 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:03:38,255 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:03:39,957 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:03:39,958 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:03:39,959 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:05:53,587 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:05:53,588 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:05:53,588 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:05:56,351 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:05:56,352 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:05:56,352 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:07:14,191 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:07:14,192 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:07:14,192 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:07:16,674 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:07:16,674 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:07:16,674 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:11:13,123 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:11:13,124 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:11:13,124 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 11:11:14,923 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 11:11:14,924 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 11:11:14,924 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 12:08:11,879 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 12:08:11,880 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 12:08:11,880 - database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 13:31:38,325 - models.database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 13:31:38,325 - models.database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 13:31:38,325 - models.database_manager - WARNING - Service: SQLite Database Manager
+2025-09-09 13:31:40,717 - database_manager - WARNING - Starting Froth Flotation Database Manager
+2025-09-09 13:31:40,717 - database_manager - WARNING - Log file: C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\logs\database_manager.log
+2025-09-09 13:31:40,717 - database_manager - WARNING - Service: SQLite Database Manager

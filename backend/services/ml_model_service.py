@@ -24,7 +24,8 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 # Add the backend directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-logger = logging.getLogger(__name__)
+from services.shared_logging import get_logger
+logger = get_logger(__name__)
 
 class MLModelService:
     """Service for froth flotation predictions and calculations"""

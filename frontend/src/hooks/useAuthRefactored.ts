@@ -35,23 +35,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return new AuthService(apiService);
   }, []);
 
-  // Check authentication status on mount - require fresh login
+  // Check authentication status on mount - check for stored authentication
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Always start with no authentication - require fresh login
-        setUser(null);
-        setIsAuthenticated(false);
-        console.log('🔒 Authentication check: Requiring fresh login');
+        console.log('🔒 Authentication check: Checking for stored authentication');
         
-        // Clear any stored auth data to prevent conflicts
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('current_user');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
+        // Check if we have stored authentication data
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+        const userStr = localStorage.getItem('current_user') || localStorage.getItem('userData');
+        
+        if (token && userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            console.log('🔑 Found stored authentication, verifying token...');
+            
+            // Verify the token is still valid
+            const isValid = await authService.verifyToken(token);
+            
+            if (isValid) {
+              setUser(user);
+              setIsAuthenticated(true);
+              console.log('✅ Stored authentication is valid, user logged in:', user.username);
+            } else {
+              console.log('❌ Stored token is invalid, clearing stored data');
+              // Clear invalid stored data
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('current_user');
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('userData');
+              setUser(null);
+              setIsAuthenticated(false);
+            }
+          } catch (error) {
+            console.error('❌ Failed to parse stored user data:', error);
+            // Clear corrupted stored data
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('current_user');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        } else {
+          console.log('🔑 No stored authentication found, user needs to login');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
         
       } catch (error) {
         console.error('🔒 Auth check failed:', error);
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -75,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(true);
         console.log('🔐 useAuth: Login successful, user authenticated');
       } else {
-        const errorMsg = response.error || response.message || 'Login failed';
+        const errorMsg = response.error;
         setError(errorMsg);
         console.log('🔐 useAuth: Login failed:', errorMsg);
       }

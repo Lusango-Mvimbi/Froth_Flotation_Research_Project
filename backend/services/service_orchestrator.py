@@ -11,6 +11,8 @@ import time
 from typing import Dict, Any, Optional
 from datetime import datetime
 
+from services.shared_logging import get_logger
+
 from services.interfaces import (
     IDataGenerator, IMLModel, IFeatureProcessor, IProcessStatusAnalyzer,
     IWebSocketManager, IHistoricalDataManager
@@ -26,8 +28,8 @@ from services.websocket_manager import WebSocketConnectionManager
 class FlotationServiceOrchestrator:
     """Orchestrates all flotation services"""
     
-    def __init__(self, logger: logging.Logger):
-        self.logger = logger
+    def __init__(self, logger: logging.Logger = None):
+        self.logger = logger or get_logger(__name__)
         
         # Initialize lightweight services immediately
         self.data_generator: IDataGenerator = FlotationDataGenerator(logger)
@@ -384,10 +386,14 @@ class FlotationServiceOrchestrator:
         }
         
         # Check ML model
-        if self.ml_model.is_loaded():
-            health_status['components']['ml_model'] = 'healthy'
-        else:
-            health_status['components']['ml_model'] = 'unhealthy'
+        try:
+            if self.ml_model and hasattr(self.ml_model, 'model') and self.ml_model.model is not None:
+                health_status['components']['ml_model'] = 'healthy'
+            else:
+                health_status['components']['ml_model'] = 'unhealthy'
+                health_status['overall_status'] = 'degraded'
+        except Exception as e:
+            health_status['components']['ml_model'] = f'unhealthy: {str(e)}'
             health_status['overall_status'] = 'degraded'
         
         # Check data generator

@@ -2,19 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, 
-  TrendingUp, 
-  AlertTriangle, 
-  CheckCircle, 
-  Settings,
   LogOut,
   RefreshCw,
-  Wifi,
   WifiOff
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import { DashboardState, FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges } from '../types';
 import { flotationAPI } from '../services/api';
+import { useAuth } from '../hooks/useAuthRefactored';
 import PredictionCards from './PredictionCards';
 import ControlPanel from './ControlPanel';
 import FuturePredictionChart from './FuturePredictionChart';
@@ -23,6 +19,8 @@ import PredictiveRecommendations from './PredictiveRecommendations';
 import ConnectionStatus from './ConnectionStatus';
 
 const Dashboard: React.FC = () => {
+  const { logout } = useAuth();
+  
   const [state, setState] = useState<DashboardState>({
     data: [],
     currentData: null,
@@ -53,14 +51,12 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
-        console.log('🔍 Initializing dashboard...');
         setState(prev => ({ ...prev, loading: true, error: null }));
         
         // Try to fetch optimal ranges
         let optimalRanges: OptimalRanges | null = null;
         try {
           optimalRanges = await flotationAPI.getOptimalRanges();
-          console.log('✅ Optimal ranges fetched');
         } catch (error) {
           console.warn('⚠️ Could not fetch optimal ranges:', error);
         }
@@ -69,15 +65,12 @@ const Dashboard: React.FC = () => {
         let targetRanges: TargetRanges | null = null;
         try {
           targetRanges = await flotationAPI.getTargetRanges();
-          console.log('✅ Target ranges fetched');
         } catch (error) {
           console.warn('⚠️ Could not fetch target ranges:', error);
         }
         
         // Fetch current control settings - must succeed
-        console.log('🔄 Fetching current control settings...');
         const currentControls = await flotationAPI.getControlSettings();
-        console.log('✅ Current control settings fetched:', currentControls);
         
         
         // Use the API controls as the initial values
@@ -88,7 +81,6 @@ const Dashboard: React.FC = () => {
         let historicalData: FlotationData[] = [];
         try {
           historicalData = await flotationAPI.getHistoricalData(100);
-          console.log('✅ Historical data fetched');
         } catch (error) {
           console.warn('⚠️ Could not fetch historical data:', error);
         }
@@ -97,7 +89,6 @@ const Dashboard: React.FC = () => {
         let currentData: FlotationData | null = null;
         try {
           currentData = await flotationAPI.getCurrentData();
-          console.log('✅ Current data fetched');
         } catch (error) {
           console.warn('⚠️ Could not fetch current data:', error);
         }
@@ -110,16 +101,15 @@ const Dashboard: React.FC = () => {
         let predictions: Prediction | null = null;
         if (currentData) {
           predictions = {
-            predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
-            recovery_efficiency: (currentData.Predicted_Pb_Recovery || currentData.Pb_Recovery || 0) * 100,
-            status: currentData.Process_Status || 'optimal',
+            predicted_pb: currentData.Predicted_Pb_Concentrate || 0,
+            recovery_efficiency: (currentData.Predicted_Pb_Recovery || 0) * 100,
+            status: currentData.Process_Status || 'unknown',
             prediction_method: 'ML Model' as const
           };
-          console.log('✅ ML Predictions created from real data');
         }
         
         // Determine if server is connected based on successful API calls
-        const serverConnected = !!(currentData || historicalData.length > 0);
+        const serverConnected = !!currentData;
         
         
         
@@ -135,7 +125,7 @@ const Dashboard: React.FC = () => {
             id: `rec-${index}`,
             type: 'info' as const,
             message: rec,
-            timestamp: new Date().toISOString()
+            timestamp: currentData?.timestamp || new Date().toISOString()
           })),
           loading: false,
           serverConnected,
@@ -187,11 +177,15 @@ const Dashboard: React.FC = () => {
         
         // Only fetch from API if controls were not manually changed recently
         const timeSinceLastManualChange = lastManualChangeTime ? Date.now() - lastManualChangeTime : Infinity;
-        const shouldPreserveManualChanges = controlsManuallyChanged && timeSinceLastManualChange < 30000; // 30 seconds
+        const shouldPreserveManualChanges = controlsManuallyChanged && timeSinceLastManualChange < 12000; // 12 seconds (3 polling cycles)
         
-        if (!shouldPreserveManualChanges && state.controls.kex === 0 && state.controls.sipx === 0) {
+        // Fetch control settings from backend if:
+        // 1. Controls were not manually changed recently, OR
+        // 2. Controls are at default values (0,0) and we need initial values
+        if (!shouldPreserveManualChanges) {
           try {
             updatedControls = await flotationAPI.getControlSettings();
+            console.log('🔄 Fetched control settings from backend:', updatedControls);
           } catch (error) {
             console.warn('Could not fetch control settings:', error);
           }
@@ -217,7 +211,7 @@ const Dashboard: React.FC = () => {
             id: `rec-${index}`,
             type: 'info' as const,
             message: rec,
-            timestamp: new Date().toISOString()
+            timestamp: currentData?.timestamp || new Date().toISOString()
           })),
           data: [...prev.data.slice(-99), currentData], // Keep last 100 points
         }));
@@ -231,7 +225,7 @@ const Dashboard: React.FC = () => {
           toast.error('Connection lost - trying to reconnect...');
         }
       }
-    }, 10000); // Increased to 10 seconds to give manual changes time to take effect
+    }, 4000); // Aligned with backend data generation (4 seconds)
 
     return () => clearInterval(interval);
   }, [state.serverConnected]); // Removed state.controls dependency to reduce re-renders
@@ -313,10 +307,20 @@ const Dashboard: React.FC = () => {
 
 
   // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      console.log('🔐 Logging out...');
+      await logout(); // Use the proper logout method from useAuth
+      console.log('✅ Logout successful');
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+      // Fallback: clear localStorage and redirect
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('current_user');
+      window.location.href = '/login';
+    }
   };
 
   if (state.loading) {

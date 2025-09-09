@@ -84,7 +84,7 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
       return (
         <div className="bg-dark-800 border border-dark-600 rounded-lg p-3 shadow-lg">
           <p className="text-white font-semibold mb-2">
-            Time: {payload[0]?.payload?.timestamp || 'N/A'}
+            Time: {payload[0].payload.timestamp}
           </p>
           {payload.map((entry: any, index: number) => {
             const value = entry.value;
@@ -176,7 +176,7 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
               dataKey="time" 
               stroke="#94a3b8"
               fontSize={12}
-              tickFormatter={(value) => chartData[value]?.timestamp || ''}
+              tickFormatter={(value) => chartData[value].timestamp}
             />
             <YAxis 
               stroke="#94a3b8"
@@ -257,19 +257,19 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
             </div>
             <div className="p-3 bg-dark-700/30 rounded">
               <span className="text-dark-300">KEX Flow:</span>
-              <span className="text-white ml-2 font-medium">{currentData.Pb_Conditioner_KEX_Flowrate || 'N/A'}</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Conditioner_KEX_Flowrate}</span>
             </div>
             <div className="p-3 bg-dark-700/30 rounded">
               <span className="text-dark-300">SIPX Flow:</span>
-              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_SIPX_Flowrate || 'N/A'}</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_SIPX_Flowrate}</span>
             </div>
             <div className="p-3 bg-dark-700/30 rounded">
               <span className="text-dark-300">Air Flow:</span>
-              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_AirFlow || 'N/A'}</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_AirFlow}</span>
             </div>
             <div className="p-3 bg-dark-700/30 rounded">
               <span className="text-dark-300">Cell Level:</span>
-              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_Level || 'N/A'}</span>
+              <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_Level}</span>
             </div>
           </div>
         </div>

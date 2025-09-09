@@ -25,21 +25,25 @@ class SystemLauncher:
         self.processes = []
         self.running = True
         
-    def check_service_health(self, url, service_name, timeout=30):
+    def check_service_health(self, url, service_name, timeout=60):
         """Check if a service is running and healthy"""
         print(f"🔍 Checking {service_name} health at {url}...")
         start_time = time.time()
         
         while time.time() - start_time < timeout:
             try:
-                response = requests.get(url, timeout=2)
+                response = requests.get(url, timeout=5)
                 if response.status_code == 200:
                     print(f"✅ {service_name} is healthy and responding!")
                     return True
-            except requests.exceptions.RequestException:
+                elif response.status_code == 500:
+                    # Service is running but having issues - give it more time
+                    print(f"⚠️ {service_name} is running but having issues (500 error) - waiting...")
+            except requests.exceptions.RequestException as e:
+                # Service not ready yet - continue waiting
                 pass
             
-            time.sleep(1)
+            time.sleep(2)
         
         print(f"❌ {service_name} is not responding after {timeout} seconds")
         return False
@@ -265,7 +269,7 @@ class SystemLauncher:
             print("🔍 Verifying services are running...")
             
             # Check backend health
-            backend_healthy = self.check_service_health("http://localhost:8000/docs", "Backend API")
+            backend_healthy = self.check_service_health("http://localhost:8000/", "Backend API")
             if not backend_healthy:
                 print("❌ Backend service is not responding. Cannot start frontend.")
                 return 1

@@ -7,17 +7,17 @@ This module implements the WebSocket connection management following SOLID princ
 
 import asyncio
 import json
-import logging
 from typing import Dict, Any, List, Set
 from fastapi import WebSocket, WebSocketDisconnect
 
 from services.interfaces import IWebSocketManager
+from services.shared_logging import get_logger
 
 class WebSocketConnectionManager(IWebSocketManager):
     """Manages WebSocket connections for real-time data broadcasting"""
     
-    def __init__(self, logger: logging.Logger):
-        self.logger = logger
+    def __init__(self, logger=None):
+        self.logger = logger or get_logger(__name__)
         self.active_connections: Set[WebSocket] = set()
         self.connection_count = 0
     

@@ -53,9 +53,9 @@ const Login: React.FC = () => {
         toast.success('Login successful!');
         navigate('/dashboard', { replace: true });
       } else {
-        const errorMessage = result.error || result.message || 'Login failed';
+        const errorMessage = result.error;
         console.error('🔐 Login failed:', errorMessage);
-        toast.error(errorMessage);
+        toast.error(errorMessage || 'Login failed');
       }
     } catch (error) {
       console.error('🔐 Login exception:', error);

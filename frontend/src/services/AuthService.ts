@@ -118,8 +118,8 @@ export class AuthService implements IAuthService {
 
   private loadStoredAuth(): void {
     // Try to load from multiple possible storage keys
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    const userStr = localStorage.getItem('current_user') || localStorage.getItem('userData');
+    const token = localStorage.getItem('auth_token');
+    const userStr = localStorage.getItem('current_user');
     
     if (token && userStr) {
       try {

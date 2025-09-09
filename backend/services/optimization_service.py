@@ -28,10 +28,12 @@ import os
 # Add the backend directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from services.shared_logging import get_logger
+
 from services.ml_model_service import MLModelService
 from services.future_prediction_service import FuturePredictionService
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class FlotationOptimizer:
     """

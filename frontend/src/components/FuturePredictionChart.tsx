@@ -8,22 +8,19 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer,
-  Area,
-  AreaChart
+  ResponsiveContainer
 } from 'recharts';
 import { 
   TrendingUp, 
   TrendingDown, 
   Clock, 
   Target, 
-  Settings,
   Play,
   Pause,
   RotateCcw
 } from 'lucide-react';
 import { FlotationData, FuturePredictionResponse } from '../types';
-import { flotationAPI } from '../services/api';
+import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
 interface FuturePredictionChartProps {
   currentData: FlotationData | null;
@@ -52,9 +49,8 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
   currentData, 
   historicalData 
 }) => {
-  const [futurePredictions, setFuturePredictions] = useState<FuturePredictionResponse | null>(null);
+  const { futurePredictions, loading, refreshing, fetchPredictions } = useFuturePredictions();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedHorizons, setSelectedHorizons] = useState<Set<string>>(new Set(['5min', '15min', '30min', '60min']));
   const [showConfidenceIntervals, setShowConfidenceIntervals] = useState(true);
@@ -65,7 +61,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     if (currentData && autoRefresh) {
       // Debounce the fetch to prevent excessive API calls
       const timeoutId = setTimeout(() => {
-        fetchFuturePredictions();
+        fetchPredictions(currentData, !futurePredictions);
       }, 1500); // 1.5 second delay
       
       return () => clearTimeout(timeoutId);
@@ -77,32 +73,6 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     updateChartData();
   }, [futurePredictions, historicalData, currentData]);
 
-  const fetchFuturePredictions = async () => {
-    if (!currentData) return;
-    
-    // Only show loading if we don't have existing predictions
-    if (!futurePredictions) {
-      setLoading(true);
-    }
-    
-    try {
-      const inputData = {
-        Feed_Pb: currentData.Feed_Pb,
-        Feed_Zn: currentData.Feed_Zn,
-        Pb_Conditioner_KEX_Flowrate: currentData.Pb_Conditioner_KEX_Flowrate,
-        Pb_Rougher1_SIPX_Flowrate: currentData.Pb_Rougher1_SIPX_Flowrate,
-        Pb_Rougher1_AirFlow: currentData.Pb_Rougher1_AirFlow,
-        Pb_Rougher1_Level: currentData.Pb_Rougher1_Level,
-      };
-      
-      const futureData = await flotationAPI.getFuturePredictions(inputData);
-      setFuturePredictions(futureData);
-    } catch (error) {
-      console.error('Failed to fetch future predictions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateChartData = () => {
     if (!currentData) return;
@@ -127,11 +97,16 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     // Clamp to reasonable range
     currentValue = Math.max(0, Math.min(50, currentValue));
     
-    const now = new Date();
+    // Use only the actual timestamp from the current data - no fallback
+    if (!currentData.timestamp) {
+      console.error('No timestamp in current data - cannot create chart data point');
+      return;
+    }
+    const dataTimestamp = new Date(currentData.timestamp);
     
     // Create base data point for current time
     const basePoint: ChartDataPoint = {
-      timestamp: now.toISOString(),
+      timestamp: dataTimestamp.toISOString(),
       current: currentValue,
     };
 
@@ -157,8 +132,10 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
       for (const horizon of horizons) {
         const prediction = futurePredictions.future_predictions[horizon];
         if (prediction && selectedHorizons.has(horizon)) {
-          // Create a future timestamp based on the horizon
-          const futureTime = new Date(now.getTime() + (parseInt(horizon) * 60 * 1000));
+          // Create a future timestamp based on the horizon with slight offset to avoid duplicates
+          const horizonMinutes = parseInt(horizon);
+          const offsetSeconds = horizons.indexOf(horizon) * 10; // 10 second offset per horizon
+          const futureTime = new Date(dataTimestamp.getTime() + (horizonMinutes * 60 * 1000) + (offsetSeconds * 1000));
           
           const futurePoint: ChartDataPoint = {
             timestamp: futureTime.toISOString(),
@@ -209,37 +186,6 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     // Combine historical, current, and future data
     const allData = [...historicalPoints, basePoint, ...futurePoints];
     
-    // Debug: Log the data structure to ensure future predictions are included
-    if (futurePredictions && allData.length > 0) {
-      const lastPoint = allData[allData.length - 1];
-      console.log('Chart data structure:', {
-        totalDataPoints: allData.length,
-        current: lastPoint.current,
-        predictions: {
-          '5min': lastPoint.predicted_5min,
-          '15min': lastPoint.predicted_15min,
-          '30min': lastPoint.predicted_30min,
-          '60min': lastPoint.predicted_60min
-        },
-        selectedHorizons: Array.from(selectedHorizons),
-        futurePointsCount: futurePoints.length,
-        historicalPointsCount: historicalPoints.length
-      });
-      
-      // Log all data points to see the structure and check for any large numbers
-      console.log('All chart data points:', allData.map((point, index) => ({
-        index,
-        timestamp: point.timestamp,
-        current: point.current,
-        hasPredictions: {
-          '5min': !!point.predicted_5min,
-          '15min': !!point.predicted_15min,
-          '30min': !!point.predicted_30min,
-          '60min': !!point.predicted_60min
-        },
-        allValues: Object.keys(point).filter(key => typeof point[key] === 'number').map(key => ({ [key]: point[key] }))
-      })));
-    }
     
     setChartData(allData);
   };
@@ -268,6 +214,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     return date.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit',
+      second: '2-digit',
       hour12: false 
     });
   };
@@ -334,7 +281,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
 
           {/* Refresh button */}
           <button
-            onClick={fetchFuturePredictions}
+            onClick={() => fetchPredictions(currentData, false)}
             disabled={loading}
             className="flex items-center space-x-2 px-3 py-2 bg-dark-700 text-dark-300 hover:text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50"
           >
@@ -404,6 +351,8 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
                 tickFormatter={formatTimestamp}
                 stroke="#9CA3AF"
                 fontSize={12}
+                interval="preserveStartEnd"
+                tick={{ fontSize: 10 }}
               />
               <YAxis 
                 stroke="#9CA3AF"
@@ -481,7 +430,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
       {futurePredictions && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(futurePredictions.future_predictions).map(([horizon, prediction]) => {
-            const currentValue = currentData?.Actual_Pb_Concentrate || currentData?.Predicted_Pb_Concentrate || 0;
+            const currentValue = currentData?.Actual_Pb_Concentrate || 0;
             const trendIcon = getTrendIcon(currentValue, prediction.prediction);
             
             return (

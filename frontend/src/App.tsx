@@ -10,17 +10,9 @@ import './index.css';
 const AuthWrapper: React.FC = () => {
   const { isAuthenticated, loading, debugSetAuth } = useAuth();
   
-  console.log('🔍 AuthWrapper render:', {
-    isAuthenticated,
-    loading,
-    currentPath: window.location.pathname,
-    localStorageToken: localStorage.getItem('authToken') ? 'present' : 'missing',
-    localStorageUser: localStorage.getItem('userData') ? 'present' : 'missing'
-  });
 
   // Show loading spinner while checking authentication
   if (loading) {
-    console.log('⏳ AuthWrapper: Showing loading spinner');
     return (
       <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center">
         <div className="text-center">
@@ -31,7 +23,6 @@ const AuthWrapper: React.FC = () => {
     );
   }
 
-  console.log('🎯 AuthWrapper: Rendering routes with auth state:', { isAuthenticated });
 
   // Debug function to check authentication state
   const debugAuth = () => {
@@ -115,7 +106,6 @@ const AuthWrapper: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  console.log('🚀 App component rendering');
   
   return (
     <Router

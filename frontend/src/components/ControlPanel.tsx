@@ -82,7 +82,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       icon: Droplets,
       min: 0,  // Realistic range
       max: 60,  // Realistic maximum for SIPX
-      optimal: optimalRanges?.sipx?.optimal || 25,
+      optimal: optimalRanges?.sipx?.optimal || 30,
       step: 0.5,
       description: 'Frother reagent flow rate'
     }

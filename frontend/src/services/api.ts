@@ -171,10 +171,10 @@ export const dashboardAPI = {
     const data = currentData.data;
     
     return {
-      current_performance: (data.Pb_Recovery || 0) * 100,
-      target_performance: 90.0,
-      system_status: data.Process_Status || 'operational',
-      last_update: data.timestamp || new Date().toISOString(),
+      current_performance: data.Pb_Recovery * 100,
+      target_performance: data.Target_Performance,
+      system_status: data.Process_Status,
+      last_update: data.timestamp,
       current_data: data,
       optimal_ranges: optimalRanges.data
     };
@@ -185,10 +185,10 @@ export const dashboardAPI = {
     const connections = await api.get('/api/connections');
     const status = await api.get('/status');
     return {
-      status: status.data.status || 'operational',
-      uptime: status.data.uptime || 'unknown',
-      active_connections: connections.data.active_connections || 0,
-      last_check: new Date().toISOString()
+      status: status.data.status,
+      uptime: status.data.uptime,
+      active_connections: connections.data.active_connections,
+      last_check: status.data.timestamp
     };
   },
   

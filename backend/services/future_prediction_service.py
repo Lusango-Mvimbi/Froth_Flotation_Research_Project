@@ -6,7 +6,6 @@ This service loads trained time-series models and provides future predictions
 for multiple time horizons (5, 60 minutes) with confidence intervals.
 """
 
-import logging
 import joblib
 import numpy as np
 import pandas as pd
@@ -23,7 +22,8 @@ sys.path.append(str(Path(__file__).parent))
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
-logger = logging.getLogger(__name__)
+from services.shared_logging import get_logger
+logger = get_logger(__name__)
 
 class FuturePredictionService:
     """

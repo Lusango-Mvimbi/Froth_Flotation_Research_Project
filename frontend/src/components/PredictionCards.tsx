@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Prediction, FlotationData, PerformanceState, TargetRanges, FuturePredictionResponse } from '../types';
 import { flotationAPI } from '../services/api';
+import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
 interface PredictionCardsProps {
   predictions: Prediction | null;
@@ -22,66 +23,27 @@ interface PredictionCardsProps {
 }
 
 const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentData, targetRanges }) => {
-  const [futurePredictions, setFuturePredictions] = useState<FuturePredictionResponse | null>(null);
+  const { futurePredictions, loading, fetchPredictions } = useFuturePredictions();
   const [activeTab, setActiveTab] = useState<'current' | '5min' | '15min' | '30min' | '60min'>('current');
-  const [loading, setLoading] = useState(false);
 
   // Fetch future predictions when current data changes (with debouncing)
   useEffect(() => {
     if (currentData) {
       // Debounce the fetch to prevent excessive API calls
       const timeoutId = setTimeout(() => {
-        fetchFuturePredictions();
+        fetchPredictions(currentData, !futurePredictions);
       }, 1000); // 1 second delay
       
       return () => clearTimeout(timeoutId);
     }
   }, [currentData]);
 
-  const fetchFuturePredictions = async () => {
-    if (!currentData) return;
-    
-    // Only show loading if we don't have existing predictions
-    if (!futurePredictions) {
-      setLoading(true);
-    }
-    
-    try {
-      const inputData = {
-        Feed_Pb: currentData.Feed_Pb,
-        Feed_Zn: currentData.Feed_Zn,
-        Pb_Conditioner_KEX_Flowrate: currentData.Pb_Conditioner_KEX_Flowrate,
-        Pb_Rougher1_SIPX_Flowrate: currentData.Pb_Rougher1_SIPX_Flowrate,
-        Pb_Rougher1_AirFlow: currentData.Pb_Rougher1_AirFlow,
-        Pb_Rougher1_Level: currentData.Pb_Rougher1_Level,
-      };
-      
-      const futureData = await flotationAPI.getFuturePredictions(inputData);
-      setFuturePredictions(futureData);
-    } catch (error) {
-      console.error('PredictionCards: Failed to fetch future predictions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Performance state calculation
   const getPerformanceState = (value: number, metric: 'pb' | 'recovery' | 'feed_grade'): PerformanceState => {
     if (!targetRanges) {
-      // Fallback to hardcoded values if target ranges not available
-      if (metric === 'pb') {
-        if (value < 15) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
-        if (value >= 25) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
-        return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
-      } else if (metric === 'recovery') {
-        if (value < 75) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
-        if (value >= 95) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
-        return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
-      } else { // feed_grade
-        if (value < 2.0) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
-        if (value >= 4.0) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
-        return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
-      }
+      // No fallback - return neutral state if no target ranges available
+      return { state: 'within_range' as const, color: 'text-dark-400', backgroundColor: 'bg-dark-700/20' };
     }
 
     // Use dynamic target ranges from backend
@@ -146,18 +108,13 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
 
   const pbPerformance = getPerformanceState(predictions.predicted_pb, 'pb');
   const recoveryPerformance = getPerformanceState(predictions.recovery_efficiency, 'recovery');
-  const feedGradePerformance = getPerformanceState(currentData.Feed_Pb || 0, 'feed_grade');
+  const feedGradePerformance = getPerformanceState(currentData.Feed_Pb, 'feed_grade');
 
   // Helper function to get target range string
   const getTargetRange = (metric: 'pb' | 'recovery' | 'feed_grade') => {
     if (!targetRanges) {
-      // Fallback to hardcoded values
-      switch (metric) {
-        case 'pb': return '15-25%';
-        case 'recovery': return '75-95%';
-        case 'feed_grade': return '2.0-4.0%';
-        default: return '';
-      }
+      // No fallback - return empty string if no target ranges available
+      return 'N/A';
     }
     
     const ranges = {
@@ -193,7 +150,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
         {
           title: 'Predicted Pb',
           value: `${predictions.predicted_pb.toFixed(2)}%`,
-          trend: getTrendDirection(predictions.predicted_pb, targetRanges?.pb_concentrate?.optimal || 20),
+          trend: getTrendDirection(predictions.predicted_pb, targetRanges?.pb_concentrate?.optimal || 10),
           performance: pbPerformance,
           icon: Activity,
           method: 'ML Model',
@@ -202,9 +159,9 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
         },
         {
           title: 'Actual Pb',
-          value: `${currentData.Actual_Pb_Concentrate?.toFixed(2) || 'N/A'}%`,
-          trend: currentData.Actual_Pb_Concentrate ? getTrendDirection(currentData.Actual_Pb_Concentrate, targetRanges?.pb_concentrate?.optimal || 20) : 'stable',
-          performance: currentData.Actual_Pb_Concentrate ? getPerformanceState(currentData.Actual_Pb_Concentrate, 'pb') : { state: 'unknown', color: 'text-dark-400', backgroundColor: 'bg-dark-700/20' },
+          value: `${(currentData.Actual_Pb_Concentrate || 0).toFixed(2)}%`,
+          trend: getTrendDirection(currentData.Actual_Pb_Concentrate || 0, targetRanges?.pb_concentrate?.optimal || 10),
+          performance: getPerformanceState(currentData.Actual_Pb_Concentrate || 0, 'pb'),
           icon: Activity,
           target: getTargetRange('pb'),
           confidence: null,
@@ -221,9 +178,9 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
         },
         {
           title: 'Actual Recovery',
-          value: `${currentData.Actual_Pb_Recovery ? (currentData.Actual_Pb_Recovery * 100).toFixed(1) : 'N/A'}%`,
-          trend: currentData.Actual_Pb_Recovery ? getTrendDirection(currentData.Actual_Pb_Recovery * 100, targetRanges?.recovery?.optimal || 85) : 'stable',
-          performance: currentData.Actual_Pb_Recovery ? getPerformanceState(currentData.Actual_Pb_Recovery * 100, 'recovery') : { state: 'unknown', color: 'text-dark-400', backgroundColor: 'bg-dark-700/20' },
+          value: `${((currentData.Actual_Pb_Recovery || 0) * 100).toFixed(1)}%`,
+          trend: getTrendDirection((currentData.Actual_Pb_Recovery || 0) * 100, targetRanges?.recovery?.optimal || 85),
+          performance: getPerformanceState((currentData.Actual_Pb_Recovery || 0) * 100, 'recovery'),
           icon: TrendingUp,
           target: getTargetRange('recovery'),
           confidence: null,
@@ -243,7 +200,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
         },
         {
           title: 'Feed Grade',
-          value: `${currentData.Feed_Pb?.toFixed(2) || 'N/A'}%`,
+          value: `${currentData.Feed_Pb.toFixed(2)}%`,
           trend: 'stable',
           performance: feedGradePerformance,
           icon: TrendingDown,

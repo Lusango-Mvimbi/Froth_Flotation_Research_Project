@@ -194,7 +194,8 @@ class HistoricalDataManager(IHistoricalDataManager):
     def __init__(self, max_history: int = 100, logger: logging.Logger = None):
         self.max_history = max_history
         self.historical_data = []
-        self.logger = logger or logging.getLogger(__name__)
+        from services.shared_logging import get_logger
+        self.logger = logger or get_logger(__name__)
     
     def add_data_point(self, data_point: Dict[str, Any]) -> None:
         """Add a new data point to historical data"""

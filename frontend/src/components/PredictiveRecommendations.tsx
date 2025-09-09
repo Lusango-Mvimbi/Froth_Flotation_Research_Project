@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { FlotationData, FuturePredictionResponse, ProcessControls } from '../types';
 import { flotationAPI } from '../services/api';
+import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
 interface PredictiveRecommendationsProps {
   currentData: FlotationData | null;
@@ -46,10 +47,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
   onControlChange,
   currentControls 
 }) => {
-  const [futurePredictions, setFuturePredictions] = useState<FuturePredictionResponse | null>(null);
+  const { futurePredictions, loading, refreshing, fetchPredictions } = useFuturePredictions();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
   const [simulationModal, setSimulationModal] = useState<{
     isOpen: boolean;
@@ -77,7 +76,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     if (currentData) {
       // Only show loading on initial load, not on subsequent updates
       const isInitialLoad = !futurePredictions;
-      fetchFuturePredictions(isInitialLoad);
+      fetchPredictions(currentData, isInitialLoad);
     }
   }, [currentData]);
 
@@ -88,50 +87,18 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     }
   }, [futurePredictions, currentData]);
 
-  const fetchFuturePredictions = async (isInitialLoad = false) => {
-    if (!currentData) return;
-    
-    // Only show full loading state on initial load
-    if (isInitialLoad) {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
-    
-    try {
-      const inputData = {
-        Feed_Pb: currentData.Feed_Pb,
-        Feed_Zn: currentData.Feed_Zn,
-        Pb_Conditioner_KEX_Flowrate: currentData.Pb_Conditioner_KEX_Flowrate,
-        Pb_Rougher1_SIPX_Flowrate: currentData.Pb_Rougher1_SIPX_Flowrate,
-        Pb_Rougher1_AirFlow: currentData.Pb_Rougher1_AirFlow,
-        Pb_Rougher1_Level: currentData.Pb_Rougher1_Level,
-      };
-      
-      const futureData = await flotationAPI.getFuturePredictions(inputData);
-      setFuturePredictions(futureData);
-    } catch (error) {
-      console.error('Failed to fetch future predictions:', error);
-    } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-      } else {
-        setRefreshing(false);
-      }
-    }
-  };
 
   const generateRecommendations = () => {
     if (!futurePredictions || !currentData) return;
 
     const newRecommendations: Recommendation[] = [];
-    const currentPb = currentData.Actual_Pb_Concentrate || currentData.Predicted_Pb_Concentrate || 0;
-    const targetPb = targetRanges?.pb_concentrate?.optimal || 20;
+    const currentPb = currentData.Actual_Pb_Concentrate;
+    const targetPb = targetRanges.pb_concentrate.optimal;
 
     // Analyze 5-minute predictions
     const pred5min = futurePredictions.future_predictions['5min'];
     if (pred5min) {
-      const change5min = pred5min.prediction - currentPb;
+      const change5min = pred5min.prediction - (currentPb || 0);
       
       if (change5min > 2) {
         // Significant improvement expected
@@ -141,7 +108,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           title: 'Strong Performance Expected',
           description: `Pb concentrate is predicted to increase by ${change5min.toFixed(2)}% in 5 minutes`,
           parameter: 'Pb_Concentrate',
-          currentValue: currentPb,
+          currentValue: currentPb || 0,
           suggestedValue: pred5min.prediction,
           expectedOutcome: `Expected to reach ${pred5min.prediction.toFixed(2)}% Pb concentrate`,
           timeHorizon: '5 minutes',
@@ -157,7 +124,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           title: 'Performance Decline Warning',
           description: `Pb concentrate is predicted to decrease by ${Math.abs(change5min).toFixed(2)}% in 5 minutes`,
           parameter: 'Pb_Concentrate',
-          currentValue: currentPb,
+          currentValue: currentPb || 0,
           suggestedValue: pred5min.prediction,
           expectedOutcome: `May drop to ${pred5min.prediction.toFixed(2)}% Pb concentrate`,
           timeHorizon: '5 minutes',
@@ -171,7 +138,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     // Analyze 60-minute predictions
     const pred60min = futurePredictions.future_predictions['60min'];
     if (pred60min) {
-      const change60min = pred60min.prediction - currentPb;
+      const change60min = pred60min.prediction - (currentPb || 0);
       
       if (change60min > 3) {
         newRecommendations.push({
@@ -180,7 +147,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           title: 'Long-term Optimization Opportunity',
           description: `Significant improvement expected: +${change60min.toFixed(2)}% in 60 minutes`,
           parameter: 'Pb_Concentrate',
-          currentValue: currentPb,
+          currentValue: currentPb || 0,
           suggestedValue: pred60min.prediction,
           expectedOutcome: `Could reach ${pred60min.prediction.toFixed(2)}% Pb concentrate`,
           timeHorizon: '60 minutes',
@@ -195,7 +162,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           title: 'Long-term Performance Risk',
           description: `Sustained decline predicted: -${Math.abs(change60min).toFixed(2)}% in 60 minutes`,
           parameter: 'Pb_Concentrate',
-          currentValue: currentPb,
+          currentValue: currentPb || 0,
           suggestedValue: pred60min.prediction,
           expectedOutcome: `May decline to ${pred60min.prediction.toFixed(2)}% Pb concentrate`,
           timeHorizon: '60 minutes',
@@ -357,8 +324,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         console.log('Setting SIPX to:', recommendation.suggestedValue);
       } else if (recommendation.parameter === 'Pb_Rougher1_AirFlow') {
         // Air flow is not directly controllable via KEX/SIPX, but we can adjust them as a proxy
-        const currentKex = currentControls?.kex || currentData?.Pb_Conditioner_KEX_Flowrate || 0;
-        const currentSipx = currentControls?.sipx || currentData?.Pb_Rougher1_SIPX_Flowrate || 0;
+        const currentKex = currentControls?.kex || 0;
+        const currentSipx = currentControls?.sipx || 0;
         
         if (recommendation.actionType === 'decrease') {
           // Reduce KEX and SIPX to compensate for high air flow
@@ -369,8 +336,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       } else if (recommendation.parameter === 'Pb_Concentrate') {
         // For Pb concentrate recommendations, we need to adjust KEX and SIPX
         // This is a simplified approach - in reality, you'd use optimization algorithms
-        const currentKex = currentControls?.kex || currentData?.Pb_Conditioner_KEX_Flowrate || 0;
-        const currentSipx = currentControls?.sipx || currentData?.Pb_Rougher1_SIPX_Flowrate || 0;
+        const currentKex = currentControls?.kex || 0;
+        const currentSipx = currentControls?.sipx || 0;
         
         if (recommendation.actionType === 'increase') {
           controlSettings.kex = Math.min(currentKex + 5, 80);
@@ -421,7 +388,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         
         // Refresh predictions after control change
         setTimeout(() => {
-          fetchFuturePredictions(false);
+          fetchPredictions(currentData, false);
         }, 2000);
       } else {
         // Show warning modal
@@ -458,8 +425,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         simulationParams.sipx = recommendation.suggestedValue;
       } else if (recommendation.parameter === 'Pb_Concentrate') {
         // For Pb concentrate recommendations, simulate with adjusted KEX and SIPX
-        const currentKex = currentControls?.kex || currentData?.Pb_Conditioner_KEX_Flowrate || 0;
-        const currentSipx = currentControls?.sipx || currentData?.Pb_Rougher1_SIPX_Flowrate || 0;
+        const currentKex = currentControls?.kex || 0;
+        const currentSipx = currentControls?.sipx || 0;
         
         if (recommendation.actionType === 'increase') {
           simulationParams.kex = Math.min(currentKex + 5, 80);
@@ -481,10 +448,10 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       const simulationResult = await flotationAPI.optimizeReagentRates(fullSimulationParams);
       
       // Display simulation results in modal
-      const currentRecovery = simulationResult.current_simulation?.recovery_rates?.[0] || 0;
-      const optimalRecovery = simulationResult.optimal_simulation?.recovery_rates?.[0] || 0;
-      const currentConcentrate = simulationResult.current_simulation?.pb_concentrates?.[0] || 0;
-      const optimalConcentrate = simulationResult.optimal_simulation?.pb_concentrates?.[0] || 0;
+      const currentRecovery = simulationResult.current_simulation.recovery_rates[0];
+      const optimalRecovery = simulationResult.optimal_simulation.recovery_rates[0];
+      const currentConcentrate = simulationResult.current_simulation.pb_concentrates[0];
+      const optimalConcentrate = simulationResult.optimal_simulation.pb_concentrates[0];
       
       setSimulationModal({
         isOpen: true,
@@ -518,7 +485,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         </div>
         
         <button
-          onClick={() => fetchFuturePredictions(false)}
+          onClick={() => fetchPredictions(currentData, false)}
           disabled={loading || refreshing}
           className="flex items-center space-x-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium transition-all duration-200 hover:bg-primary-700 disabled:opacity-50"
         >
@@ -663,7 +630,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           <h4 className="text-sm font-medium text-dark-300 mb-3">Prediction Summary</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(futurePredictions.future_predictions).map(([horizon, prediction]) => {
-              const currentValue = currentData?.Actual_Pb_Concentrate || currentData?.Predicted_Pb_Concentrate || 0;
+              const currentValue = currentData?.Actual_Pb_Concentrate || 0;
               const change = prediction.prediction - currentValue;
               
               return (

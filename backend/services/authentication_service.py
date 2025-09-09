@@ -17,21 +17,12 @@ from datetime import datetime, timedelta
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'models'))
 from database_manager import db
 
-# Set up comprehensive logging for Authentication Service
-log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
-os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, 'authentication_service.log')
+from services.shared_logging import setup_logger
 
-# Configure logging - Only log errors and warnings
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+# Set up logging
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
+log_file = os.path.join(log_dir, 'authentication_service.log')
+logger = setup_logger(__name__, log_file, level=logging.WARNING)
 
 # Log service startup (WARNING level for important startup info)
 logger.warning("Starting Froth Flotation Authentication Service")
