@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges, FuturePredictionResponse } from '../types';
+import { FlotationData, ProcessControls, OptimalRanges, TargetRanges, FuturePredictionResponse } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const AUTH_BASE_URL = process.env.REACT_APP_AUTH_URL || 'http://localhost:8051';

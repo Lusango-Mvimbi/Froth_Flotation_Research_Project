@@ -9,6 +9,7 @@ via WebSocket connections, using SOLID principles.
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 import asyncio
 import json
 import time
@@ -35,11 +36,40 @@ logger.info(f"Log file: {log_file}")
 logger.info(f"Service: FastAPI WebSocket Server (SOLID Architecture)")
 logger.info(f"Port: 8000")
 
-# Create FastAPI app with connection limits
+# Initialize service orchestrator
+orchestrator = FlotationServiceOrchestrator(logger)
+
+# Background task for data generation
+data_generation_task = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events"""
+    global data_generation_task
+    
+    # Startup
+    logger.info("Starting background data generation task")
+    data_generation_task = asyncio.create_task(
+        orchestrator.run_data_generation_loop(interval_seconds=4)  # 4-second updates for better stability
+    )
+    
+    yield
+    
+    # Shutdown
+    if data_generation_task:
+        data_generation_task.cancel()
+        try:
+            await data_generation_task
+        except asyncio.CancelledError:
+            pass
+    logger.info("Service shutdown complete")
+
+# Create FastAPI app with connection limits and lifespan
 app = FastAPI(
     title="Froth Flotation Digital Twin API",
     description="Real-time flotation data service with ML predictions",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan
 )
 
 # Add connection limiting middleware
@@ -49,7 +79,7 @@ from collections import defaultdict
 
 # Simple rate limiting - increased for better performance
 request_counts = defaultdict(list)
-MAX_REQUESTS_PER_MINUTE = 120  # Increased from 60 to 120 requests per minute
+MAX_REQUESTS_PER_MINUTE = 300  # Increased to 300 requests per minute for development
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -82,33 +112,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize service orchestrator
-orchestrator = FlotationServiceOrchestrator(logger)
-
-# Background task for data generation
-data_generation_task = None
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup"""
-    global data_generation_task
-    logger.info("Starting background data generation task")
-    data_generation_task = asyncio.create_task(
-        orchestrator.run_data_generation_loop(interval_seconds=4)  # 4-second updates for better stability
-    )
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    global data_generation_task
-    if data_generation_task:
-        data_generation_task.cancel()
-        try:
-            await data_generation_task
-        except asyncio.CancelledError:
-            pass
-    logger.info("Service shutdown complete")
 
 @app.get("/")
 async def root():
@@ -334,6 +337,9 @@ async def optimize_reagent_rates(reagent_settings: Dict[str, float]):
             'Pb_Rougher1_AirFlow': 12.0,
             'Pb_Rougher1_Level': 45.0
         }
+        
+        # Initialize optimizer if needed
+        orchestrator._initialize_optimizer()
         
         # Run optimization
         optimization_result = orchestrator.optimizer.optimize_reagent_rates(current_data)

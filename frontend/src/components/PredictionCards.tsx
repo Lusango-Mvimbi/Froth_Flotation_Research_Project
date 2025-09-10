@@ -12,8 +12,7 @@ import {
   Target,
   BarChart3
 } from 'lucide-react';
-import { Prediction, FlotationData, PerformanceState, TargetRanges, FuturePredictionResponse } from '../types';
-import { flotationAPI } from '../services/api';
+import { Prediction, FlotationData, PerformanceState, TargetRanges } from '../types';
 import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
 interface PredictionCardsProps {
@@ -32,11 +31,11 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentD
       // Debounce the fetch to prevent excessive API calls
       const timeoutId = setTimeout(() => {
         fetchPredictions(currentData, !futurePredictions);
-      }, 500); // 500ms delay for synchronized updates
+      }, 1500); // Increased to 1.5s delay to reduce API calls
       
       return () => clearTimeout(timeoutId);
     }
-  }, [currentData]);
+  }, [currentData, fetchPredictions, futurePredictions]);
 
 
   // Performance state calculation

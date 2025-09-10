@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import { DashboardState, FlotationData, ProcessControls, Prediction, Recommendation, OptimalRanges, TargetRanges } from '../types';
+import { DashboardState, FlotationData, ProcessControls, Prediction, OptimalRanges, TargetRanges } from '../types';
 import { flotationAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuthRefactored';
 import PredictionCards from './PredictionCards';
@@ -77,7 +77,8 @@ const Dashboard: React.FC = () => {
         const preservedControls = currentControls;
         
         
-        // Try to fetch historical data
+        // Try to fetch historical data (currently unused but kept for future use)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let historicalData: FlotationData[] = [];
         try {
           historicalData = await flotationAPI.getHistoricalData(100);
@@ -113,9 +114,12 @@ const Dashboard: React.FC = () => {
         
         
         
+        // Create live data array with current data for real-time updates
+        const liveData = currentData ? [currentData] : [];
+        
         setState(prev => ({
           ...prev,
-          data: historicalData,
+          data: liveData, // Use current data for live graph instead of historical data
           currentData,
           predictions,
           controls: preservedControls,
@@ -228,7 +232,7 @@ const Dashboard: React.FC = () => {
     }, 4000); // Aligned with backend data generation (4 seconds)
 
     return () => clearInterval(interval);
-  }, [state.serverConnected]); // Removed state.controls dependency to reduce re-renders
+  }, [state.serverConnected, controlsManuallyChanged, lastManualChangeTime, state.controls]); // Include all dependencies
 
   // Handle control changes
   const handleControlChange = useCallback(async (controls: ProcessControls) => {

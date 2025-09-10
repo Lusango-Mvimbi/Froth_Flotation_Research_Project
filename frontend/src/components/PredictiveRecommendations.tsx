@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,7 +16,7 @@ import {
   RotateCcw,
   Brain
 } from 'lucide-react';
-import { FlotationData, FuturePredictionResponse, ProcessControls } from '../types';
+import { FlotationData, ProcessControls } from '../types';
 import { flotationAPI } from '../services/api';
 import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
@@ -71,33 +72,11 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     message: ''
   });
 
-  // Fetch future predictions when current data changes
-  useEffect(() => {
-    if (currentData) {
-      // Debounce the fetch to prevent excessive API calls and synchronize with other components
-      const timeoutId = setTimeout(() => {
-        const isInitialLoad = !futurePredictions;
-        fetchPredictions(currentData, isInitialLoad);
-      }, 500); // 500ms delay for synchronized updates
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [currentData]);
-
-  // Generate recommendations when predictions change
-  useEffect(() => {
-    if (futurePredictions && currentData) {
-      generateRecommendations();
-    }
-  }, [futurePredictions, currentData]);
-
-
-  const generateRecommendations = () => {
+  const generateRecommendations = useCallback(() => {
     if (!futurePredictions || !currentData) return;
 
     const newRecommendations: Recommendation[] = [];
     const currentPb = currentData.Actual_Pb_Concentrate;
-    const targetPb = targetRanges.pb_concentrate.optimal;
 
     // Analyze 5-minute predictions
     const pred5min = futurePredictions.future_predictions['5min'];
@@ -213,7 +192,25 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       });
     }
 
-    // SIPX flow rate optimization (decrease scenarios)
+    // SIPX flow rate optimization (increase scenarios - too low)
+    if (currentData.Pb_Rougher1_SIPX_Flowrate < 15) {
+      newRecommendations.push({
+        id: 'sipx-increase',
+        type: 'optimization',
+        title: 'Increase SIPX Flow Rate',
+        description: 'SIPX flow rate is below optimal range',
+        parameter: 'Pb_Rougher1_SIPX_Flowrate',
+        currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
+        suggestedValue: Math.min(currentData.Pb_Rougher1_SIPX_Flowrate + 10, 35),
+        expectedOutcome: 'Expected to improve froth stability and recovery',
+        timeHorizon: '10-20 minutes',
+        confidence: 0.85,
+        impact: 'high',
+        actionType: 'increase'
+      });
+    }
+
+    // SIPX flow rate optimization (decrease scenarios - too high)
     if (currentData.Pb_Rougher1_SIPX_Flowrate > 35) {
       newRecommendations.push({
         id: 'sipx-decrease',
@@ -268,7 +265,27 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     }
 
     setRecommendations(newRecommendations);
-  };
+  }, [futurePredictions, currentData]);
+
+  // Fetch future predictions when current data changes
+  useEffect(() => {
+    if (currentData) {
+      // Debounce the fetch to prevent excessive API calls and synchronize with other components
+      const timeoutId = setTimeout(() => {
+        const isInitialLoad = !futurePredictions;
+        fetchPredictions(currentData, isInitialLoad);
+      }, 1500); // Increased to 1.5s delay to reduce API calls
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentData, fetchPredictions, futurePredictions]);
+
+  // Generate recommendations when predictions change
+  useEffect(() => {
+    if (futurePredictions && currentData) {
+      generateRecommendations();
+    }
+  }, [futurePredictions, currentData, generateRecommendations]);
 
   const getRecommendationIcon = (type: string) => {
     switch (type) {
@@ -451,11 +468,22 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       // Run simulation via optimization API
       const simulationResult = await flotationAPI.optimizeReagentRates(fullSimulationParams);
       
-      // Display simulation results in modal
-      const currentRecovery = simulationResult.current_simulation.recovery_rates[0];
-      const optimalRecovery = simulationResult.optimal_simulation.recovery_rates[0];
-      const currentConcentrate = simulationResult.current_simulation.pb_concentrates[0];
-      const optimalConcentrate = simulationResult.optimal_simulation.pb_concentrates[0];
+      // Extract simulation data from the nested structure
+      const optimizationData = simulationResult.optimization_result;
+      
+      if (!optimizationData || !optimizationData.current_simulation || !optimizationData.optimal_simulation) {
+        throw new Error('Invalid simulation data structure received from API');
+      }
+      
+      // Use the average values from the optimization result for better accuracy
+      const currentRecovery = optimizationData.current_avg_recovery;
+      const optimalRecovery = optimizationData.optimal_avg_recovery;
+      const currentConcentrate = optimizationData.current_avg_concentrate;
+      const optimalConcentrate = optimizationData.optimal_avg_concentrate;
+      
+      // Get the optimal settings for display
+      const optimalKex = optimizationData.optimal_settings.KEX;
+      const optimalSipx = optimizationData.optimal_settings.SIPX;
       
       setSimulationModal({
         isOpen: true,
@@ -464,6 +492,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           optimalRecovery,
           currentConcentrate,
           optimalConcentrate,
+          optimalKex,
+          optimalSipx,
           simulationParams: fullSimulationParams
         },
         recommendation
@@ -472,7 +502,9 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     } catch (error) {
       console.error('Simulation failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`❌ Simulation failed: ${recommendation.title}\n\nError: ${errorMessage}`);
+      toast.error(`Simulation failed: ${recommendation.title} - ${errorMessage}`, {
+        duration: 5000,
+      });
     }
   };
 
@@ -497,6 +529,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           <p className="text-dark-300">Analyzing predictions...</p>
         </div>
       )}
+
 
       {/* Recommendations Grid */}
       {!loading && recommendations.length > 0 && (
@@ -658,10 +691,10 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-dark-800 border border-dark-600 rounded-xl p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-primary-600 rounded-lg">
                   <Zap className="h-5 w-5 text-white" />
@@ -683,7 +716,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
             {/* Simulation Data */}
             {simulationModal.data && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Current vs Expected Comparison */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Current Settings */}
@@ -715,11 +748,11 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-sm text-dark-400">KEX Flowrate:</span>
-                        <span className="text-sm font-medium text-primary-400">{simulationModal.data.simulationParams.kex}</span>
+                        <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalKex}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-dark-400">SIPX Flowrate:</span>
-                        <span className="text-sm font-medium text-primary-400">{simulationModal.data.simulationParams.sipx}</span>
+                        <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalSipx}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-dark-400">Pb Concentrate:</span>
@@ -773,10 +806,44 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                 {/* Action Buttons */}
                 <div className="flex space-x-3 pt-4">
                   <button
-                    onClick={() => {
-                      if (simulationModal.recommendation) {
-                        handleQuickAction(simulationModal.recommendation);
-                        setSimulationModal({ isOpen: false, data: null, recommendation: null });
+                    onClick={async () => {
+                      if (simulationModal.data) {
+                        try {
+                          // Apply the optimal settings from the simulation
+                          const optimalControls = {
+                            kex: simulationModal.data.optimalKex,
+                            sipx: simulationModal.data.optimalSipx
+                          };
+                          
+                          
+                          // Update control settings via API
+                          await flotationAPI.updateControls(optimalControls);
+                          
+                          // Update the parent component's controls state
+                          if (onControlChange) {
+                            onControlChange(optimalControls);
+                          }
+                          
+                          // Show success message
+                          toast.success(`Applied optimal settings: KEX=${optimalControls.kex}, SIPX=${optimalControls.sipx}`, {
+                            duration: 4000,
+                          });
+                          
+                          // Close modal
+                          setSimulationModal({ isOpen: false, data: null, recommendation: null });
+                          
+                          // Refresh predictions after control change
+                          setTimeout(() => {
+                            fetchPredictions(currentData, false);
+                          }, 2000);
+                          
+                        } catch (error) {
+                          console.error('Failed to apply optimal settings:', error);
+                          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                          toast.error(`Failed to apply optimal settings: ${errorMessage}`, {
+                            duration: 5000,
+                          });
+                        }
                       }
                     }}
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-success-600 hover:bg-success-700 text-white rounded-lg font-medium transition-colors"

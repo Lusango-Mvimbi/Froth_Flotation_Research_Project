@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   LineChart, 
@@ -16,10 +16,9 @@ import {
   Clock, 
   Target, 
   Play,
-  Pause,
-  RotateCcw
+  Pause
 } from 'lucide-react';
-import { FlotationData, FuturePredictionResponse } from '../types';
+import { FlotationData } from '../types';
 import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
 interface FuturePredictionChartProps {
@@ -49,32 +48,23 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
   currentData, 
   historicalData 
 }) => {
-  const { futurePredictions, loading, refreshing, fetchPredictions } = useFuturePredictions();
+  const { futurePredictions, loading, fetchPredictions } = useFuturePredictions();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedHorizons, setSelectedHorizons] = useState<Set<string>>(new Set(['5min', '15min', '30min', '60min']));
   const [showConfidenceIntervals, setShowConfidenceIntervals] = useState(true);
   const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h'>('1h');
 
-  // Fetch future predictions when current data changes (with debouncing)
-  useEffect(() => {
-    if (currentData && autoRefresh) {
-      // Debounce the fetch to prevent excessive API calls
-      const timeoutId = setTimeout(() => {
-        fetchPredictions(currentData, !futurePredictions);
-      }, 500); // 500ms delay for synchronized updates
-      
-      return () => clearTimeout(timeoutId);
+  const getDataLimit = useCallback(() => {
+    switch (timeRange) {
+      case '1h': return 60; // 60 data points for 1 hour
+      case '6h': return 360; // 360 data points for 6 hours
+      case '24h': return 1440; // 1440 data points for 24 hours
+      default: return 60;
     }
-  }, [currentData, autoRefresh]);
+  }, [timeRange]);
 
-  // Update chart data when predictions or historical data changes
-  useEffect(() => {
-    updateChartData();
-  }, [futurePredictions, historicalData, currentData]);
-
-
-  const updateChartData = () => {
+  const updateChartData = useCallback(() => {
     if (!currentData) return;
 
     // Get current value with proper scaling
@@ -188,16 +178,24 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     
     
     setChartData(allData);
-  };
+  }, [currentData, futurePredictions, historicalData, selectedHorizons, getDataLimit]);
 
-  const getDataLimit = () => {
-    switch (timeRange) {
-      case '1h': return 60; // 60 data points for 1 hour
-      case '6h': return 360; // 360 data points for 6 hours
-      case '24h': return 1440; // 1440 data points for 24 hours
-      default: return 60;
+  // Fetch future predictions when current data changes (with debouncing)
+  useEffect(() => {
+    if (currentData && autoRefresh) {
+      // Debounce the fetch to prevent excessive API calls
+      const timeoutId = setTimeout(() => {
+        fetchPredictions(currentData, !futurePredictions);
+      }, 1500); // Increased to 1.5s delay to reduce API calls
+      
+      return () => clearTimeout(timeoutId);
     }
-  };
+  }, [currentData, autoRefresh, fetchPredictions, futurePredictions]);
+
+  // Update chart data when predictions or historical data changes
+  useEffect(() => {
+    updateChartData();
+  }, [futurePredictions, historicalData, currentData, updateChartData]);
 
   const toggleHorizon = (horizon: string) => {
     const newSelected = new Set(selectedHorizons);
