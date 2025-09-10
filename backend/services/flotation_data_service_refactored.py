@@ -328,14 +328,17 @@ async def optimize_reagent_rates(reagent_settings: Dict[str, float]):
         if 'kex' not in reagent_settings or 'sipx' not in reagent_settings:
             raise HTTPException(status_code=400, detail="Missing required reagent parameters: kex, sipx")
         
-        # Create current data with the provided reagent settings
+        # Get current system data for simulation
+        current_system_data = await orchestrator.generate_and_process_data(use_cache=False)
+        
+        # Create current data with the provided reagent settings and real system data
         current_data = {
             'Pb_Conditioner_KEX_Flowrate': reagent_settings['kex'],
             'Pb_Rougher1_SIPX_Flowrate': reagent_settings['sipx'],
-            'Feed_Pb': 1.5,  # Default values for simulation
-            'Feed_Zn': 0.8,
-            'Pb_Rougher1_AirFlow': 12.0,
-            'Pb_Rougher1_Level': 45.0
+            'Feed_Pb': current_system_data.get('Feed_Pb', 2.5),  # Use real system data
+            'Feed_Zn': current_system_data.get('Feed_Zn', 10.0),
+            'Pb_Rougher1_AirFlow': current_system_data.get('Pb_Rougher1_AirFlow', 10.0),
+            'Pb_Rougher1_Level': current_system_data.get('Pb_Rougher1_Level', 40.0)
         }
         
         # Initialize optimizer if needed
@@ -523,14 +526,17 @@ async def get_future_predictions():
     Get future predictions for multiple time horizons (GET endpoint for health checks)
     """
     try:
-        # Use default values for health check
+        # Get current data to use for future predictions (use same data source as current-data endpoint)
+        current_data = await orchestrator.generate_and_process_data(use_cache=True)
+        
+        # Extract the relevant data for predictions
         prediction_data = {
-            'Feed_Pb': 2.5,
-            'Feed_Zn': 10.0,
-            'Pb_Conditioner_KEX_Flowrate': 45.0,
-            'Pb_Rougher1_SIPX_Flowrate': 25.0,
-            'Pb_Rougher1_AirFlow': 150.0,
-            'Pb_Rougher1_Level': 65.0
+            'Feed_Pb': current_data.get('Feed_Pb', 2.5),
+            'Feed_Zn': current_data.get('Feed_Zn', 10.0),
+            'Pb_Conditioner_KEX_Flowrate': current_data.get('Pb_Conditioner_KEX_Flowrate', 45.0),
+            'Pb_Rougher1_SIPX_Flowrate': current_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0),
+            'Pb_Rougher1_AirFlow': current_data.get('Pb_Rougher1_AirFlow', 150.0),
+            'Pb_Rougher1_Level': current_data.get('Pb_Rougher1_Level', 65.0)
         }
         future_predictions = orchestrator.ml_model.predict_future_pb_concentrate(prediction_data, [5, 15, 30, 60])
         
@@ -550,6 +556,7 @@ async def get_future_predictions():
         return {
             "success": True,
             "future_predictions": converted_predictions,
+            "current_data": current_data,  # Include current data for frontend
             "prediction_time": future_predictions['prediction_time'],
             "available_horizons": future_predictions['available_horizons'],
             "timestamp": future_predictions['prediction_time']  # Use same timestamp as prediction_time for consistency

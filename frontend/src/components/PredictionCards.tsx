@@ -12,30 +12,24 @@ import {
   Target,
   BarChart3
 } from 'lucide-react';
-import { Prediction, FlotationData, PerformanceState, TargetRanges } from '../types';
-import { useFuturePredictions } from '../hooks/useFuturePredictions';
+import { Prediction, FlotationData, PerformanceState, TargetRanges, FuturePredictionResponse } from '../types';
 
 interface PredictionCardsProps {
   predictions: Prediction | null;
   currentData: FlotationData | null;
   targetRanges: TargetRanges | null;
+  futurePredictions: FuturePredictionResponse | null;
+  loading: boolean;
 }
 
-const PredictionCards: React.FC<PredictionCardsProps> = ({ predictions, currentData, targetRanges }) => {
-  const { futurePredictions, loading, fetchPredictions } = useFuturePredictions();
+const PredictionCards: React.FC<PredictionCardsProps> = ({ 
+  predictions, 
+  currentData, 
+  targetRanges, 
+  futurePredictions, 
+  loading 
+}) => {
   const [activeTab, setActiveTab] = useState<'current' | '5min' | '15min' | '30min' | '60min'>('current');
-
-  // Fetch future predictions when current data changes (with debouncing)
-  useEffect(() => {
-    if (currentData) {
-      // Debounce the fetch to prevent excessive API calls
-      const timeoutId = setTimeout(() => {
-        fetchPredictions(currentData, !futurePredictions);
-      }, 1500); // Increased to 1.5s delay to reduce API calls
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [currentData, fetchPredictions, futurePredictions]);
 
 
   // Performance state calculation

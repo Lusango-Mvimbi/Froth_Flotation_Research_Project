@@ -18,12 +18,13 @@ import {
   Play,
   Pause
 } from 'lucide-react';
-import { FlotationData } from '../types';
-import { useFuturePredictions } from '../hooks/useFuturePredictions';
+import { FlotationData, FuturePredictionResponse } from '../types';
 
 interface FuturePredictionChartProps {
   currentData: FlotationData | null;
   historicalData: FlotationData[];
+  futurePredictions: FuturePredictionResponse | null;
+  loading: boolean;
 }
 
 interface ChartDataPoint {
@@ -46,9 +47,10 @@ interface ChartDataPoint {
 
 const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({ 
   currentData, 
-  historicalData 
+  historicalData,
+  futurePredictions,
+  loading
 }) => {
-  const { futurePredictions, loading, fetchPredictions } = useFuturePredictions();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedHorizons, setSelectedHorizons] = useState<Set<string>>(new Set(['5min', '15min', '30min', '60min']));
@@ -180,17 +182,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     setChartData(allData);
   }, [currentData, futurePredictions, historicalData, selectedHorizons, getDataLimit]);
 
-  // Fetch future predictions when current data changes (with debouncing)
-  useEffect(() => {
-    if (currentData && autoRefresh) {
-      // Debounce the fetch to prevent excessive API calls
-      const timeoutId = setTimeout(() => {
-        fetchPredictions(currentData, !futurePredictions);
-      }, 1500); // Increased to 1.5s delay to reduce API calls
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [currentData, autoRefresh, fetchPredictions, futurePredictions]);
+  // No longer fetching predictions here - they come from Dashboard as props
 
   // Update chart data when predictions or historical data changes
   useEffect(() => {

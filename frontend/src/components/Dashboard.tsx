@@ -8,9 +8,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import { DashboardState, FlotationData, ProcessControls, Prediction, OptimalRanges, TargetRanges } from '../types';
+import { DashboardState, FlotationData, ProcessControls, Prediction, OptimalRanges, TargetRanges, FuturePredictionResponse } from '../types';
 import { flotationAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuthRefactored';
+import { useFuturePredictions } from '../hooks/useFuturePredictions';
 import PredictionCards from './PredictionCards';
 import ControlPanel from './ControlPanel';
 import FuturePredictionChart from './FuturePredictionChart';
@@ -20,6 +21,7 @@ import ConnectionStatus from './ConnectionStatus';
 
 const Dashboard: React.FC = () => {
   const { logout } = useAuth();
+  const { futurePredictions, loading: futurePredictionsLoading, fetchPredictions } = useFuturePredictions();
   
   const [state, setState] = useState<DashboardState>({
     data: [],
@@ -157,6 +159,14 @@ const Dashboard: React.FC = () => {
 
     initializeDashboard();
   }, []);
+
+  // Fetch future predictions when current data changes
+  useEffect(() => {
+    if (state.currentData) {
+      console.log('Dashboard: Current data changed, fetching future predictions');
+      fetchPredictions(state.currentData, !futurePredictions);
+    }
+  }, [state.currentData, fetchPredictions, futurePredictions]);
 
   // Real-time data polling (only if server is connected)
   useEffect(() => {
@@ -416,13 +426,16 @@ const Dashboard: React.FC = () => {
               console.log('Dashboard: Passing data to PredictionCards:', {
                 predictions: state.predictions,
                 currentData: state.currentData,
-                targetRanges: state.targetRanges
+                targetRanges: state.targetRanges,
+                futurePredictions: futurePredictions
               });
               return (
                 <PredictionCards 
                   predictions={state.predictions}
                   currentData={state.currentData}
                   targetRanges={state.targetRanges}
+                  futurePredictions={futurePredictions}
+                  loading={futurePredictionsLoading}
                 />
               );
             })()}
@@ -439,6 +452,8 @@ const Dashboard: React.FC = () => {
             <FuturePredictionChart
               currentData={state.currentData}
               historicalData={state.data}
+              futurePredictions={futurePredictions}
+              loading={futurePredictionsLoading}
             />
           </motion.div>
 

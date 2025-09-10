@@ -1,0 +1,104 @@
+test_model_files_exist (__main__.TestModelLoading.test_model_files_exist)
+Test that model files exist ... ok
+test_model_loading_performance (__main__.TestModelLoading.test_model_loading_performance)
+Test model loading performance ... ok
+test_future_prediction_service_initialization (__main__.TestMLModelService.test_future_prediction_service_initialization)
+Test future prediction service initialization time ... FAIL
+test_ml_model_service_initialization (__main__.TestMLModelService.test_ml_model_service_initialization)
+Test ML model service initialization time ... ok
+test_data_generation_performance (__main__.TestServiceOrchestrator.test_data_generation_performance)
+Test data generation performance ... skipped 'Skip async test for now'
+test_orchestrator_initialization (__main__.TestServiceOrchestrator.test_orchestrator_initialization)
+Test orchestrator initialization time ... FAIL
+test_backend_health (__main__.TestAPIIntegration.test_backend_health)
+Test backend health endpoint ... ok
+test_current_data_api_performance (__main__.TestAPIIntegration.test_current_data_api_performance)
+Test current data API performance ... FAIL
+test_future_predictions_api_performance (__main__.TestAPIIntegration.test_future_predictions_api_performance)
+Test future predictions API performance ... FAIL
+
+======================================================================
+FAIL: test_future_prediction_service_initialization (__main__.TestMLModelService.test_future_prediction_service_initialization)
+Test future prediction service initialization time
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 74, in test_future_prediction_service_initialization
+    from future_prediction_service import FuturePredictionService
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\future_prediction_service.py", line 25, in <module>
+    from services.shared_logging import get_logger
+ModuleNotFoundError: No module named 'services'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 95, in test_future_prediction_service_initialization
+    self.fail(f"Future Prediction Service initialization failed: {e}")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Future Prediction Service initialization failed: No module named 'services'
+
+======================================================================
+FAIL: test_orchestrator_initialization (__main__.TestServiceOrchestrator.test_orchestrator_initialization)
+Test orchestrator initialization time
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 118, in test_orchestrator_initialization
+    orchestrator = FlotationServiceOrchestrator()
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\service_orchestrator.py", line 35, in __init__
+    self.data_generator: IDataGenerator = FlotationDataGenerator(logger)
+                                          ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\..\services\data_generator.py", line 22, in __init__
+    self._calculate_optimal_balance()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\backend\services\..\services\data_generator.py", line 35, in _calculate_optimal_balance
+    self.logger.debug("Calculating dynamic optimal balance based on training data")
+    ^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'debug'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 135, in test_orchestrator_initialization
+    self.fail(f"Service Orchestrator initialization failed: {e}")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Service Orchestrator initialization failed: 'NoneType' object has no attribute 'debug'
+
+======================================================================
+FAIL: test_current_data_api_performance (__main__.TestAPIIntegration.test_current_data_api_performance)
+Test current data API performance
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 229, in test_current_data_api_performance
+    self.fail(f"Current data API is too slow: {duration:.2f}s")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Current data API is too slow: 24.52s
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 236, in test_current_data_api_performance
+    self.fail(f"Current data API test failed: {e}")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Current data API test failed: Current data API is too slow: 24.52s
+
+======================================================================
+FAIL: test_future_predictions_api_performance (__main__.TestAPIIntegration.test_future_predictions_api_performance)
+Test future predictions API performance
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 269, in test_future_predictions_api_performance
+    self.fail(f"Future predictions API is too slow: {duration:.2f}s")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Future predictions API is too slow: 17.92s
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\@Python Projects\Froth_Flotation_Research_Project\unit_tests_backend.py", line 276, in test_future_predictions_api_performance
+    self.fail(f"Future predictions API test failed: {e}")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Future predictions API test failed: Future predictions API is too slow: 17.92s
+
+----------------------------------------------------------------------
+Ran 9 tests in 74.763s
+
+FAILED (failures=4, skipped=1)

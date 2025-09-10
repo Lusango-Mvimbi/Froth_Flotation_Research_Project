@@ -106,37 +106,33 @@ class FlotationServiceOrchestrator:
             # Combine raw data with lag features
             combined_data = {**raw_data, **lag_features}
             
-            # Make ML prediction using the future prediction service
+            # Generate actual current values (not ML predictions)
             try:
-                # Initialize ML model if needed
+                # Initialize ML model service for utility methods (not predictions)
                 self._initialize_ml_model()
                 
-                # Get future predictions (5min, 15min, 30min, 60min)
-                future_predictions = self.ml_model.predict_future_pb_concentrate(combined_data, [5, 15, 30, 60])
+                # Calculate actual Pb concentrate based on process conditions
+                actual_pb_concentrate = self.ml_model._calculate_actual_pb_concentrate(combined_data)
                 
-                # Use 5-minute prediction as current prediction
-                predicted_pb_concentrate = future_predictions['future_predictions']['5min']['prediction']
+                # Calculate actual recovery rate based on process conditions
+                actual_recovery_rate_pct = self.ml_model.calculate_recovery_rate(raw_data, actual_pb_concentrate)
                 
-                # Store future predictions for the dashboard
-                self.current_future_predictions = future_predictions
-                
-                # Calculate predicted recovery rate (returns percentage)
-                predicted_recovery_rate_pct = self.ml_model.calculate_recovery_rate(raw_data, predicted_pb_concentrate)
+                # Get future predictions for dashboard (separate from current data)
+                try:
+                    # Initialize ML model for future predictions only
+                    self._initialize_ml_model()
+                    future_predictions = self.ml_model.predict_future_pb_concentrate(combined_data, [5, 15, 30, 60])
+                    self.current_future_predictions = future_predictions
+                except Exception as e:
+                    logger.warning(f"Future predictions not available: {e}")
+                    self.current_future_predictions = None
                 
             except Exception as e:
-                # Fallback to a reasonable default if future prediction fails
-                self.logger.warning(f"Future prediction failed, using fallback: {e}")
-                predicted_pb_concentrate = 20.0  # Default reasonable value
-                predicted_recovery_rate_pct = 85.0  # Default reasonable recovery rate
+                # Fallback to reasonable defaults if actual value calculation fails
+                self.logger.warning(f"Actual value calculation failed, using fallback: {e}")
+                actual_pb_concentrate = 20.0  # Default reasonable value
+                actual_recovery_rate_pct = 85.0  # Default reasonable recovery rate
                 self.current_future_predictions = None
-            
-            # Generate actual Pb concentrate (with realistic variation from prediction)
-            import numpy as np
-            # Actual values should be close to predicted but with realistic process variation
-            actual_pb_concentrate = predicted_pb_concentrate + np.random.normal(0, 1.5)  # ±1.5% variation
-            
-            # Generate actual recovery rate (with realistic variation)
-            actual_recovery_rate_pct = predicted_recovery_rate_pct + np.random.normal(0, 2.0)  # ±2% variation
             
             # Apply the same bounds logic as predicted values based on reagent levels
             kex_value = raw_data.get('Pb_Conditioner_KEX_Flowrate', 60.0)
@@ -180,10 +176,10 @@ class FlotationServiceOrchestrator:
             else:
                 actual_recovery_rate_pct = max(75.0, min(90.0, actual_recovery_rate_pct))  # Normal recovery
             
-            # Analyze process status using predicted values
+            # Analyze process status using actual values
             predictions = {
-                'pb_concentrate': predicted_pb_concentrate,
-                'recovery_rate': predicted_recovery_rate_pct
+                'pb_concentrate': actual_pb_concentrate,
+                'recovery_rate': actual_recovery_rate_pct
             }
             
             status = self.status_analyzer.analyze_status(predictions, raw_data)
@@ -199,8 +195,8 @@ class FlotationServiceOrchestrator:
             
             # Store current predictions for next cycle
             self.last_predictions = {
-                'pb_concentrate': predicted_pb_concentrate,
-                'recovery_rate': predicted_recovery_rate_pct
+                'pb_concentrate': actual_pb_concentrate,
+                'recovery_rate': actual_recovery_rate_pct
             }
             
             # Run optimization using the instance optimizer
@@ -213,14 +209,14 @@ class FlotationServiceOrchestrator:
             processed_data = {
                 **raw_data,
                 # Predicted values (from ML model)
-                'Predicted_Pb_Concentrate': predicted_pb_concentrate,
-                'Predicted_Pb_Recovery': predicted_recovery_rate_pct / 100.0,  # Convert to decimal
+                'Predicted_Pb_Concentrate': actual_pb_concentrate,
+                'Predicted_Pb_Recovery': actual_recovery_rate_pct / 100.0,  # Convert to decimal
                 # Actual values (simulated process measurements)
                 'Actual_Pb_Concentrate': actual_pb_concentrate,
                 'Actual_Pb_Recovery': actual_recovery_rate_pct / 100.0,  # Convert to decimal
                 # Legacy fields for backward compatibility
-                'Pb_Concentrate': predicted_pb_concentrate,  # Keep for existing frontend
-                'Pb_Recovery': predicted_recovery_rate_pct / 100.0,  # Keep for existing frontend
+                'Pb_Concentrate': actual_pb_concentrate,  # Keep for existing frontend
+                'Pb_Recovery': actual_recovery_rate_pct / 100.0,  # Keep for existing frontend
                 'Process_Status': status,
                 'Recommendations': recommendations,
                 'model_info': self.ml_model.get_model_info()
@@ -242,9 +238,9 @@ class FlotationServiceOrchestrator:
                 # Check if it's time to save to RES2 (every 5 minutes)
                 if (current_time - self.last_res2_save).total_seconds() >= self.res2_interval * 60:
                     res2_id = self.database.save_to_res2({
-                        'Predicted_Pb_Concentrate': predicted_pb_concentrate,
+                        'Predicted_Pb_Concentrate': actual_pb_concentrate,
                         'Actual_Pb_Concentrate': actual_pb_concentrate,
-                        'Predicted_Pb_Recovery': predicted_recovery_rate_pct / 100.0,
+                        'Predicted_Pb_Recovery': actual_recovery_rate_pct / 100.0,
                         'Actual_Pb_Recovery': actual_recovery_rate_pct / 100.0,
                         'Process_Status': status,
                         'model_confidence': 0.85
@@ -308,7 +304,7 @@ class FlotationServiceOrchestrator:
             except Exception as e:
                 self.logger.error(f"Failed to save data to RES tables: {e}")
             
-            self.logger.debug(f"Generated data point - Status: {status}, Pb: {predicted_pb_concentrate:.2f}, Recovery: {predicted_recovery_rate_pct:.1f}%")
+            self.logger.debug(f"Generated data point - Status: {status}, Pb: {actual_pb_concentrate:.2f}, Recovery: {actual_recovery_rate_pct:.1f}%")
             
             return processed_data
             
