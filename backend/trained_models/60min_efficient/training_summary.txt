@@ -1,0 +1,35 @@
+Efficient 60min Horizon Training Summary
+==================================================
+
+Training Date: 2025-09-04 04:22:36
+Max Features: 150
+Sample Size: 50000
+Training Mode: Efficient (balanced speed vs performance)
+
+RIDGE:
+  Train R²: 0.2941
+  Val R²: 0.2932
+  Test R²: 0.3010
+  Test RMSE: 6.2135
+  Test MAE: 4.4430
+  10% Accuracy: 41.11%
+
+RF:
+  Train R²: 0.9808
+  Val R²: 0.9803
+  Test R²: 0.8919
+  Test RMSE: 2.4438
+  Test MAE: 1.6080
+  10% Accuracy: 77.80%
+
+XGB:
+  Train R²: 0.9951
+  Val R²: 0.9951
+  Test R²: 0.9011
+  Test RMSE: 2.3368
+  Test MAE: 1.5879
+  10% Accuracy: 77.70%
+
+Best Model: XGB
+Target R²: > 90%
+Expected Training Time: < 4 hours

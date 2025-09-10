@@ -1,0 +1,35 @@
+Efficient 30min Horizon Training Summary
+==================================================
+
+Training Date: 2025-09-03 20:21:41
+Max Features: 150
+Sample Size: 50000
+Training Mode: Efficient (balanced speed vs performance)
+
+RIDGE:
+  Train R²: 0.3137
+  Val R²: 0.3138
+  Test R²: 0.3134
+  Test RMSE: 6.1456
+  Test MAE: 4.4053
+  10% Accuracy: 40.92%
+
+RF:
+  Train R²: 0.9825
+  Val R²: 0.9820
+  Test R²: 0.9012
+  Test RMSE: 2.3314
+  Test MAE: 1.5467
+  10% Accuracy: 78.33%
+
+XGB:
+  Train R²: 0.9954
+  Val R²: 0.9954
+  Test R²: 0.9035
+  Test RMSE: 2.3037
+  Test MAE: 1.5686
+  10% Accuracy: 77.75%
+
+Best Model: XGB
+Target R²: > 90%
+Expected Training Time: < 4 hours

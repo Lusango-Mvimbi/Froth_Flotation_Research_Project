@@ -1,52 +1,52 @@
-# Froth Flotation Research Project - Requirements
-# ==============================================
-#
-# This file contains all the Python packages required to run the
-# froth flotation optimization and prediction pipeline.
-#
-# Installation: pip install -r requirements.txt
-#
-# Core Data Processing Libraries
-# ------------------------------
-pandas>=1.5.0          # Data manipulation and analysis
-numpy>=1.21.0          # Numerical computing and array operations
+# Froth Flotation Digital Twin - Production Dependencies
+# Version: 3.1.0 - Updated for Synchronized Updates
 
-# Visualization Libraries
-# -----------------------
-matplotlib>=3.5.0      # Basic plotting and visualization
-seaborn>=0.11.0        # Statistical data visualization
+# Core ML and Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+xgboost>=1.7.0
 
-# Machine Learning Libraries
-# --------------------------
-scikit-learn>=1.1.0    # Core ML algorithms (Random Forest, Ridge, etc.)
-xgboost>=1.6.0         # Gradient boosting with GPU support
-joblib>=1.1.0          # Model serialization and parallel processing
+# Web Framework and API
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+websockets>=12.0
 
-# GPU Acceleration (Optional)
-# ---------------------------
-# Uncomment the line below if you have NVIDIA GPU and want GPU acceleration
-# cupy-cuda12x>=13.0.0  # GPU-accelerated NumPy operations
+# Database
+# sqlite3 - Built-in with Python
 
-# Additional Utilities
-# --------------------
-pathlib2>=2.3.0        # Path manipulation utilities
-warnings>=0.0.1        # Warning management
+# Authentication and Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
 
-# Development and Jupyter (Optional)
-# ----------------------------------
-# Uncomment these if you want to use Jupyter notebooks
-# jupyter>=1.0.0        # Jupyter notebook environment
-# ipykernel>=6.0.0      # Python kernel for Jupyter
+# HTTP Client
+httpx>=0.25.0
+requests>=2.31.0
 
-# System Requirements
-# -------------------
-# - Python 3.8 or higher
-# - NVIDIA GPU (optional, for GPU acceleration)
-# - CUDA 11.0 or higher (optional, for GPU acceleration)
+# CORS and Middleware
+# fastapi-cors - Built into FastAPI
 
-# Installation Notes
-# ------------------
-# 1. For GPU support, install CUDA toolkit first
-# 2. Install cupy-cuda12x after CUDA installation
-# 3. Some packages may require additional system dependencies
-# 4. For Windows users, some GPU packages may not be available
+# Logging and Monitoring
+python-json-logger>=2.0.0
+
+# Development and Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# Async Support
+# asyncio - Built-in with Python
+
+# Date and Time
+python-dateutil>=2.8.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Additional Dependencies for Production
+flask>=2.3.0
+selenium>=4.15.0
