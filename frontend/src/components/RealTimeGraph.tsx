@@ -82,7 +82,7 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-dark-800 border border-dark-600 rounded-lg p-3 shadow-lg">
+        <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg">
           <p className="text-white font-semibold mb-2">
             Time: {payload[0].payload.timestamp}
           </p>
@@ -109,12 +109,12 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="glass rounded-xl p-6 h-96 flex items-center justify-center"
+        className="bg-slate-800 border border-slate-600 rounded-xl p-6 h-96 flex items-center justify-center shadow-sm"
       >
         <div className="text-center">
-          <Activity className="h-12 w-12 text-dark-400 mx-auto mb-4" />
+          <Activity className="h-12 w-12 text-slate-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">No Data Available</h3>
-          <p className="text-dark-300">Waiting for real-time data...</p>
+          <p className="text-slate-300">Waiting for real-time data...</p>
         </div>
       </motion.div>
     );
@@ -124,7 +124,7 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-xl p-6 h-full"
+      className="bg-slate-800 border border-slate-600 rounded-xl p-6 h-full shadow-sm"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -134,13 +134,13 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Real-time Performance & Optimization</h2>
-            <p className="text-sm text-dark-300">Live process monitoring with optimization insights</p>
+            <p className="text-sm text-slate-300">Live process monitoring with optimization insights</p>
           </div>
         </div>
         
         <div className="flex items-center space-x-4">
           {currentData && (
-            <div className="flex items-center space-x-2 text-sm text-dark-300">
+            <div className="flex items-center space-x-2 text-sm text-slate-300">
               <Clock className="h-4 w-4" />
               <span>Last update: {new Date(currentData.timestamp).toLocaleTimeString()}</span>
             </div>
@@ -239,36 +239,36 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
           <h4 className="text-base font-semibold text-white mb-3">Process Parameters</h4>
           <div className="grid grid-cols-3 gap-3 text-sm">
             {/* ONLY parameters from training data */}
-            <div className="p-3 bg-dark-700/30 rounded">
-              <span className="text-dark-300">Feed Pb:</span>
+            <div className="p-3 bg-slate-700/30 rounded">
+              <span className="text-slate-300">Feed Pb:</span>
               <span className="text-white ml-2 font-medium">
                 {typeof currentData.Feed_Pb === 'number' && !isNaN(currentData.Feed_Pb) 
                   ? currentData.Feed_Pb.toFixed(2) 
                   : 'N/A'}%
               </span>
             </div>
-            <div className="p-3 bg-dark-700/30 rounded">
-              <span className="text-dark-300">Feed Zn:</span>
+            <div className="p-3 bg-slate-700/30 rounded">
+              <span className="text-slate-300">Feed Zn:</span>
               <span className="text-white ml-2 font-medium">
                 {typeof currentData.Feed_Zn === 'number' && !isNaN(currentData.Feed_Zn) 
                   ? currentData.Feed_Zn.toFixed(2) 
                   : 'N/A'}%
               </span>
             </div>
-            <div className="p-3 bg-dark-700/30 rounded">
-              <span className="text-dark-300">KEX Flow:</span>
+            <div className="p-3 bg-slate-700/30 rounded">
+              <span className="text-slate-300">KEX Flow:</span>
               <span className="text-white ml-2 font-medium">{currentData.Pb_Conditioner_KEX_Flowrate}</span>
             </div>
-            <div className="p-3 bg-dark-700/30 rounded">
-              <span className="text-dark-300">SIPX Flow:</span>
+            <div className="p-3 bg-slate-700/30 rounded">
+              <span className="text-slate-300">SIPX Flow:</span>
               <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_SIPX_Flowrate}</span>
             </div>
-            <div className="p-3 bg-dark-700/30 rounded">
-              <span className="text-dark-300">Air Flow:</span>
+            <div className="p-3 bg-slate-700/30 rounded">
+              <span className="text-slate-300">Air Flow:</span>
               <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_AirFlow}</span>
             </div>
-            <div className="p-3 bg-dark-700/30 rounded">
-              <span className="text-dark-300">Cell Level:</span>
+            <div className="p-3 bg-slate-700/30 rounded">
+              <span className="text-slate-300">Cell Level:</span>
               <span className="text-white ml-2 font-medium">{currentData.Pb_Rougher1_Level}</span>
             </div>
           </div>
@@ -277,19 +277,19 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
 
        {/* Recommendations Panel */}
        <div className="mt-6">
-         <div className="p-4 bg-dark-700/50 rounded-lg border border-dark-600">
+         <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
            <h4 className="text-base font-semibold text-white mb-3">Recommendations</h4>
            {recommendations && recommendations.length > 0 ? (
              <div className="space-y-3">
                {recommendations.map((rec, index) => (
                  <div key={index} className="flex items-start space-x-3 text-sm">
                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                   <span className="text-dark-300 leading-relaxed">{rec.message}</span>
+                   <span className="text-slate-300 leading-relaxed">{rec.message}</span>
                  </div>
                ))}
              </div>
            ) : (
-             <p className="text-sm text-dark-400">No recommendations available at this time.</p>
+             <p className="text-sm text-slate-400">No recommendations available at this time.</p>
            )}
          </div>
        </div>

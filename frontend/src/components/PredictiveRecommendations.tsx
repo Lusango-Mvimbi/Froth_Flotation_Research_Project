@@ -17,6 +17,7 @@ import {
   Brain
 } from 'lucide-react';
 import { FlotationData, ProcessControls, Recommendation } from '../types';
+import { RecommendationsSkeleton } from './LoadingSkeleton';
 import { flotationAPI } from '../services/api';
 import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
@@ -66,7 +67,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     
     // Define targets based on supervisor's expectations
     const CONCENTRATE_TARGET = 18.0; // Target concentrate grade
-    const TAILINGS_LIMIT = 2.0; // Maximum tailings grade (we'll need to add this)
     const KEX_OPTIMAL_MIN = 50;
     const KEX_OPTIMAL_MAX = 70;
     const SIPX_OPTIMAL_MIN = 15;
@@ -288,7 +288,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       case 'info':
         return <Info className="h-5 w-5 text-info-400" />;
       default:
-        return <Info className="h-5 w-5 text-dark-400" />;
+        return <Info className="h-5 w-5 text-slate-400" />;
     }
   };
 
@@ -301,7 +301,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       case 'low':
         return 'text-info-400 bg-info-900/20';
       default:
-        return 'text-dark-400 bg-dark-700/20';
+        return 'text-slate-400 bg-slate-700/20';
     }
   };
 
@@ -504,14 +504,14 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
   };
 
   return (
-    <div className="bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6">
+    <div className="bg-slate-800 border border-slate-600 rounded-xl p-6 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Brain className="h-6 w-6 text-primary-400" />
           <div>
             <h3 className="text-lg font-semibold text-white">Predictive Recommendations</h3>
-            <p className="text-sm text-dark-300">AI-powered insights and action suggestions</p>
+            <p className="text-sm text-slate-300">AI-powered insights and action suggestions</p>
           </div>
         </div>
         
@@ -519,10 +519,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
       {/* Loading State */}
       {loading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400 mx-auto mb-4"></div>
-          <p className="text-dark-300">Analyzing predictions...</p>
-        </div>
+        <RecommendationsSkeleton />
       )}
 
 
@@ -536,13 +533,13 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
               <span>Updating...</span>
             </div>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {recommendations.map((recommendation) => (
             <motion.div
               key={recommendation.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`bg-dark-700/50 rounded-lg p-4 border border-dark-600 hover:border-primary-500/50 transition-all duration-200 ${
+              className={`bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:border-primary-500/50 transition-all duration-200 ${
                 selectedRecommendation === recommendation.id ? 'ring-2 ring-primary-500/50' : ''
               }`}
               onClick={() => setSelectedRecommendation(recommendation.id)}
@@ -558,25 +555,25 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1 text-xs text-dark-400">
+                <div className="flex items-center space-x-1 text-xs text-slate-400">
                   <Clock className="h-3 w-3" />
                   <span>{recommendation.timeHorizon}</span>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-dark-300 mb-3">{recommendation.description}</p>
+              <p className="text-sm text-slate-300 mb-3">{recommendation.description}</p>
 
               {/* Parameter Details */}
-              <div className="bg-dark-600/50 rounded-lg p-3 mb-3">
+              <div className="bg-slate-600/50 rounded-lg p-3 mb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-dark-400">Parameter</span>
-                  <span className="text-xs text-dark-400">Current → Suggested</span>
+                  <span className="text-xs text-slate-400">Parameter</span>
+                  <span className="text-xs text-slate-400">Current → Suggested</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white">{recommendation.parameter}</span>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-dark-300">{recommendation.currentValue}</span>
+                    <span className="text-sm text-slate-300">{recommendation.currentValue}</span>
                     <ArrowUp className="h-3 w-3 text-primary-400" />
                     <span className="text-sm font-medium text-primary-400">{recommendation.suggestedValue}</span>
                   </div>
@@ -585,15 +582,15 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
               {/* Expected Outcome */}
               <div className="mb-3">
-                <span className="text-xs text-dark-400">Expected Outcome:</span>
+                <span className="text-xs text-slate-400">Expected Outcome:</span>
                 <p className="text-sm text-white font-medium">{recommendation.expectedOutcome}</p>
               </div>
 
               {/* Confidence */}
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-dark-400">Model Confidence</span>
+                <span className="text-xs text-slate-400">Model Confidence</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-16 bg-dark-600 rounded-full h-2">
+                  <div className="w-16 bg-slate-600 rounded-full h-2">
                     <div 
                       className="bg-primary-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(recommendation.confidence || 0.8) * 100}%` }}
@@ -627,7 +624,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                     e.stopPropagation();
                     handleSimulateScenario(recommendation);
                   }}
-                  className="flex items-center space-x-1 px-3 py-2 bg-dark-600 text-dark-300 hover:text-white rounded-lg text-xs font-medium transition-all duration-200"
+                  className="flex items-center space-x-1 px-3 py-2 bg-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-all duration-200"
                 >
                   <Zap className="h-3 w-3" />
                   <span>Simulate</span>
@@ -644,22 +641,22 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         <div className="text-center py-8">
           <CheckCircle className="h-12 w-12 text-success-400 mx-auto mb-4" />
           <h4 className="text-lg font-semibold text-white mb-2">All Systems Optimal</h4>
-          <p className="text-dark-300">No immediate recommendations at this time</p>
+          <p className="text-slate-300">No immediate recommendations at this time</p>
         </div>
       )}
 
       {/* Future Predictions Summary */}
       {futurePredictions && (
-        <div className="mt-6 p-4 bg-dark-700/30 rounded-lg">
-          <h4 className="text-sm font-medium text-dark-300 mb-3">Prediction Summary</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mt-6 p-4 bg-slate-700/30 rounded-lg">
+          <h4 className="text-sm font-medium text-slate-300 mb-3">Prediction Summary</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {Object.entries(futurePredictions.future_predictions).map(([horizon, prediction]) => {
               const currentValue = currentData?.Actual_Pb_Concentrate || 0;
               const change = prediction.prediction - currentValue;
               
               return (
                 <div key={horizon} className="flex items-center justify-between">
-                  <span className="text-sm text-dark-300">{horizon} Forecast</span>
+                  <span className="text-sm text-slate-300">{horizon} Forecast</span>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-white">
                       {prediction.prediction.toFixed(2)}%
@@ -669,7 +666,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                     ) : change < 0 ? (
                       <TrendingDown className="h-4 w-4 text-danger-400" />
                     ) : (
-                      <div className="h-4 w-4 text-dark-400">—</div>
+                      <div className="h-4 w-4 text-slate-400">—</div>
                     )}
                   </div>
                 </div>
@@ -686,7 +683,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            className="bg-slate-800 border border-slate-600 rounded-xl p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-sm"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-4">
@@ -696,14 +693,14 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white">Simulation Results</h3>
-                  <p className="text-sm text-dark-300">{simulationModal.recommendation?.title}</p>
+                  <p className="text-sm text-slate-300">{simulationModal.recommendation?.title}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSimulationModal({ isOpen: false, data: null, recommendation: null })}
-                className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <svg className="h-5 w-5 text-dark-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -713,48 +710,48 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             {simulationModal.data && (
               <div className="space-y-4">
                 {/* Current vs Expected Comparison */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {/* Current Settings */}
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-dark-300 mb-3">Current Settings</h4>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-slate-300 mb-3">Current Settings</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">KEX Flowrate:</span>
+                        <span className="text-sm text-slate-400">KEX Flowrate:</span>
                         <span className="text-sm font-medium text-white">{simulationModal.data.currentKex}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">SIPX Flowrate:</span>
+                        <span className="text-sm text-slate-400">SIPX Flowrate:</span>
                         <span className="text-sm font-medium text-white">{simulationModal.data.currentSipx}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Pb Concentrate:</span>
+                        <span className="text-sm text-slate-400">Pb Concentrate:</span>
                         <span className="text-sm font-medium text-white">{simulationModal.data.currentConcentrate.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Recovery Rate:</span>
+                        <span className="text-sm text-slate-400">Recovery Rate:</span>
                         <span className="text-sm font-medium text-white">{(simulationModal.data.currentRecovery * 100).toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Expected Outcome */}
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-dark-300 mb-3">Expected Outcome</h4>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-slate-300 mb-3">Expected Outcome</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">KEX Flowrate:</span>
+                        <span className="text-sm text-slate-400">KEX Flowrate:</span>
                         <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalKex}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">SIPX Flowrate:</span>
+                        <span className="text-sm text-slate-400">SIPX Flowrate:</span>
                         <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalSipx}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Pb Concentrate:</span>
+                        <span className="text-sm text-slate-400">Pb Concentrate:</span>
                         <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalConcentrate.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Recovery Rate:</span>
+                        <span className="text-sm text-slate-400">Recovery Rate:</span>
                         <span className="text-sm font-medium text-primary-400">{(simulationModal.data.optimalRecovery * 100).toFixed(1)}%</span>
                       </div>
                     </div>
@@ -762,36 +759,36 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                 </div>
 
                 {/* Performance Impact */}
-                <div className="bg-dark-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">Performance Impact</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-slate-300 mb-3">Performance Impact</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-white mb-1">
                         {((simulationModal.data.optimalConcentrate - simulationModal.data.currentConcentrate) / simulationModal.data.currentConcentrate * 100).toFixed(1)}%
                       </div>
-                      <div className="text-xs text-dark-400">Pb Concentrate Change</div>
+                      <div className="text-xs text-slate-400">Pb Concentrate Change</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-white mb-1">
                         {((simulationModal.data.optimalRecovery - simulationModal.data.currentRecovery) / simulationModal.data.currentRecovery * 100).toFixed(1)}%
                       </div>
-                      <div className="text-xs text-dark-400">Recovery Rate Change</div>
+                      <div className="text-xs text-slate-400">Recovery Rate Change</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Recommendation Details */}
                 {simulationModal.recommendation && (
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-dark-300 mb-3">Recommendation Details</h4>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-slate-300 mb-3">Recommendation Details</h4>
                     <div className="space-y-2">
                       <p className="text-sm text-white">{simulationModal.recommendation.description}</p>
-                      <p className="text-sm text-dark-300">{simulationModal.recommendation.expectedOutcome}</p>
+                      <p className="text-sm text-slate-300">{simulationModal.recommendation.expectedOutcome}</p>
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-dark-400">Time Horizon:</span>
+                        <span className="text-xs text-slate-400">Time Horizon:</span>
                         <span className="text-xs font-medium text-white">{simulationModal.recommendation.timeHorizon}</span>
-                        <span className="text-xs text-dark-400">•</span>
-                        <span className="text-xs text-dark-400">Confidence:</span>
+                        <span className="text-xs text-slate-400">•</span>
+                        <span className="text-xs text-slate-400">Confidence:</span>
                         <span className="text-xs font-medium text-white">{((simulationModal.recommendation.confidence || 0.8) * 100).toFixed(0)}%</span>
                       </div>
                     </div>
@@ -848,7 +845,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   </button>
                   <button
                     onClick={() => setSimulationModal({ isOpen: false, data: null, recommendation: null })}
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-dark-600 hover:bg-dark-700 text-white rounded-lg font-medium transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
                   >
                     <span>Close</span>
                   </button>
@@ -866,7 +863,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-6 max-w-md w-full"
+            className="bg-slate-800 border border-slate-600 rounded-xl p-6 max-w-md w-full"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
@@ -886,16 +883,16 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   <h3 className="text-lg font-semibold text-white">
                     {quickActionModal.success ? 'Quick Action Applied' : 'Quick Action Failed'}
                   </h3>
-                  <p className="text-sm text-dark-300">
+                  <p className="text-sm text-slate-300">
                     {quickActionModal.recommendation?.title}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setQuickActionModal({ isOpen: false, recommendation: null, success: false, message: '' })}
-                className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <svg className="h-5 w-5 text-dark-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -905,29 +902,29 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             <div className="space-y-4">
               {/* Action Details */}
               {quickActionModal.recommendation && (
-                <div className="bg-dark-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">Action Details</h4>
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-slate-300 mb-3">Action Details</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Parameter:</span>
+                      <span className="text-sm text-slate-400">Parameter:</span>
                       <span className="text-sm font-medium text-white">
                         {quickActionModal.recommendation.parameter}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Current Value:</span>
+                      <span className="text-sm text-slate-400">Current Value:</span>
                       <span className="text-sm font-medium text-white">
                         {quickActionModal.recommendation.currentValue}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Suggested Value:</span>
+                      <span className="text-sm text-slate-400">Suggested Value:</span>
                       <span className="text-sm font-medium text-primary-400">
                         {quickActionModal.recommendation.suggestedValue}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Action Type:</span>
+                      <span className="text-sm text-slate-400">Action Type:</span>
                       <span className={`text-sm font-medium capitalize ${
                         quickActionModal.recommendation.actionType === 'increase' 
                           ? 'text-success-400'
@@ -969,18 +966,18 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
               {/* Expected Outcome */}
               {quickActionModal.recommendation && quickActionModal.success && (
-                <div className="bg-dark-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-dark-300 mb-2">Expected Outcome</h4>
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-slate-300 mb-2">Expected Outcome</h4>
                   <p className="text-sm text-white">
                     {quickActionModal.recommendation.expectedOutcome}
                   </p>
                   <div className="flex items-center space-x-2 mt-2">
-                    <span className="text-xs text-dark-400">Time Horizon:</span>
+                    <span className="text-xs text-slate-400">Time Horizon:</span>
                     <span className="text-xs font-medium text-white">
                       {quickActionModal.recommendation.timeHorizon}
                     </span>
-                    <span className="text-xs text-dark-400">•</span>
-                    <span className="text-xs text-dark-400">Confidence:</span>
+                    <span className="text-xs text-slate-400">•</span>
+                    <span className="text-xs text-slate-400">Confidence:</span>
                     <span className="text-xs font-medium text-white">
                       {((quickActionModal.recommendation.confidence || 0.8) * 100).toFixed(0)}%
                     </span>
@@ -995,7 +992,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                     quickActionModal.success
                       ? 'bg-success-600 hover:bg-success-700 text-white'
-                      : 'bg-dark-600 hover:bg-dark-700 text-white'
+                      : 'bg-slate-600 hover:bg-slate-700 text-white'
                   }`}
                 >
                   {quickActionModal.success ? 'Continue' : 'Close'}

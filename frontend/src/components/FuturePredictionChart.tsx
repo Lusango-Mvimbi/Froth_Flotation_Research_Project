@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  LineChart, 
   Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer
+  ResponsiveContainer,
+  Area,
+  ComposedChart
 } from 'recharts';
 import { 
   TrendingUp, 
@@ -19,6 +20,7 @@ import {
   Pause
 } from 'lucide-react';
 import { FlotationData, FuturePredictionResponse } from '../types';
+import { ChartSkeleton } from './LoadingSkeleton';
 
 interface FuturePredictionChartProps {
   currentData: FlotationData | null;
@@ -211,9 +213,11 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0]?.payload;
+      
       return (
-        <div className="bg-dark-800 border border-dark-600 rounded-lg p-3 shadow-lg">
-          <p className="text-dark-300 text-sm mb-2">
+        <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-sm">
+          <p className="text-slate-300 text-sm mb-2">
             {formatTimestamp(label)}
           </p>
           {payload.map((entry: any, index: number) => (
@@ -227,6 +231,25 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
               </span>
             </div>
           ))}
+          
+          {/* Show confidence intervals if available */}
+          {showConfidenceIntervals && data && (
+            <div className="mt-2 pt-2 border-t border-slate-600">
+              <p className="text-xs text-slate-400 mb-1">Confidence Intervals:</p>
+              {['5min', '15min', '30min', '60min'].map(horizon => {
+                const lower = data[`confidence_lower_${horizon}`];
+                const upper = data[`confidence_upper_${horizon}`];
+                if (lower !== undefined && upper !== undefined) {
+                  return (
+                    <div key={horizon} className="text-xs text-slate-400">
+                      {horizon}: {lower?.toFixed(2)}% - {upper?.toFixed(2)}%
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          )}
         </div>
       );
     }
@@ -239,18 +262,18 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
     } else if (predicted < current) {
       return <TrendingDown className="h-4 w-4 text-danger-400" />;
     }
-    return <div className="h-4 w-4 text-dark-400">—</div>;
+    return <div className="h-4 w-4 text-slate-400">—</div>;
   };
 
   return (
-    <div className="bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6">
+    <div className="bg-slate-800 border border-slate-600 rounded-xl p-4 sm:p-6 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <div className="flex items-center space-x-3">
           <Target className="h-6 w-6 text-primary-400" />
           <div>
             <h3 className="text-lg font-semibold text-white">Future Predictions</h3>
-            <p className="text-sm text-dark-300">Time-series analysis with ML predictions</p>
+            <p className="text-sm text-slate-300">Time-series analysis with ML predictions</p>
           </div>
         </div>
         
@@ -262,7 +285,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               autoRefresh 
                 ? 'bg-primary-600 text-white' 
-                : 'bg-dark-700 text-dark-300 hover:text-white'
+                : 'bg-slate-700 text-slate-300 hover:text-white'
             }`}
           >
             {autoRefresh ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -275,8 +298,8 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
       {/* Controls Panel */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Horizon Selection */}
-        <div className="bg-dark-700/50 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-dark-300 mb-3">Prediction Horizons</h4>
+        <div className="bg-slate-700/50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-slate-300 mb-3">Prediction Horizons</h4>
                      <div className="space-y-2">
              {['5min', '15min', '30min', '60min'].map((horizon) => (
                <label key={horizon} className="flex items-center space-x-2 cursor-pointer">
@@ -284,7 +307,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
                    type="checkbox"
                    checked={selectedHorizons.has(horizon)}
                    onChange={() => toggleHorizon(horizon)}
-                   className="rounded border-dark-500 text-primary-600 focus:ring-primary-500"
+                   className="rounded border-slate-500 text-primary-600 focus:ring-primary-500"
                  />
                  <span className="text-sm text-white">{horizon}</span>
                </label>
@@ -293,12 +316,12 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
         </div>
 
         {/* Time Range */}
-        <div className="bg-dark-700/50 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-dark-300 mb-3">Time Range</h4>
+        <div className="bg-slate-700/50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-slate-300 mb-3">Time Range</h4>
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value as any)}
-            className="w-full bg-dark-600 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:ring-primary-500 focus:border-primary-500"
+            className="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-sm text-white focus:ring-primary-500 focus:border-primary-500"
           >
             <option value="1h">Last Hour</option>
             <option value="6h">Last 6 Hours</option>
@@ -307,14 +330,14 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
         </div>
 
         {/* Display Options */}
-        <div className="bg-dark-700/50 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-dark-300 mb-3">Display Options</h4>
+        <div className="bg-slate-700/50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-slate-300 mb-3">Display Options</h4>
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
               checked={showConfidenceIntervals}
               onChange={(e) => setShowConfidenceIntervals(e.target.checked)}
-              className="rounded border-dark-500 text-primary-600 focus:ring-primary-500"
+              className="rounded border-slate-500 text-primary-600 focus:ring-primary-500"
             />
             <span className="text-sm text-white">Show Confidence Intervals</span>
           </label>
@@ -325,7 +348,7 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
       <div className="h-96 mb-6">
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="2 2" stroke="#4B5563" strokeOpacity={0.3} />
               <XAxis 
                 dataKey="timestamp" 
@@ -345,6 +368,38 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
+              
+              {/* Confidence Interval Areas (render first so they appear behind the lines) */}
+              {showConfidenceIntervals && (() => {
+                const horizonColors: Record<string, string> = {
+                  '5min': '#10B981',   // Green
+                  '15min': '#F59E0B',  // Orange
+                  '30min': '#8B5CF6',  // Purple
+                  '60min': '#3B82F6'   // Blue
+                };
+                
+                return ['5min', '15min', '30min', '60min'].map(horizon => {
+                  if (!selectedHorizons.has(horizon)) {
+                    return null;
+                  }
+                  
+                  const color = horizonColors[horizon];
+                  const upperKey = `confidence_upper_${horizon}`;
+                  
+                  return (
+                    <Area
+                      key={`${horizon}-confidence`}
+                      type="monotone"
+                      dataKey={upperKey}
+                      stroke="none"
+                      fill={color}
+                      fillOpacity={0.1}
+                      connectNulls={true}
+                      name={`${horizon} Confidence`}
+                    />
+                  );
+                });
+              })()}
               
               {/* Current values */}
               <Line
@@ -395,13 +450,13 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
                   );
                 });
               })()}
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Clock className="h-12 w-12 text-dark-400 mx-auto mb-4" />
-              <p className="text-dark-300">No data available</p>
+              <Clock className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-300">No data available</p>
             </div>
           </div>
         )}
@@ -419,19 +474,19 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
                 key={horizon}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-dark-700/50 rounded-lg p-4 border border-dark-600"
+                className="bg-slate-700/50 rounded-lg p-4 border border-slate-600"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-dark-300">{horizon} Prediction</h4>
+                  <h4 className="text-sm font-medium text-slate-300">{horizon} Prediction</h4>
                   {trendIcon}
                 </div>
                 <div className="text-2xl font-bold text-white mb-1">
                   {prediction.prediction.toFixed(2)}%
                 </div>
-                <div className="text-xs text-dark-400 mb-2">
+                <div className="text-xs text-slate-400 mb-2">
                   Confidence: {(prediction.model_performance.r2_score * 100).toFixed(1)}%
                 </div>
-                <div className="text-xs text-dark-400">
+                <div className="text-xs text-slate-400">
                   {prediction.confidence_interval.lower.toFixed(2)}% - {prediction.confidence_interval.upper.toFixed(2)}%
                 </div>
               </motion.div>
@@ -442,11 +497,8 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
 
       {/* Loading State */}
       {loading && (
-        <div className="absolute inset-0 bg-dark-800/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400 mx-auto mb-4"></div>
-            <p className="text-dark-300">Updating predictions...</p>
-          </div>
+        <div className="absolute inset-0 bg-slate-800/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
+          <ChartSkeleton />
         </div>
       )}
     </div>

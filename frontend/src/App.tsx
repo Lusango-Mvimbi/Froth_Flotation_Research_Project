@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Dashboard from './components/Dashboard';
+import TabbedDashboard from './components/TabbedDashboard';
 import Login from './components/Login';
 import { useAuth } from './hooks/useAuthRefactored';
+import { ErrorProvider } from './contexts/ErrorContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
 // Authentication wrapper component
@@ -14,10 +16,10 @@ const AuthWrapper: React.FC = () => {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <p className="text-dark-300">Initializing...</p>
+          <p className="text-slate-300">Initializing...</p>
         </div>
       </div>
     );
@@ -50,12 +52,12 @@ const AuthWrapper: React.FC = () => {
         path="/dashboard" 
         element={
           isAuthenticated ? (
-            <Dashboard />
+            <TabbedDashboard />
           ) : (
-            <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center">
                            <div className="text-center">
                <h1 className="text-2xl font-bold text-white mb-4">Authentication Required</h1>
-               <p className="text-dark-300 mb-6">Please log in to access the dashboard</p>
+               <p className="text-slate-300 mb-6">Please log in to access the dashboard</p>
                <div className="space-y-4">
                  <a 
                    href="/login" 
@@ -108,41 +110,45 @@ const AuthWrapper: React.FC = () => {
 const App: React.FC = () => {
   
   return (
-    <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
-      <div className="App">
-        <AuthWrapper />
-        
-        {/* Toast notifications */}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#1e293b',
-              color: '#e2e8f0',
-              border: '1px solid #475569',
-            },
-            success: {
-              iconTheme: {
-                primary: '#22c55e',
-                secondary: '#e2e8f0',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#e2e8f0',
-              },
-            },
+    <ErrorProvider>
+      <ErrorBoundary>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
           }}
-        />
-      </div>
-    </Router>
+        >
+          <div className="App">
+            <AuthWrapper />
+            
+            {/* Toast notifications */}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#1e293b',
+                  color: '#e2e8f0',
+                  border: '1px solid #475569',
+                },
+                success: {
+                  iconTheme: {
+                    primary: '#22c55e',
+                    secondary: '#e2e8f0',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#e2e8f0',
+                  },
+                },
+              }}
+            />
+          </div>
+        </Router>
+      </ErrorBoundary>
+    </ErrorProvider>
   );
 };
 

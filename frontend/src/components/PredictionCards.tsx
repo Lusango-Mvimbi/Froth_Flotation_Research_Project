@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -13,6 +13,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { Prediction, FlotationData, PerformanceState, TargetRanges, FuturePredictionResponse } from '../types';
+import { PredictionCardsSkeleton } from './LoadingSkeleton';
 
 interface PredictionCardsProps {
   predictions: Prediction | null;
@@ -36,7 +37,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
   const getPerformanceState = (value: number, metric: 'pb' | 'recovery' | 'feed_grade'): PerformanceState => {
     if (!targetRanges) {
       // No fallback - return neutral state if no target ranges available
-      return { state: 'within_range' as const, color: 'text-dark-400', backgroundColor: 'bg-dark-700/20' };
+      return { state: 'within_range' as const, color: 'text-slate-400', backgroundColor: 'bg-slate-700/20' };
     }
 
     // Use dynamic target ranges from backend
@@ -81,26 +82,24 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
 
   if (!predictions || !currentData) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6 animate-pulse"
+            className="bg-slate-800 border border-slate-600 rounded-xl p-6 animate-pulse shadow-sm"
           >
-            <div className="h-8 bg-dark-700 rounded mb-4"></div>
-            <div className="h-4 bg-dark-700 rounded mb-2"></div>
-            <div className="h-4 bg-dark-700 rounded w-2/3"></div>
+            <div className="h-8 bg-slate-700 rounded mb-4"></div>
+            <div className="h-4 bg-slate-700 rounded mb-2"></div>
+            <div className="h-4 bg-slate-700 rounded w-2/3"></div>
           </motion.div>
         ))}
       </div>
     );
   }
 
-  const pbPerformance = getPerformanceState(predictions.predicted_pb, 'pb');
-  const recoveryPerformance = getPerformanceState(predictions.recovery_efficiency, 'recovery');
   const feedGradePerformance = getPerformanceState(currentData.Feed_Pb, 'feed_grade');
 
   // Helper function to get target range string
@@ -291,7 +290,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-lg p-1">
+      <div className="flex space-x-1 bg-slate-800 border border-slate-600 rounded-lg p-1 shadow-sm">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -301,7 +300,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
               className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 activeTab === tab.id
                   ? 'bg-primary-600 text-white shadow-lg'
-                  : 'text-dark-300 hover:text-white hover:bg-dark-700/50'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -315,7 +314,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
+      <div className="grid grid-cols-6 gap-6">
         {cards.map((card, index) => (
           <motion.div
             key={`${activeTab}-${card.title}`}
@@ -323,7 +322,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            className={`relative overflow-hidden bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6 sm:p-8 transition-all duration-300 ${card.performance.backgroundColor}`}
+            className={`relative overflow-hidden bg-slate-800 border border-slate-600 rounded-xl p-4 sm:p-6 lg:p-8 transition-all duration-300 shadow-sm ${card.performance.backgroundColor}`}
           >
             {/* Performance indicator bar */}
             <div className={`absolute top-0 left-0 right-0 h-1 ${card.performance.color.replace('text-', 'bg-')}`} />
@@ -332,7 +331,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center space-x-2 flex-1 min-w-0">
                 <card.icon className={`h-4 w-4 ${card.method ? 'text-primary-400' : card.performance.color} flex-shrink-0`} />
-                <h3 className="text-xs font-medium text-dark-300 uppercase tracking-wide leading-tight">
+                <h3 className="text-xs font-medium text-slate-300 uppercase tracking-wide leading-tight">
                   {card.title}
                 </h3>
               </div>
@@ -349,9 +348,9 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
                 ) : card.trend === 'down' ? (
                   <TrendingDown className="h-3 w-3 text-danger-400" />
                 ) : (
-                  <div className="h-3 w-3 text-dark-400">—</div>
+                  <div className="h-3 w-3 text-slate-400">—</div>
                 )}
-                <span className="text-xs text-dark-200 font-medium">
+                <span className="text-xs text-slate-200 font-medium">
                   Target: {card.target}
                 </span>
               </div>
@@ -370,7 +369,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
             <motion.div
               initial={{ opacity: 0 }}
               whileHover={{ opacity: 1 }}
-              className="absolute inset-0 bg-gradient-to-br from-transparent to-dark-900/20 pointer-events-none"
+              className="absolute inset-0 bg-gradient-to-br from-transparent to-slate-900/20 pointer-events-none"
             />
           </motion.div>
         ))}
@@ -378,17 +377,14 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
 
       {/* Loading State for Future Predictions */}
       {loading && activeTab !== 'current' && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400 mx-auto mb-4"></div>
-          <p className="text-dark-300">Loading future predictions...</p>
-        </div>
+        <PredictionCardsSkeleton />
       )}
 
       {/* Error State for Future Predictions */}
       {!loading && activeTab !== 'current' && !futurePredictions && (
         <div className="text-center py-8">
           <AlertTriangle className="h-8 w-8 text-warning-400 mx-auto mb-4" />
-          <p className="text-dark-300">Unable to load future predictions</p>
+          <p className="text-slate-300">Unable to load future predictions</p>
         </div>
       )}
     </div>
