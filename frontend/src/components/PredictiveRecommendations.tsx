@@ -16,7 +16,7 @@ import {
   RotateCcw,
   Brain
 } from 'lucide-react';
-import { FlotationData, ProcessControls } from '../types';
+import { FlotationData, ProcessControls, Recommendation } from '../types';
 import { flotationAPI } from '../services/api';
 import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
@@ -27,20 +27,6 @@ interface PredictiveRecommendationsProps {
   currentControls?: ProcessControls;
 }
 
-interface Recommendation {
-  id: string;
-  type: 'improvement' | 'risk' | 'optimization' | 'info';
-  title: string;
-  description: string;
-  parameter: string;
-  currentValue: number;
-  suggestedValue: number;
-  expectedOutcome: string;
-  timeHorizon: string;
-  confidence: number;
-  impact: 'high' | 'medium' | 'low';
-  actionType: 'increase' | 'decrease' | 'maintain';
-}
 
 const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({ 
   currentData, 
@@ -77,101 +63,100 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
     const newRecommendations: Recommendation[] = [];
     const currentPb = currentData.Actual_Pb_Concentrate;
+    
+    // Define targets based on supervisor's expectations
+    const CONCENTRATE_TARGET = 18.0; // Target concentrate grade
+    const TAILINGS_LIMIT = 2.0; // Maximum tailings grade (we'll need to add this)
+    const KEX_OPTIMAL_MIN = 50;
+    const KEX_OPTIMAL_MAX = 70;
+    const SIPX_OPTIMAL_MIN = 15;
+    const SIPX_OPTIMAL_MAX = 35;
 
-    // Analyze 5-minute predictions
-    const pred5min = futurePredictions.future_predictions['5min'];
-    if (pred5min) {
-      const change5min = pred5min.prediction - (currentPb || 0);
-      
-      if (change5min > 2) {
-        // Significant improvement expected
-        newRecommendations.push({
-          id: '5min-improvement',
-          type: 'improvement',
-          title: 'Strong Performance Expected',
-          description: `Pb concentrate is predicted to increase by ${change5min.toFixed(2)}% in 5 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred5min.prediction,
-          expectedOutcome: `Expected to reach ${pred5min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '5 minutes',
-          confidence: pred5min.model_performance.r2_score,
-          impact: 'high',
-          actionType: 'maintain'
-        });
-      } else if (change5min < -2) {
-        // Potential decline
-        newRecommendations.push({
-          id: '5min-risk',
-          type: 'risk',
-          title: 'Performance Decline Warning',
-          description: `Pb concentrate is predicted to decrease by ${Math.abs(change5min).toFixed(2)}% in 5 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred5min.prediction,
-          expectedOutcome: `May drop to ${pred5min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '5 minutes',
-          confidence: pred5min.model_performance.r2_score,
-          impact: 'high',
-          actionType: 'increase'
-        });
-      }
-    }
-
-    // Analyze 60-minute predictions
-    const pred60min = futurePredictions.future_predictions['60min'];
-    if (pred60min) {
-      const change60min = pred60min.prediction - (currentPb || 0);
-      
-      if (change60min > 3) {
-        newRecommendations.push({
-          id: '60min-optimization',
-          type: 'optimization',
-          title: 'Long-term Optimization Opportunity',
-          description: `Significant improvement expected: +${change60min.toFixed(2)}% in 60 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred60min.prediction,
-          expectedOutcome: `Could reach ${pred60min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '60 minutes',
-          confidence: pred60min.model_performance.r2_score,
-          impact: 'medium',
-          actionType: 'maintain'
-        });
-      } else if (change60min < -3) {
-        newRecommendations.push({
-          id: '60min-risk-long',
-          type: 'risk',
-          title: 'Long-term Performance Risk',
-          description: `Sustained decline predicted: -${Math.abs(change60min).toFixed(2)}% in 60 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred60min.prediction,
-          expectedOutcome: `May decline to ${pred60min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '60 minutes',
-          confidence: pred60min.model_performance.r2_score,
-          impact: 'high',
-          actionType: 'increase'
-        });
-      }
-    }
-
-    // Parameter-specific recommendations
-    if (currentData.Pb_Conditioner_KEX_Flowrate < 50) {
+    // Check if targets are being met
+    const isConcentrateTargetMet = (currentPb || 0) >= CONCENTRATE_TARGET;
+    const isKexInRange = currentData.Pb_Conditioner_KEX_Flowrate >= KEX_OPTIMAL_MIN && 
+                        currentData.Pb_Conditioner_KEX_Flowrate <= KEX_OPTIMAL_MAX;
+    const isSipxInRange = currentData.Pb_Rougher1_SIPX_Flowrate >= SIPX_OPTIMAL_MIN && 
+                         currentData.Pb_Rougher1_SIPX_Flowrate <= SIPX_OPTIMAL_MAX;
+    
+    // If targets are met and parameters are optimal, show success status
+    if (isConcentrateTargetMet && isKexInRange && isSipxInRange) {
       newRecommendations.push({
-        id: 'kex-increase',
-        type: 'optimization',
-        title: 'Increase KEX Flowrate',
-        description: 'Current KEX flowrate is below optimal range',
-        parameter: 'Pb_Conditioner_KEX_Flowrate',
-        currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-        suggestedValue: Math.min(currentData.Pb_Conditioner_KEX_Flowrate + 10, 80),
-        expectedOutcome: 'Expected to improve Pb concentrate by 1-2%',
-        timeHorizon: '15-30 minutes',
-        confidence: 0.75,
-        impact: 'medium',
-        actionType: 'increase'
+        id: 'targets-achieved',
+        type: 'success',
+        title: '🎯 TARGETS ACHIEVED',
+        description: `Concentrate grade at ${(currentPb || 0).toFixed(1)}% - Above target of ${CONCENTRATE_TARGET}%`,
+        parameter: 'System_Status',
+        currentValue: currentPb || 0,
+        suggestedValue: currentPb || 0,
+        expectedOutcome: 'System performing optimally - consider efficiency optimization',
+        timeHorizon: 'Current',
+        confidence: 1.0,
+        impact: 'high',
+        actionType: 'maintain'
       });
+      setRecommendations(newRecommendations);
+      return;
+    }
+
+    // Show recommendations only when targets are NOT met
+    if (!isConcentrateTargetMet) {
+      // Concentrate grade below target - need to increase
+      if (currentData.Pb_Conditioner_KEX_Flowrate < KEX_OPTIMAL_MIN) {
+        newRecommendations.push({
+          id: 'increase-kex-for-target',
+          type: 'optimization',
+          title: 'Increase KEX to Meet Target',
+          description: `Concentrate grade ${(currentPb || 0).toFixed(1)}% below target of ${CONCENTRATE_TARGET}%`,
+          parameter: 'Pb_Conditioner_KEX_Flowrate',
+          currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
+          suggestedValue: Math.min(currentData.Pb_Conditioner_KEX_Flowrate + 10, KEX_OPTIMAL_MAX),
+          expectedOutcome: `Expected to improve concentrate grade to meet ${CONCENTRATE_TARGET}% target`,
+          timeHorizon: '15-30 minutes',
+          confidence: 0.8,
+          impact: 'high',
+          actionType: 'increase'
+        });
+      }
+    }
+
+    // Parameter optimization when targets are met (efficiency mode)
+    if (isConcentrateTargetMet) {
+      // Target met - optimize for efficiency
+      if (currentData.Pb_Conditioner_KEX_Flowrate > KEX_OPTIMAL_MAX) {
+        newRecommendations.push({
+          id: 'reduce-kex-efficiency',
+          type: 'optimization',
+          title: 'Reduce KEX for Efficiency',
+          description: 'Target met - reduce reagent consumption',
+          parameter: 'Pb_Conditioner_KEX_Flowrate',
+          currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
+          suggestedValue: KEX_OPTIMAL_MAX,
+          expectedOutcome: 'Maintain target while reducing reagent costs',
+          timeHorizon: '15-30 minutes',
+          confidence: 0.8,
+          impact: 'medium',
+          actionType: 'decrease'
+        });
+      }
+    } else {
+      // Target not met - optimize for performance
+      if (currentData.Pb_Conditioner_KEX_Flowrate < KEX_OPTIMAL_MIN) {
+        newRecommendations.push({
+          id: 'increase-kex-performance',
+          type: 'optimization',
+          title: 'Increase KEX for Performance',
+          description: 'Below target - increase reagent for better performance',
+          parameter: 'Pb_Conditioner_KEX_Flowrate',
+          currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
+          suggestedValue: Math.min(currentData.Pb_Conditioner_KEX_Flowrate + 10, KEX_OPTIMAL_MAX),
+          expectedOutcome: 'Expected to improve concentrate grade to meet target',
+          timeHorizon: '15-30 minutes',
+          confidence: 0.8,
+          impact: 'high',
+          actionType: 'increase'
+        });
+      }
     }
 
     // Air flow optimization (decrease scenarios)
@@ -210,43 +195,48 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       });
     }
 
-    // SIPX flow rate optimization (decrease scenarios - too high)
-    if (currentData.Pb_Rougher1_SIPX_Flowrate > 35) {
-      newRecommendations.push({
-        id: 'sipx-decrease',
-        type: 'optimization',
-        title: 'Reduce SIPX Flow Rate',
-        description: 'SIPX flow rate is above optimal range',
-        parameter: 'Pb_Rougher1_SIPX_Flowrate',
-        currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
-        suggestedValue: Math.max(currentData.Pb_Rougher1_SIPX_Flowrate - 5, 20),
-        expectedOutcome: 'Expected to reduce reagent waste and improve efficiency',
-        timeHorizon: '15-30 minutes',
-        confidence: 0.75,
-        impact: 'medium',
-        actionType: 'decrease'
-      });
+    // SIPX optimization based on targets
+    if (isConcentrateTargetMet) {
+      // Target met - optimize SIPX for efficiency
+      if (currentData.Pb_Rougher1_SIPX_Flowrate > SIPX_OPTIMAL_MAX) {
+        newRecommendations.push({
+          id: 'reduce-sipx-efficiency',
+          type: 'optimization',
+          title: 'Reduce SIPX for Efficiency',
+          description: 'Target met - reduce reagent consumption',
+          parameter: 'Pb_Rougher1_SIPX_Flowrate',
+          currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
+          suggestedValue: SIPX_OPTIMAL_MAX,
+          expectedOutcome: 'Maintain target while reducing reagent costs',
+          timeHorizon: '15-30 minutes',
+          confidence: 0.8,
+          impact: 'medium',
+          actionType: 'decrease'
+        });
+      }
+    } else {
+      // Target not met - check if SIPX needs adjustment
+      if (currentData.Pb_Rougher1_SIPX_Flowrate < SIPX_OPTIMAL_MIN) {
+        newRecommendations.push({
+          id: 'increase-sipx-performance',
+          type: 'optimization',
+          title: 'Increase SIPX for Performance',
+          description: 'Below target - may need SIPX adjustment',
+          parameter: 'Pb_Rougher1_SIPX_Flowrate',
+          currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
+          suggestedValue: Math.min(currentData.Pb_Rougher1_SIPX_Flowrate + 5, SIPX_OPTIMAL_MAX),
+          expectedOutcome: 'May help improve concentrate grade',
+          timeHorizon: '15-30 minutes',
+          confidence: 0.7,
+          impact: 'medium',
+          actionType: 'increase'
+        });
+      }
     }
 
-    // KEX flow rate optimization (decrease scenarios)
-    if (currentData.Pb_Conditioner_KEX_Flowrate > 70) {
-      newRecommendations.push({
-        id: 'kex-decrease',
-        type: 'optimization',
-        title: 'Reduce KEX Flow Rate',
-        description: 'KEX flow rate is above optimal range',
-        parameter: 'Pb_Conditioner_KEX_Flowrate',
-        currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-        suggestedValue: Math.max(currentData.Pb_Conditioner_KEX_Flowrate - 8, 50),
-        expectedOutcome: 'Expected to reduce reagent consumption while maintaining performance',
-        timeHorizon: '20-40 minutes',
-        confidence: 0.80,
-        impact: 'medium',
-        actionType: 'decrease'
-      });
-    }
 
     // Model confidence recommendations
+    const pred5min = futurePredictions.future_predictions['5min'];
     if (pred5min && pred5min.model_performance.r2_score < 0.7) {
       newRecommendations.push({
         id: 'low-confidence',
@@ -330,19 +320,24 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
   const handleQuickAction = async (recommendation: Recommendation) => {
     try {
-      console.log('Quick action triggered:', recommendation);
+      // Ensure we have current controls - fail if not available
+      if (!currentControls) {
+        setQuickActionModal({
+          isOpen: true,
+          recommendation,
+          success: false,
+          message: 'Current control settings not available. Please refresh the page.'
+        });
+        return;
+      }
       
       // Map recommendation parameters to control settings
       let controlSettings: { kex?: number; sipx?: number } = {};
       
-      console.log('Mapping recommendation parameter:', recommendation.parameter, 'to control settings');
-      
       if (recommendation.parameter === 'Pb_Conditioner_KEX_Flowrate') {
         controlSettings.kex = recommendation.suggestedValue;
-        console.log('Setting KEX to:', recommendation.suggestedValue);
       } else if (recommendation.parameter === 'Pb_Rougher1_SIPX_Flowrate') {
         controlSettings.sipx = recommendation.suggestedValue;
-        console.log('Setting SIPX to:', recommendation.suggestedValue);
       } else if (recommendation.parameter === 'Pb_Rougher1_AirFlow') {
         // Air flow is not directly controllable via KEX/SIPX, but we can adjust them as a proxy
         const currentKex = currentControls?.kex || 0;
@@ -352,7 +347,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           // Reduce KEX and SIPX to compensate for high air flow
           controlSettings.kex = Math.max(currentKex - 3, 30);
           controlSettings.sipx = Math.max(currentSipx - 2, 15);
-          console.log('Adjusting KEX/SIPX due to high air flow');
         }
       } else if (recommendation.parameter === 'Pb_Concentrate') {
         // For Pb concentrate recommendations, we need to adjust KEX and SIPX
@@ -360,43 +354,34 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         const currentKex = currentControls?.kex || 0;
         const currentSipx = currentControls?.sipx || 0;
         
-        if (recommendation.actionType === 'increase') {
+        const actionType = (recommendation.actionType || 'maintain').toLowerCase();
+        
+        if (actionType === 'increase') {
           controlSettings.kex = Math.min(currentKex + 5, 80);
           controlSettings.sipx = Math.min(currentSipx + 3, 50);
-          console.log('Increasing KEX/SIPX for better Pb concentrate');
-        } else if (recommendation.actionType === 'decrease') {
+        } else if (actionType === 'decrease') {
           controlSettings.kex = Math.max(currentKex - 5, 0);
           controlSettings.sipx = Math.max(currentSipx - 3, 0);
-          console.log('Decreasing KEX/SIPX for better Pb concentrate');
+        } else if (actionType === 'maintain') {
+          // For maintain, keep current values but ensure they're within optimal ranges
+          controlSettings.kex = currentKex;
+          controlSettings.sipx = currentSipx;
         }
       }
       
       // Only proceed if we have valid control settings
       if (Object.keys(controlSettings).length > 0) {
-        console.log('Control settings to apply:', controlSettings);
-        
-        // Get current settings to ensure we have both kex and sipx
-        const apiControls = await flotationAPI.getControlSettings();
-        console.log('Current controls from API:', apiControls);
-        
         const fullControlSettings: ProcessControls = {
-          kex: controlSettings.kex ?? apiControls.kex,
-          sipx: controlSettings.sipx ?? apiControls.sipx
+          kex: controlSettings.kex ?? currentControls.kex,
+          sipx: controlSettings.sipx ?? currentControls.sipx
         };
-        
-        console.log('Full control settings to send:', fullControlSettings);
         
         // Update control settings via API
         await flotationAPI.updateControls(fullControlSettings);
-        console.log('API update completed');
         
         // Update the parent component's controls state to refresh the UI
         if (onControlChange) {
-          console.log('Calling onControlChange with:', fullControlSettings);
           onControlChange(fullControlSettings);
-          console.log('onControlChange called successfully');
-        } else {
-          console.warn('onControlChange callback is not available');
         }
         
         // Show success modal
@@ -475,15 +460,23 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         throw new Error('Invalid simulation data structure received from API');
       }
       
-      // Use the average values from the optimization result for better accuracy
-      const currentRecovery = optimizationData.current_avg_recovery;
+      // Get actual current system data instead of optimization result data
+      const currentDataResponse = await flotationAPI.getCurrentData();
+      const currentSystemData = currentDataResponse;
+      
+      // Use the average values from the optimization result for optimal predictions
       const optimalRecovery = optimizationData.optimal_avg_recovery;
-      const currentConcentrate = optimizationData.current_avg_concentrate;
       const optimalConcentrate = optimizationData.optimal_avg_concentrate;
       
       // Get the optimal settings for display
       const optimalKex = optimizationData.optimal_settings.KEX;
       const optimalSipx = optimizationData.optimal_settings.SIPX;
+      
+      // Use actual current system data
+      const currentRecovery = currentSystemData.Actual_Pb_Recovery || 0; // Already a decimal (0.5 = 50%)
+      const currentConcentrate = currentSystemData.Actual_Pb_Concentrate || 0;
+      const currentKex = currentSystemData.Pb_Conditioner_KEX_Flowrate;
+      const currentSipx = currentSystemData.Pb_Rougher1_SIPX_Flowrate;
       
       setSimulationModal({
         isOpen: true,
@@ -492,6 +485,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           optimalRecovery,
           currentConcentrate,
           optimalConcentrate,
+          currentKex,
+          currentSipx,
           optimalKex,
           optimalSipx,
           simulationParams: fullSimulationParams
@@ -558,8 +553,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   {getRecommendationIcon(recommendation.type)}
                   <div>
                     <h4 className="text-sm font-semibold text-white">{recommendation.title}</h4>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(recommendation.impact)}`}>
-                      {recommendation.impact.toUpperCase()} IMPACT
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(recommendation.impact || 'medium')}`}>
+                      {(recommendation.impact || 'medium').toUpperCase()} IMPACT
                     </span>
                   </div>
                 </div>
@@ -601,10 +596,10 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   <div className="w-16 bg-dark-600 rounded-full h-2">
                     <div 
                       className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${recommendation.confidence * 100}%` }}
+                      style={{ width: `${(recommendation.confidence || 0.8) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-white">{(recommendation.confidence * 100).toFixed(0)}%</span>
+                  <span className="text-xs text-white">{((recommendation.confidence || 0.8) * 100).toFixed(0)}%</span>
                 </div>
               </div>
 
@@ -623,7 +618,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                       : 'bg-primary-600 text-white hover:bg-primary-700'
                   }`}
                 >
-                  {getActionIcon(recommendation.actionType)}
+                  {getActionIcon(recommendation.actionType || 'maintain')}
                   <span>Quick Action</span>
                 </button>
                 
@@ -725,11 +720,11 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-sm text-dark-400">KEX Flowrate:</span>
-                        <span className="text-sm font-medium text-white">{simulationModal.data.simulationParams.kex}</span>
+                        <span className="text-sm font-medium text-white">{simulationModal.data.currentKex}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-dark-400">SIPX Flowrate:</span>
-                        <span className="text-sm font-medium text-white">{simulationModal.data.simulationParams.sipx}</span>
+                        <span className="text-sm font-medium text-white">{simulationModal.data.currentSipx}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-dark-400">Pb Concentrate:</span>
@@ -797,7 +792,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                         <span className="text-xs font-medium text-white">{simulationModal.recommendation.timeHorizon}</span>
                         <span className="text-xs text-dark-400">•</span>
                         <span className="text-xs text-dark-400">Confidence:</span>
-                        <span className="text-xs font-medium text-white">{(simulationModal.recommendation.confidence * 100).toFixed(0)}%</span>
+                        <span className="text-xs font-medium text-white">{((simulationModal.recommendation.confidence || 0.8) * 100).toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -987,7 +982,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                     <span className="text-xs text-dark-400">•</span>
                     <span className="text-xs text-dark-400">Confidence:</span>
                     <span className="text-xs font-medium text-white">
-                      {(quickActionModal.recommendation.confidence * 100).toFixed(0)}%
+                      {((quickActionModal.recommendation.confidence || 0.8) * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>

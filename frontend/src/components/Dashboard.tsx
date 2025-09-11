@@ -127,12 +127,7 @@ const Dashboard: React.FC = () => {
           controls: preservedControls,
           optimalRanges,
           targetRanges,
-          recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
-            id: `rec-${index}`,
-            type: 'info' as const,
-            message: rec,
-            timestamp: currentData?.timestamp || new Date().toISOString()
-          })),
+          recommendations: [], // Recommendations are now handled by PredictiveRecommendations component
           loading: false,
           serverConnected,
           error: serverConnected ? null : 'Backend services not available'
@@ -221,12 +216,7 @@ const Dashboard: React.FC = () => {
           currentData,
           predictions,
           controls: updatedControls,
-          recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
-            id: `rec-${index}`,
-            type: 'info' as const,
-            message: rec,
-            timestamp: currentData?.timestamp || new Date().toISOString()
-          })),
+          recommendations: [], // Recommendations are now handled by PredictiveRecommendations component
           data: [...prev.data.slice(-99), currentData], // Keep last 100 points
         }));
         

@@ -316,6 +316,9 @@ async def update_control_settings(controls: Dict[str, float]):
             "controls": controls,
             "timestamp": datetime.now().isoformat()
         }
+    except HTTPException:
+        # Re-raise HTTP exceptions (like validation errors) without modification
+        raise
     except Exception as e:
         logger.error(f"Control settings update failed: {e}")
         raise HTTPException(status_code=500, detail="Control settings update failed")

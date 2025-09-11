@@ -63,12 +63,21 @@ export interface FuturePredictionResponse {
 
 export interface Recommendation {
   id: string;
-  type: 'danger' | 'warning' | 'success' | 'info';
-  message: string;
+  type: 'danger' | 'warning' | 'success' | 'info' | 'improvement' | 'risk' | 'optimization';
+  title?: string;
+  description?: string;
   parameter?: string;
+  currentValue?: number;
+  suggestedValue?: number;
+  expectedOutcome?: string;
+  timeHorizon?: string;
+  confidence?: number;
+  impact?: 'low' | 'medium' | 'high';
+  actionType?: 'increase' | 'decrease' | 'maintain';
+  message?: string;
   current_value?: number;
   optimal_range?: string;
-  timestamp: string;
+  timestamp?: string;
 }
 
 export interface PerformanceState {

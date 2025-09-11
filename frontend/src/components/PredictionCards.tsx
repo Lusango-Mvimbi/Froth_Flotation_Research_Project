@@ -138,18 +138,8 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
     console.log('PredictionCards: Target ranges:', targetRanges);
     
     if (activeTab === 'current') {
-      console.log('PredictionCards: Generating CURRENT tab cards');
+      console.log('PredictionCards: Generating CURRENT tab cards - ACTUAL VALUES ONLY');
       return [
-        {
-          title: 'Predicted Pb',
-          value: `${predictions.predicted_pb.toFixed(2)}%`,
-          trend: getTrendDirection(predictions.predicted_pb, targetRanges?.pb_concentrate?.optimal || 10),
-          performance: pbPerformance,
-          icon: Activity,
-          method: 'ML Model',
-          target: getTargetRange('pb'),
-          confidence: null,
-        },
         {
           title: 'Actual Pb',
           value: `${(currentData.Actual_Pb_Concentrate || 0).toFixed(2)}%`,
@@ -157,16 +147,6 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           performance: getPerformanceState(currentData.Actual_Pb_Concentrate || 0, 'pb'),
           icon: Activity,
           target: getTargetRange('pb'),
-          confidence: null,
-        },
-        {
-          title: 'Predicted Recovery',
-          value: `${predictions.recovery_efficiency.toFixed(1)}%`,
-          trend: getTrendDirection(predictions.recovery_efficiency, targetRanges?.recovery?.optimal || 85),
-          performance: recoveryPerformance,
-          icon: TrendingUp,
-          method: 'ML Model',
-          target: getTargetRange('recovery'),
           confidence: null,
         },
         {
@@ -198,6 +178,24 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           performance: feedGradePerformance,
           icon: TrendingDown,
           target: getTargetRange('feed_grade'),
+          confidence: null,
+        },
+        {
+          title: 'KEX Flowrate',
+          value: `${currentData.Pb_Conditioner_KEX_Flowrate.toFixed(1)}`,
+          trend: 'stable',
+          performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
+          icon: Activity,
+          target: 'Control',
+          confidence: null,
+        },
+        {
+          title: 'SIPX Flowrate',
+          value: `${currentData.Pb_Rougher1_SIPX_Flowrate.toFixed(1)}`,
+          trend: 'stable',
+          performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
+          icon: Activity,
+          target: 'Control',
           confidence: null,
         }
       ];
@@ -267,12 +265,12 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           confidence: null,
         },
         {
-          title: 'Current vs Future',
-          value: `${currentPb.toFixed(2)} → ${futurePred.prediction.toFixed(2)}%`,
-          trend: futureTrend,
-          performance: futurePerformance,
+          title: 'Predicted Recovery',
+          value: `${((currentData.Actual_Pb_Recovery || 0) * 100).toFixed(1)}%`,
+          trend: getTrendDirection((currentData.Actual_Pb_Recovery || 0) * 100, targetRanges?.recovery?.optimal || 85),
+          performance: getPerformanceState((currentData.Actual_Pb_Recovery || 0) * 100, 'recovery'),
           icon: TrendingUp,
-          target: 'Change',
+          target: getTargetRange('recovery'),
           confidence: null,
         },
         {
