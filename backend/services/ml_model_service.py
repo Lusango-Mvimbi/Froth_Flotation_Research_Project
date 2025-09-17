@@ -730,7 +730,8 @@ class MLModelService:
             optimization_result = self.optimizer.optimize_reagent_rates(current_data)
             
             # Generate recommendations
-            recommendations = self.optimizer.generate_recommendations(optimization_result)
+            actual_current_pb = input_data.get('Actual_Pb_Concentrate', 0)
+            recommendations = self.optimizer.generate_recommendations(optimization_result, actual_current_pb)
             
             # Add recommendations to the result
             optimization_result['recommendations'] = recommendations

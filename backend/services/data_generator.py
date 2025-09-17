@@ -40,8 +40,9 @@ class FlotationDataGenerator(IDataGenerator):
         
         # Use control ranges for KEX and SIPX (operator-controlled parameters)
         control_ranges = self.get_control_ranges()
-        self.optimal_kex = control_ranges['kex']['optimal']  # Use default optimal from control ranges
-        self.optimal_sipx = control_ranges['sipx']['optimal']  # Use default optimal from control ranges
+        # Initialize with default optimal values - operator will control these
+        self.optimal_kex = control_ranges['kex']['optimal']  # Default: 60.0 L/min
+        self.optimal_sipx = control_ranges['sipx']['optimal']  # Default: 30.0 L/min
         
         # Calculate optimal AirFlow based on ACTUAL training data ranges
         # Training data: 3.99 - 14.17, Mean: 9.97 ± 2.30
@@ -53,9 +54,16 @@ class FlotationDataGenerator(IDataGenerator):
         
         self.logger.debug(f"Optimal values calculated - KEX: {self.optimal_kex}, SIPX: {self.optimal_sipx}, AirFlow: {self.optimal_airflow}")
     
+    def _update_dynamic_values(self):
+        """Update KEX and SIPX values only when operator changes them - no automatic changes"""
+        # KEX and SIPX values should only change when operator sets them
+        # This method is kept for compatibility but does nothing automatically
+        pass
+    
     def generate_data_point(self) -> Dict[str, Any]:
         """Generate a single flotation data point - ONLY parameters from training data"""
-        # Use operator's control settings for KEX and SIPX (no random variation)
+        # KEX and SIPX values are controlled by operator - no automatic changes
+        
         # Generate fresh feed values each time for better variation
         fresh_feed_pb = round(random.uniform(0.5, 2.5), 2)  # Full range from training data
         fresh_feed_zn = round(random.uniform(8.0, 12.5), 2)  # Full range from training data

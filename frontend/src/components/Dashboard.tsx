@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Activity, 
   LogOut,
@@ -50,6 +51,7 @@ type TabId = typeof TABS[number]['id'];
 
 const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const { futurePredictions, loading: futurePredictionsLoading, fetchPredictions } = useFuturePredictions();
   const { addError } = useError();
   const [activeTab, setActiveTab] = useState<TabId>('monitor');
@@ -155,7 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
           controls: preservedControls,
           optimalRanges,
           targetRanges,
-          recommendations: [], // Recommendations are now handled by PredictiveRecommendations component
+          recommendations: [], // Let PredictiveRecommendations parse backend recommendations directly
           loading: false,
           serverConnected,
           error: serverConnected ? null : 'Backend services not available'
@@ -243,7 +245,7 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
           currentData,
           predictions,
           controls: updatedControls,
-          recommendations: [], // Recommendations are now handled by PredictiveRecommendations component
+          recommendations: [], // Let PredictiveRecommendations parse backend recommendations directly
           data: [...prev.data.slice(-99), currentData], // Keep last 100 points
         }));
         
@@ -409,6 +411,9 @@ SYSTEM STATUS: ${state.serverConnected ? 'CONNECTED' : 'DISCONNECTED'}
       console.log('🔐 Logging out...');
       await logout(); // Use the proper logout method from useAuth
       console.log('✅ Logout successful');
+      
+      // Navigate to login page after successful logout
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('❌ Logout error:', error);
       // Fallback: clear localStorage and redirect
@@ -416,7 +421,9 @@ SYSTEM STATUS: ${state.serverConnected ? 'CONNECTED' : 'DISCONNECTED'}
       localStorage.removeItem('userData');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('current_user');
-      window.location.href = '/login';
+      
+      // Force navigation to login page
+      navigate('/login', { replace: true });
     }
   };
 

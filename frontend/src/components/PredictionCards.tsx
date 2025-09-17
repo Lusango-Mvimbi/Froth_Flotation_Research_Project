@@ -136,6 +136,12 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
     console.log('PredictionCards: Future predictions:', futurePredictions);
     console.log('PredictionCards: Target ranges:', targetRanges);
     
+    // Add null checks for currentData
+    if (!currentData) {
+      console.log('PredictionCards: No current data available');
+      return [];
+    }
+    
     if (activeTab === 'current') {
       console.log('PredictionCards: Generating CURRENT tab cards - ACTUAL VALUES ONLY');
       return [
@@ -159,12 +165,12 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'Process Status',
-          value: predictions.status,
-          trend: predictions.status === 'optimal' ? 'up' : predictions.status === 'warning' ? 'stable' : 'down',
+          value: predictions?.status || 'Loading...',
+          trend: predictions?.status === 'optimal' ? 'up' : predictions?.status === 'warning' ? 'stable' : 'down',
           performance: { 
-            state: predictions.status === 'optimal' ? 'within_range' : predictions.status === 'warning' ? 'warning' : 'critical',
-            color: predictions.status === 'optimal' ? 'text-success-400' : predictions.status === 'warning' ? 'text-warning-400' : 'text-danger-400',
-            backgroundColor: predictions.status === 'optimal' ? 'bg-success-900/20' : predictions.status === 'warning' ? 'bg-warning-900/20' : 'bg-danger-900/20'
+            state: predictions?.status === 'optimal' ? 'within_range' : predictions?.status === 'warning' ? 'warning' : 'critical',
+            color: predictions?.status === 'optimal' ? 'text-success-400' : predictions?.status === 'warning' ? 'text-warning-400' : 'text-danger-400',
+            backgroundColor: predictions?.status === 'optimal' ? 'bg-success-900/20' : predictions?.status === 'warning' ? 'bg-warning-900/20' : 'bg-danger-900/20'
           },
           icon: CheckCircle,
           target: 'Optimal',
@@ -172,7 +178,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'Feed Grade',
-          value: `${currentData.Feed_Pb.toFixed(2)}%`,
+          value: `${(currentData.Feed_Pb || 0).toFixed(2)}%`,
           trend: 'stable',
           performance: feedGradePerformance,
           icon: TrendingDown,
@@ -181,7 +187,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'KEX Flowrate',
-          value: `${currentData.Pb_Conditioner_KEX_Flowrate.toFixed(1)}`,
+          value: `${(currentData.Pb_Conditioner_KEX_Flowrate || 0).toFixed(1)}`,
           trend: 'stable',
           performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
           icon: Activity,
@@ -190,7 +196,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'SIPX Flowrate',
-          value: `${currentData.Pb_Rougher1_SIPX_Flowrate.toFixed(1)}`,
+          value: `${(currentData.Pb_Rougher1_SIPX_Flowrate || 0).toFixed(1)}`,
           trend: 'stable',
           performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
           icon: Activity,
@@ -211,7 +217,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         return [];
       }
 
-      const currentPb = currentData.Actual_Pb_Concentrate || predictions.predicted_pb;
+      const currentPb = currentData.Actual_Pb_Concentrate || predictions?.predicted_pb || 0;
       const futureTrend = getFutureTrendDirection(futurePred.prediction, currentPb);
       const futurePerformance = getPerformanceState(futurePred.prediction, 'pb');
 
@@ -220,7 +226,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
       return [
         {
           title: `Future Pb (${activeTab})`,
-          value: `${futurePred.prediction.toFixed(2)}%`,
+          value: `${(futurePred.prediction || 0).toFixed(2)}%`,
           trend: futureTrend,
           performance: futurePerformance,
           icon: Brain,
@@ -230,7 +236,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'Confidence Interval',
-          value: `${futurePred.confidence_interval.lower.toFixed(2)} - ${futurePred.confidence_interval.upper.toFixed(2)}%`,
+          value: `${(futurePred.confidence_interval?.lower || 0).toFixed(2)} - ${(futurePred.confidence_interval?.upper || 0).toFixed(2)}%`,
           trend: 'stable',
           performance: { state: 'within_range', color: 'text-cyan-400', backgroundColor: 'bg-cyan-900/20' },
           icon: BarChart3,
@@ -239,12 +245,12 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'Model Performance',
-          value: futurePred.model_performance.r2_score > 0 ? `${(futurePred.model_performance.r2_score * 100).toFixed(1)}%` : 'Loading...',
-          trend: futurePred.model_performance.r2_score > 0.8 ? 'up' : 'stable',
+          value: (futurePred.model_performance?.r2_score || 0) > 0 ? `${((futurePred.model_performance?.r2_score || 0) * 100).toFixed(1)}%` : 'Loading...',
+          trend: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'up' : 'stable',
           performance: { 
-            state: futurePred.model_performance.r2_score > 0.8 ? 'within_range' : 'warning',
-            color: getConfidenceColor(futurePred.model_performance.r2_score),
-            backgroundColor: futurePred.model_performance.r2_score > 0.8 ? 'bg-success-900/20' : 'bg-warning-900/20'
+            state: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'within_range' : 'warning',
+            color: getConfidenceColor(futurePred.model_performance?.r2_score || 0),
+            backgroundColor: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'bg-success-900/20' : 'bg-warning-900/20'
           },
           icon: Zap,
           target: 'R² Score',
@@ -252,12 +258,12 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
         },
         {
           title: 'Prediction Accuracy',
-          value: futurePred.model_performance.accuracy_10_percent > 0 ? `${(futurePred.model_performance.accuracy_10_percent * 100).toFixed(1)}%` : 'Loading...',
-          trend: futurePred.model_performance.accuracy_10_percent > 0.7 ? 'up' : 'stable',
+          value: (futurePred.model_performance?.accuracy_10_percent || 0) > 0 ? `${((futurePred.model_performance?.accuracy_10_percent || 0) * 100).toFixed(1)}%` : 'Loading...',
+          trend: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'up' : 'stable',
           performance: { 
-            state: futurePred.model_performance.accuracy_10_percent > 0.7 ? 'within_range' : 'warning',
-            color: futurePred.model_performance.accuracy_10_percent > 0.7 ? 'text-success-400' : 'text-warning-400',
-            backgroundColor: futurePred.model_performance.accuracy_10_percent > 0.7 ? 'bg-success-900/20' : 'bg-warning-900/20'
+            state: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'within_range' : 'warning',
+            color: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'text-success-400' : 'text-warning-400',
+            backgroundColor: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'bg-success-900/20' : 'bg-warning-900/20'
           },
           icon: Target,
           target: 'Within 10%',

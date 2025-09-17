@@ -6,7 +6,9 @@ import {
   TrendingDown,
   Activity,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Calendar,
+  Filter
 } from 'lucide-react';
 import {
   LineChart,
@@ -46,15 +48,37 @@ const HistoricalAnalysis: React.FC<HistoricalAnalysisProps> = ({ className = '' 
     'Actual_Pb_Recovery'
   ]);
   const [viewMode, setViewMode] = useState<'trends' | 'analysis' | 'anomalies'>('trends');
+  const [useDateRange, setUseDateRange] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const { addError, showToast } = useError();
 
   const fetchHistoricalData = useCallback(async () => {
+    console.log('HistoricalAnalysis: fetchHistoricalData called', {
+      useDateRange,
+      startDate,
+      endDate,
+      selectedTimeRange: selectedTimeRange?.label
+    });
+    
     try {
       setLoading(true);
-      const response = await historicalDataService.getHistoricalDataByTimeRange(selectedTimeRange);
+      let response;
+      
+      if (useDateRange && startDate && endDate) {
+        // Use date range filtering
+        console.log('HistoricalAnalysis: Using date range filtering', { startDate, endDate });
+        response = await historicalDataService.getHistoricalDataByDateRange(startDate, endDate);
+      } else {
+        // Use time range filtering
+        console.log('HistoricalAnalysis: Using time range filtering', { selectedTimeRange: selectedTimeRange?.label });
+        response = await historicalDataService.getHistoricalDataByTimeRange(selectedTimeRange);
+      }
+      
       setData(response.data);
       showToast(`Loaded ${response.data.length} data points`, 'success');
     } catch (error) {
+      console.error('HistoricalAnalysis: Error fetching data', error);
       addError({
         type: 'data',
         message: 'Failed to fetch historical data',
@@ -68,26 +92,58 @@ const HistoricalAnalysis: React.FC<HistoricalAnalysisProps> = ({ className = '' 
     } finally {
       setLoading(false);
     }
-  }, [selectedTimeRange, addError, showToast]);
+  }, [selectedTimeRange, useDateRange, startDate, endDate, addError, showToast]);
 
   useEffect(() => {
     fetchHistoricalData();
-  }, [selectedTimeRange, fetchHistoricalData]);
+  }, [fetchHistoricalData]);
 
   const trendAnalysis = useMemo(() => {
-    return METRICS.map(metric => 
-      historicalDataService.analyzeTrends(data, metric.key as keyof FlotationData)
-    );
+    return METRICS.map(metric => {
+      const analysis = historicalDataService.analyzeTrends(data, metric.key as keyof FlotationData);
+      
+      // Convert recovery values from decimal to percentage for display
+      if (metric.key === 'Actual_Pb_Recovery') {
+        return {
+          ...analysis,
+          average: analysis.average * 100,
+          min: analysis.min * 100,
+          max: analysis.max * 100,
+          volatility: analysis.volatility * 100
+        };
+      }
+      
+      return analysis;
+    });
   }, [data]);
 
   const timeSeriesData = useMemo(() => {
-    return data.map((point, index) => ({
-      time: new Date(point.timestamp || Date.now() - (data.length - index) * 60000),
-      timestamp: point.timestamp || new Date(Date.now() - (data.length - index) * 60000).toISOString(),
+    // Reverse the data array so oldest points appear on the left
+    const reversedData = [...data].reverse();
+    
+    // Debug: Log the first and last timestamps to verify order
+    if (reversedData.length > 0) {
+      console.log('HistoricalAnalysis: Time series data order:', {
+        oldest: reversedData[0]?.timestamp,
+        newest: reversedData[reversedData.length - 1]?.timestamp,
+        totalPoints: reversedData.length
+      });
+    }
+    
+    return reversedData.map((point, index) => ({
+      time: new Date(point.timestamp || Date.now() - (reversedData.length - index) * 60000),
+      timestamp: point.timestamp || new Date(Date.now() - (reversedData.length - index) * 60000).toISOString(),
       ...selectedMetrics.reduce((acc, metricKey) => {
         const metric = METRICS.find(m => m.key === metricKey);
         if (metric) {
-          acc[metric.label] = point[metric.key as keyof FlotationData] as number;
+          let value = point[metric.key as keyof FlotationData] as number;
+          
+          // Convert recovery from decimal to percentage for display
+          if (metricKey === 'Actual_Pb_Recovery') {
+            value = (value || 0) * 100;
+          }
+          
+          acc[metric.label] = value;
         }
         return acc;
       }, {} as Record<string, number>)
@@ -95,10 +151,25 @@ const HistoricalAnalysis: React.FC<HistoricalAnalysisProps> = ({ className = '' 
   }, [data, selectedMetrics]);
 
   const anomalyData = useMemo(() => {
-    return METRICS.map(metric => ({
-      metric: metric.label,
-      anomalies: historicalDataService.detectAnomalies(data, metric.key as keyof FlotationData)
-    }));
+    return METRICS.map(metric => {
+      const anomalies = historicalDataService.detectAnomalies(data, metric.key as keyof FlotationData);
+      
+      // Convert recovery anomaly values from decimal to percentage for display
+      if (metric.key === 'Actual_Pb_Recovery') {
+        return {
+          metric: metric.label,
+          anomalies: anomalies.map(anomaly => ({
+            ...anomaly,
+            value: (anomaly?.value || 0) * 100
+          }))
+        };
+      }
+      
+      return {
+        metric: metric.label,
+        anomalies
+      };
+    });
   }, [data]);
 
   const formatTime = (time: Date) => {
@@ -155,21 +226,65 @@ const HistoricalAnalysis: React.FC<HistoricalAnalysisProps> = ({ className = '' 
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* Time Range Selector */}
-          <select
-            value={selectedTimeRange.label}
-            onChange={(e) => {
-              const range = TIME_RANGES.find(r => r.label === e.target.value);
-              if (range) setSelectedTimeRange(range);
+          {/* Date Range Toggle */}
+          <button
+            onClick={() => {
+              console.log('HistoricalAnalysis: Date range toggle clicked', { currentUseDateRange: useDateRange });
+              setUseDateRange(!useDateRange);
             }}
-            className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              useDateRange 
+                ? 'bg-primary-600 text-white' 
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            }`}
           >
-            {TIME_RANGES.map(range => (
-              <option key={range.label} value={range.label}>
-                {range.label}
-              </option>
-            ))}
-          </select>
+            <Calendar className="h-4 w-4" />
+            <span>Date Range</span>
+          </button>
+
+          {useDateRange ? (
+            <>
+              {/* Start Date */}
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  console.log('HistoricalAnalysis: Start date changed', { startDate: e.target.value });
+                  setStartDate(e.target.value);
+                }}
+                className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="Start Date"
+              />
+              
+              {/* End Date */}
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  console.log('HistoricalAnalysis: End date changed', { endDate: e.target.value });
+                  setEndDate(e.target.value);
+                }}
+                className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="End Date"
+              />
+            </>
+          ) : (
+            /* Time Range Selector */
+            <select
+              value={selectedTimeRange.label}
+              onChange={(e) => {
+                const range = TIME_RANGES.find(r => r.label === e.target.value);
+                if (range) setSelectedTimeRange(range);
+              }}
+              className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {TIME_RANGES.map(range => (
+                <option key={range.label} value={range.label}>
+                  {range.label}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Refresh Button */}
           <button
@@ -355,45 +470,56 @@ const HistoricalAnalysis: React.FC<HistoricalAnalysisProps> = ({ className = '' 
             className="space-y-6"
           >
             {/* Anomaly Detection Results */}
-            <div className="space-y-4">
-              {anomalyData.map(({ metric, anomalies }) => (
+            {anomalyData.filter(({ anomalies }) => anomalies.length > 0).length > 0 ? (
+              <div className="space-y-4">
+                {anomalyData.filter(({ anomalies }) => anomalies.length > 0).map(({ metric, anomalies }) => (
                 <div key={metric} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-white">{metric}</h4>
                     <div className="flex items-center space-x-2">
                       <AlertTriangle className="h-4 w-4 text-warning-400" />
-                      <span className="text-sm text-slate-300">{anomalies.length} anomalies</span>
+                      <span className="text-sm text-slate-300">{anomalies.length} process alerts</span>
                     </div>
                   </div>
                   
                   {anomalies.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {anomalies.slice(0, 5).map((anomaly, index) => {
                         if (!anomaly) return null;
                         return (
-                          <div key={index} className="flex items-center justify-between p-2 bg-slate-600/50 rounded">
-                            <div className="flex items-center space-x-3">
-                              <div className={`w-2 h-2 rounded-full ${
-                                anomaly.severity === 'high' ? 'bg-danger-400' : 'bg-warning-400'
-                              }`} />
-                              <span className="text-sm text-white">
-                                {anomaly.time.toLocaleString()}
+                          <div key={index} className="p-3 bg-slate-600/50 rounded-lg border-l-4 border-l-warning-400">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${
+                                  anomaly.severity === 'high' ? 'bg-danger-400' : 'bg-warning-400'
+                                }`} />
+                                <span className="text-sm font-medium text-white">
+                                  {anomaly.type || 'Process Alert'}
+                                </span>
+                                <span className={`px-2 py-1 rounded text-xs ${
+                                  anomaly.severity === 'high' 
+                                    ? 'bg-danger-400/20 text-danger-300' 
+                                    : 'bg-warning-400/20 text-warning-300'
+                                }`}>
+                                  {anomaly.severity?.toUpperCase()}
+                                </span>
+                              </div>
+                              <span className="text-sm text-slate-400">
+                                {anomaly.time?.toLocaleString() || 'Unknown time'}
                               </span>
                             </div>
-                            <div className="text-right">
-                              <div className="text-sm font-medium text-white">
-                                {anomaly.value.toFixed(2)}
-                              </div>
-                              <div className="text-xs text-slate-400">
-                                Z-score: {anomaly.zScore.toFixed(2)}
-                              </div>
+                            <div className="text-sm text-white mb-2">
+                              {anomaly.description}
+                            </div>
+                            <div className="text-xs text-slate-300 bg-slate-700/50 p-2 rounded">
+                              <strong>Recommendation:</strong> {anomaly.recommendation}
                             </div>
                           </div>
                         );
                       })}
                       {anomalies.length > 5 && (
                         <p className="text-xs text-slate-400 text-center">
-                          ... and {anomalies.length - 5} more anomalies
+                          ... and {anomalies.length - 5} more alerts
                         </p>
                       )}
                     </div>
@@ -401,13 +527,22 @@ const HistoricalAnalysis: React.FC<HistoricalAnalysisProps> = ({ className = '' 
                     <div className="flex items-center justify-center py-4">
                       <div className="flex items-center space-x-2 text-slate-400">
                         <CheckCircle className="h-4 w-4" />
-                        <span className="text-sm">No anomalies detected</span>
+                        <span className="text-sm">No process alerts - all parameters within normal ranges</span>
                       </div>
                     </div>
                   )}
                 </div>
               ))}
-            </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">No Process Alerts</h3>
+                  <p className="text-slate-400">All process parameters are within normal operating ranges</p>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

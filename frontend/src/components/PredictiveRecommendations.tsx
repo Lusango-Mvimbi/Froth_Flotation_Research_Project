@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { 
@@ -33,10 +33,9 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
   currentData, 
   targetRanges,
   onControlChange,
-  currentControls 
+  currentControls
 }) => {
   const { futurePredictions, loading, refreshing, fetchPredictions } = useFuturePredictions();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
   const [simulationModal, setSimulationModal] = useState<{
     isOpen: boolean;
@@ -59,203 +58,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     message: ''
   });
 
-  const generateRecommendations = useCallback(() => {
-    if (!futurePredictions || !currentData) return;
-
-    const newRecommendations: Recommendation[] = [];
-    const currentPb = currentData.Actual_Pb_Concentrate;
-    
-    // Define targets based on supervisor's expectations
-    const CONCENTRATE_TARGET = 18.0; // Target concentrate grade
-    const KEX_OPTIMAL_MIN = 50;
-    const KEX_OPTIMAL_MAX = 70;
-    const SIPX_OPTIMAL_MIN = 15;
-    const SIPX_OPTIMAL_MAX = 35;
-
-    // Check if targets are being met
-    const isConcentrateTargetMet = (currentPb || 0) >= CONCENTRATE_TARGET;
-    const isKexInRange = currentData.Pb_Conditioner_KEX_Flowrate >= KEX_OPTIMAL_MIN && 
-                        currentData.Pb_Conditioner_KEX_Flowrate <= KEX_OPTIMAL_MAX;
-    const isSipxInRange = currentData.Pb_Rougher1_SIPX_Flowrate >= SIPX_OPTIMAL_MIN && 
-                         currentData.Pb_Rougher1_SIPX_Flowrate <= SIPX_OPTIMAL_MAX;
-    
-    // If targets are met and parameters are optimal, show success status
-    if (isConcentrateTargetMet && isKexInRange && isSipxInRange) {
-      newRecommendations.push({
-        id: 'targets-achieved',
-        type: 'success',
-        title: '🎯 TARGETS ACHIEVED',
-        description: `Concentrate grade at ${(currentPb || 0).toFixed(1)}% - Above target of ${CONCENTRATE_TARGET}%`,
-        parameter: 'System_Status',
-        currentValue: currentPb || 0,
-        suggestedValue: currentPb || 0,
-        expectedOutcome: 'System performing optimally - consider efficiency optimization',
-        timeHorizon: 'Current',
-        confidence: 1.0,
-        impact: 'high',
-        actionType: 'maintain'
-      });
-      setRecommendations(newRecommendations);
-      return;
-    }
-
-    // Show recommendations only when targets are NOT met
-    if (!isConcentrateTargetMet) {
-      // Concentrate grade below target - need to increase
-      if (currentData.Pb_Conditioner_KEX_Flowrate < KEX_OPTIMAL_MIN) {
-        newRecommendations.push({
-          id: 'increase-kex-for-target',
-          type: 'optimization',
-          title: 'Increase KEX to Meet Target',
-          description: `Concentrate grade ${(currentPb || 0).toFixed(1)}% below target of ${CONCENTRATE_TARGET}%`,
-          parameter: 'Pb_Conditioner_KEX_Flowrate',
-          currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-          suggestedValue: Math.min(currentData.Pb_Conditioner_KEX_Flowrate + 10, KEX_OPTIMAL_MAX),
-          expectedOutcome: `Expected to improve concentrate grade to meet ${CONCENTRATE_TARGET}% target`,
-          timeHorizon: '15-30 minutes',
-          confidence: 0.8,
-          impact: 'high',
-          actionType: 'increase'
-        });
-      }
-    }
-
-    // Parameter optimization when targets are met (efficiency mode)
-    if (isConcentrateTargetMet) {
-      // Target met - optimize for efficiency
-      if (currentData.Pb_Conditioner_KEX_Flowrate > KEX_OPTIMAL_MAX) {
-        newRecommendations.push({
-          id: 'reduce-kex-efficiency',
-          type: 'optimization',
-          title: 'Reduce KEX for Efficiency',
-          description: 'Target met - reduce reagent consumption',
-          parameter: 'Pb_Conditioner_KEX_Flowrate',
-          currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-          suggestedValue: KEX_OPTIMAL_MAX,
-          expectedOutcome: 'Maintain target while reducing reagent costs',
-          timeHorizon: '15-30 minutes',
-          confidence: 0.8,
-          impact: 'medium',
-          actionType: 'decrease'
-        });
-      }
-    } else {
-      // Target not met - optimize for performance
-      if (currentData.Pb_Conditioner_KEX_Flowrate < KEX_OPTIMAL_MIN) {
-        newRecommendations.push({
-          id: 'increase-kex-performance',
-          type: 'optimization',
-          title: 'Increase KEX for Performance',
-          description: 'Below target - increase reagent for better performance',
-          parameter: 'Pb_Conditioner_KEX_Flowrate',
-          currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-          suggestedValue: Math.min(currentData.Pb_Conditioner_KEX_Flowrate + 10, KEX_OPTIMAL_MAX),
-          expectedOutcome: 'Expected to improve concentrate grade to meet target',
-          timeHorizon: '15-30 minutes',
-          confidence: 0.8,
-          impact: 'high',
-          actionType: 'increase'
-        });
-      }
-    }
-
-    // Air flow optimization (decrease scenarios)
-    if (currentData.Pb_Rougher1_AirFlow > 15) {
-      newRecommendations.push({
-        id: 'airflow-decrease',
-        type: 'optimization',
-        title: 'Reduce Air Flow',
-        description: 'Air flow is above optimal range',
-        parameter: 'Pb_Rougher1_AirFlow',
-        currentValue: currentData.Pb_Rougher1_AirFlow,
-        suggestedValue: Math.max(currentData.Pb_Rougher1_AirFlow - 2, 8),
-        expectedOutcome: 'Expected to stabilize Pb concentrate',
-        timeHorizon: '10-20 minutes',
-        confidence: 0.70,
-        impact: 'low',
-        actionType: 'decrease'
-      });
-    }
-
-    // SIPX flow rate optimization (increase scenarios - too low)
-    if (currentData.Pb_Rougher1_SIPX_Flowrate < 15) {
-      newRecommendations.push({
-        id: 'sipx-increase',
-        type: 'optimization',
-        title: 'Increase SIPX Flow Rate',
-        description: 'SIPX flow rate is below optimal range',
-        parameter: 'Pb_Rougher1_SIPX_Flowrate',
-        currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
-        suggestedValue: Math.min(currentData.Pb_Rougher1_SIPX_Flowrate + 10, 35),
-        expectedOutcome: 'Expected to improve froth stability and recovery',
-        timeHorizon: '10-20 minutes',
-        confidence: 0.85,
-        impact: 'high',
-        actionType: 'increase'
-      });
-    }
-
-    // SIPX optimization based on targets
-    if (isConcentrateTargetMet) {
-      // Target met - optimize SIPX for efficiency
-      if (currentData.Pb_Rougher1_SIPX_Flowrate > SIPX_OPTIMAL_MAX) {
-        newRecommendations.push({
-          id: 'reduce-sipx-efficiency',
-          type: 'optimization',
-          title: 'Reduce SIPX for Efficiency',
-          description: 'Target met - reduce reagent consumption',
-          parameter: 'Pb_Rougher1_SIPX_Flowrate',
-          currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
-          suggestedValue: SIPX_OPTIMAL_MAX,
-          expectedOutcome: 'Maintain target while reducing reagent costs',
-          timeHorizon: '15-30 minutes',
-          confidence: 0.8,
-          impact: 'medium',
-          actionType: 'decrease'
-        });
-      }
-    } else {
-      // Target not met - check if SIPX needs adjustment
-      if (currentData.Pb_Rougher1_SIPX_Flowrate < SIPX_OPTIMAL_MIN) {
-        newRecommendations.push({
-          id: 'increase-sipx-performance',
-          type: 'optimization',
-          title: 'Increase SIPX for Performance',
-          description: 'Below target - may need SIPX adjustment',
-          parameter: 'Pb_Rougher1_SIPX_Flowrate',
-          currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
-          suggestedValue: Math.min(currentData.Pb_Rougher1_SIPX_Flowrate + 5, SIPX_OPTIMAL_MAX),
-          expectedOutcome: 'May help improve concentrate grade',
-          timeHorizon: '15-30 minutes',
-          confidence: 0.7,
-          impact: 'medium',
-          actionType: 'increase'
-        });
-      }
-    }
-
-
-    // Model confidence recommendations
-    const pred5min = futurePredictions.future_predictions['5min'];
-    if (pred5min && pred5min.model_performance.r2_score < 0.7) {
-      newRecommendations.push({
-        id: 'low-confidence',
-        type: 'info',
-        title: 'Low Prediction Confidence',
-        description: 'Model confidence is below 70%',
-        parameter: 'Model_Confidence',
-        currentValue: pred5min.model_performance.r2_score * 100,
-        suggestedValue: 80,
-        expectedOutcome: 'Consider manual verification of predictions',
-        timeHorizon: 'Immediate',
-        confidence: pred5min.model_performance.r2_score,
-        impact: 'low',
-        actionType: 'maintain'
-      });
-    }
-
-    setRecommendations(newRecommendations);
-  }, [futurePredictions, currentData]);
 
   // Fetch future predictions when current data changes
   useEffect(() => {
@@ -270,12 +72,110 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     }
   }, [currentData, fetchPredictions, futurePredictions]);
 
-  // Generate recommendations when predictions change
-  useEffect(() => {
-    if (futurePredictions && currentData) {
-      generateRecommendations();
+  // Parse backend recommendations into structured format
+  const parseBackendRecommendations = useCallback(() => {
+    if (!currentData?.Recommendations || !Array.isArray(currentData.Recommendations)) {
+      return [];
     }
-  }, [futurePredictions, currentData, generateRecommendations]);
+
+    return currentData.Recommendations.map((rec: string, index: number) => {
+      // Parse the recommendation string to extract structured information
+      let type = 'info';
+      let title = rec;
+      let parameter = 'System_Status';
+      let actionType = 'info';
+      let impact = 'medium';
+      let confidence = 0.8;
+      let currentValue = 0;
+      let suggestedValue = 0;
+
+      // Parse different types of recommendations
+      if (rec.includes('🎯')) {
+        type = 'success';
+        actionType = 'info';  // Targets achieved is informational, not actionable
+        impact = 'high';
+        confidence = 1.0;
+        title = '🎯 TARGETS ACHIEVED';
+      } else if (rec.includes('💡')) {
+        type = 'optimization';
+        if (rec.toLowerCase().includes('increase')) {
+          actionType = 'increase';
+        } else if (rec.toLowerCase().includes('decrease')) {
+          actionType = 'decrease';
+        }
+        impact = 'high';
+        confidence = 0.8;
+        
+        // Extract parameter name and values
+        if (rec.includes('KEX')) {
+          parameter = 'Pb_Conditioner_KEX_Flowrate';
+          // Parse "from X to Y" pattern
+          const fromMatch = rec.match(/from ([\d.]+) to ([\d.]+)/);
+          if (fromMatch) {
+            currentValue = parseFloat(fromMatch[1]);
+            suggestedValue = parseFloat(fromMatch[2]);
+          }
+          title = rec.includes('increase') ? 'Increase KEX to Meet Target' : 'Decrease KEX for Efficiency';
+        } else if (rec.includes('SIPX')) {
+          parameter = 'Pb_Rougher1_SIPX_Flowrate';
+          // Parse "from X to Y" pattern
+          const fromMatch = rec.match(/from ([\d.]+) to ([\d.]+)/);
+          if (fromMatch) {
+            currentValue = parseFloat(fromMatch[1]);
+            suggestedValue = parseFloat(fromMatch[2]);
+          }
+          title = rec.includes('increase') ? 'Increase SIPX Flow Rate' : 'Decrease SIPX for Efficiency';
+        }
+      } else if (rec.includes('⚠️')) {
+        type = 'warning';
+        actionType = 'info';  // Warnings are informational, no direct action needed
+        impact = 'medium';
+        confidence = 0.7;
+        title = 'System Warning';
+      } else if (rec.includes('📊')) {
+        type = 'info';
+        actionType = 'info';
+        impact = 'low';
+        confidence = 0.8;
+        title = 'Expected Outcomes';
+      } else if (rec.includes('✅')) {
+        type = 'success';
+        actionType = 'info';  // System optimal is informational, no action needed
+        impact = 'medium';
+        confidence = 0.9;
+        title = 'System Optimal';
+      }
+
+      return {
+        id: `backend-rec-${index}`,
+        type: type as any,
+        title: title,
+        description: rec,
+        parameter: parameter,
+        currentValue: currentValue || (currentData as any)[parameter] || 0,
+        suggestedValue: suggestedValue || (currentData as any)[parameter] || 0,
+        expectedOutcome: rec,
+        timeHorizon: '15-30 minutes',
+        confidence: confidence,
+        impact: impact as any,
+        actionType: actionType as any
+      };
+    });
+  }, [currentData]);
+
+  // Always use backend recommendations parsed from currentData
+  const allRecommendations = parseBackendRecommendations();
+  
+  // Group recommendations by type for better organization
+  const groupedRecommendations = useMemo(() => {
+    const actionable = allRecommendations.filter(rec => rec.actionType !== 'info');
+    const informational = allRecommendations.filter(rec => rec.actionType === 'info');
+    
+    return {
+      actionable: actionable.slice(0, 4), // Limit actionable to 4
+      informational: informational.slice(0, 3) // Limit informational to 3
+    };
+  }, [allRecommendations]);
 
   const getRecommendationIcon = (type: string) => {
     switch (type) {
@@ -295,13 +195,13 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'high':
-        return 'text-danger-400 bg-danger-900/20';
+        return 'text-red-400 bg-red-900/20 border border-red-800/30';
       case 'medium':
-        return 'text-warning-400 bg-warning-900/20';
+        return 'text-orange-400 bg-orange-900/20 border border-orange-800/30';
       case 'low':
-        return 'text-info-400 bg-info-900/20';
+        return 'text-blue-400 bg-blue-900/20 border border-blue-800/30';
       default:
-        return 'text-slate-400 bg-slate-700/20';
+        return 'text-slate-300 bg-slate-700/20 border border-slate-600/30';
     }
   };
 
@@ -524,7 +424,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
 
       {/* Recommendations Grid */}
-      {!loading && recommendations.length > 0 && (
+      {!loading && (groupedRecommendations.actionable.length > 0 || groupedRecommendations.informational.length > 0) && (
         <div className="relative">
           {/* Subtle refreshing overlay */}
           {refreshing && (
@@ -533,8 +433,23 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
               <span>Updating...</span>
             </div>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {recommendations.map((recommendation) => (
+          
+          {/* Recommendation count indicator */}
+          {allRecommendations.length > 7 && (
+            <div className="absolute top-0 left-0 z-10 flex items-center space-x-2 px-3 py-1 bg-slate-600/90 text-white rounded-lg text-xs font-medium">
+              <span>Showing {groupedRecommendations.actionable.length + groupedRecommendations.informational.length} of {allRecommendations.length} recommendations</span>
+            </div>
+          )}
+
+          {/* Actionable Recommendations Section */}
+          {groupedRecommendations.actionable.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="h-1 w-8 bg-primary-500 rounded"></div>
+                <h3 className="text-sm font-semibold text-primary-400 uppercase tracking-wide">Actionable Recommendations</h3>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                {groupedRecommendations.actionable.map((recommendation) => (
             <motion.div
               key={recommendation.id}
               initial={{ opacity: 0, y: 20 }}
@@ -601,43 +516,116 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuickAction(recommendation);
-                  }}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    recommendation.actionType === 'increase' 
-                      ? 'bg-success-600 text-white hover:bg-success-700'
-                      : recommendation.actionType === 'decrease'
-                      ? 'bg-warning-600 text-white hover:bg-warning-700'
-                      : 'bg-primary-600 text-white hover:bg-primary-700'
-                  }`}
-                >
-                  {getActionIcon(recommendation.actionType || 'maintain')}
-                  <span>Quick Action</span>
-                </button>
-                
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSimulateScenario(recommendation);
-                  }}
-                  className="flex items-center space-x-1 px-3 py-2 bg-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-all duration-200"
-                >
-                  <Zap className="h-3 w-3" />
-                  <span>Simulate</span>
-                </button>
-              </div>
+              {/* Only show action buttons for actionable recommendations */}
+              {recommendation.actionType !== 'info' && (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuickAction(recommendation);
+                    }}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                      recommendation.actionType === 'increase' 
+                        ? 'bg-success-600 text-white hover:bg-success-700'
+                        : recommendation.actionType === 'decrease'
+                        ? 'bg-warning-600 text-white hover:bg-warning-700'
+                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                    }`}
+                  >
+                    {getActionIcon(recommendation.actionType || 'maintain')}
+                    <span>Quick Action</span>
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSimulateScenario(recommendation);
+                    }}
+                    className="flex items-center space-x-1 px-3 py-2 bg-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-all duration-200"
+                  >
+                    <Zap className="h-3 w-3" />
+                    <span>Simulate</span>
+                  </button>
+                </div>
+              )}
+              
+              {/* Show "Info Only" label for informational recommendations */}
+              {recommendation.actionType === 'info' && (
+                <div className="flex items-center space-x-1 px-3 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-xs font-medium">
+                  <Info className="h-3 w-3" />
+                  <span>Info Only</span>
+                </div>
+              )}
             </motion.div>
-          ))}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Informational Recommendations Section */}
+          {groupedRecommendations.informational.length > 0 && (
+            <div>
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="h-1 w-8 bg-slate-500 rounded"></div>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">System Status</h3>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+                {groupedRecommendations.informational.map((recommendation) => (
+                  <motion.div
+                    key={recommendation.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:border-slate-500/50 transition-all duration-200"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        {getRecommendationIcon(recommendation.type)}
+                        <span className="text-sm font-medium text-slate-300">{recommendation.title}</span>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(recommendation.impact)}`}>
+                        {recommendation.impact.toUpperCase()}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-slate-400 mb-3 leading-relaxed">
+                      {recommendation.description}
+                    </p>
+
+                    {/* Info Only label */}
+                    <div className="flex items-center space-x-1 px-3 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-xs font-medium">
+                      <Info className="h-3 w-3" />
+                      <span>Info Only</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* All Systems Optimal - Single TARGETS ACHIEVED recommendation */}
+      {!loading && groupedRecommendations.actionable.length === 0 && groupedRecommendations.informational.length === 1 && 
+       groupedRecommendations.informational[0]?.title === '🎯 TARGETS ACHIEVED' && (
+        <div className="text-center py-12">
+          <div className="bg-gradient-to-br from-success-500/20 to-success-600/20 rounded-2xl p-8 border border-success-500/30">
+            <CheckCircle className="h-16 w-16 text-success-400 mx-auto mb-6" />
+            <h3 className="text-2xl font-bold text-success-400 mb-3">🎯 TARGETS ACHIEVED</h3>
+            <h4 className="text-lg font-semibold text-white mb-2">All Systems Optimal</h4>
+            <p className="text-slate-300 mb-4">Your flotation process is performing at peak efficiency</p>
+            <div className="flex items-center justify-center space-x-2 text-sm text-slate-400">
+              <div className="h-1 w-8 bg-success-500 rounded"></div>
+              <span>No immediate action required</span>
+              <div className="h-1 w-8 bg-success-500 rounded"></div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* No Recommendations */}
-      {!loading && recommendations.length === 0 && (
+      {/* No Recommendations - True empty state */}
+      {!loading && groupedRecommendations.actionable.length === 0 && groupedRecommendations.informational.length === 0 && (
         <div className="text-center py-8">
           <CheckCircle className="h-12 w-12 text-success-400 mx-auto mb-4" />
           <h4 className="text-lg font-semibold text-white mb-2">All Systems Optimal</h4>

@@ -202,7 +202,9 @@ class FlotationServiceOrchestrator:
             # Run optimization using the instance optimizer
             self._initialize_optimizer()
             optimization_result = self.optimizer.optimize_reagent_rates(raw_data)
-            recommendations = self.optimizer.generate_recommendations(optimization_result)
+            # Get current Pb concentrate for recommendation generation
+            actual_current_pb = raw_data.get('Actual_Pb_Concentrate', 0)
+            recommendations = self.optimizer.generate_recommendations(optimization_result, actual_current_pb)
             self.logger.debug(f"Generated {len(recommendations)} optimization-based recommendations")
             
             # Prepare final data point with both predicted and actual values
@@ -231,13 +233,13 @@ class FlotationServiceOrchestrator:
                 
                 # Check if it's time to save to RES1 (every 2 minutes)
                 if (current_time - self.last_res1_save).total_seconds() >= self.res1_interval * 60:
-                    res1_id = self.database.save_to_res1(raw_data)
+                    res1_id = self.database.save_to_sensor_data(raw_data)
                     self.last_res1_save = current_time
                     self.logger.debug(f"Saved to RES1 - ID: {res1_id}")
                 
                 # Check if it's time to save to RES2 (every 5 minutes)
                 if (current_time - self.last_res2_save).total_seconds() >= self.res2_interval * 60:
-                    res2_id = self.database.save_to_res2({
+                    res2_id = self.database.save_to_calculated_values({
                         'Predicted_Pb_Concentrate': actual_pb_concentrate,
                         'Actual_Pb_Concentrate': actual_pb_concentrate,
                         'Predicted_Pb_Recovery': actual_recovery_rate_pct / 100.0,
@@ -278,7 +280,7 @@ class FlotationServiceOrchestrator:
                         external_factors_changed = False
                     
                     # Save to RES3 - Optimization recommendations and control settings
-                    res3_id = self.database.save_to_res3({
+                    res3_id = self.database.save_to_optimization_data({
                         'current_kex': current_kex,
                         'current_sipx': current_sipx,
                         'recommended_kex': recommended_kex,
