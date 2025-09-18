@@ -1,6 +1,5 @@
 """
 Database Utilities for Froth Flotation Data Storage
-==================================================
 
 This module handles SQLite database operations for storing and retrieving
 flotation process data, sensor readings, and control parameters.
@@ -25,12 +24,12 @@ from services.shared_logging import setup_logger
 # Set up logging
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
 log_file = os.path.join(log_dir, 'database_manager.log')
-logger = setup_logger(__name__, log_file, level=logging.WARNING)
+logger = setup_logger(__name__, log_file, level=logging.INFO)
 
-# Log service startup (WARNING level for important startup info)
-logger.warning("Starting Froth Flotation Database Manager")
-logger.warning(f"Log file: {log_file}")
-logger.warning(f"Service: SQLite Database Manager")
+# Log service startup (INFO level for important startup info)
+logger.info("Starting Froth Flotation Database Manager")
+logger.info(f"Log file: {log_file}")
+logger.info(f"Service: SQLite Database Manager")
 
 class FlotationDatabase:
     """SQLite database manager for flotation data"""
@@ -63,7 +62,6 @@ class FlotationDatabase:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     Feed_Pb REAL,
-                    Feed_Zn REAL,
                     Pb_Conditioner_KEX_Flowrate REAL,
                     Pb_Rougher1_SIPX_Flowrate REAL,
                     Pb_Rougher1_AirFlow REAL,
@@ -114,7 +112,6 @@ class FlotationDatabase:
                     kex_flowrate REAL,
                     sipx_flowrate REAL,
                     feed_pb REAL,
-                    feed_zn REAL,
                     cell_level REAL,
                     impeller_speed REAL,
                     froth_height REAL,
@@ -250,9 +247,9 @@ class FlotationDatabase:
             cursor.execute('''
                 INSERT INTO sensor_data (
                     pH, temperature, air_flow, kex_flowrate, sipx_flowrate,
-                    feed_pb, feed_zn, cell_level, impeller_speed, froth_height,
+                    feed_pb, cell_level, impeller_speed, froth_height,
                     pulp_density, nigrosine_min, nigrosine_max, pb_recovery, pb_concentrate
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 data.get('pH'),
                 data.get('Temperature'),
@@ -260,7 +257,6 @@ class FlotationDatabase:
                 data.get('Pb_Conditioner_KEX_Flowrate'),
                 data.get('Pb_Rougher1_SIPX_Flowrate'),
                 data.get('Feed_Pb'),
-                data.get('Feed_Zn'),
                 data.get('Cell_Level'),
                 data.get('Impeller_Speed'),
                 data.get('Froth_Height'),
@@ -685,12 +681,11 @@ class FlotationDatabase:
             
             cursor.execute('''
                 INSERT INTO flotation_sensor_data (
-                    Feed_Pb, Feed_Zn, Pb_Conditioner_KEX_Flowrate, 
+                    Feed_Pb, Pb_Conditioner_KEX_Flowrate, 
                     Pb_Rougher1_SIPX_Flowrate, Pb_Rougher1_AirFlow, Pb_Rougher1_Level
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?)
             ''', (
                 data.get('Feed_Pb'),
-                data.get('Feed_Zn'),
                 data.get('Pb_Conditioner_KEX_Flowrate'),
                 data.get('Pb_Rougher1_SIPX_Flowrate'),
                 data.get('Pb_Rougher1_AirFlow'),

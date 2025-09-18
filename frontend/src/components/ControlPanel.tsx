@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Settings, 
   Droplets, 
   TrendingUp,
   AlertTriangle,
@@ -94,16 +93,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       animate={{ opacity: 1, x: 0 }}
       className="bg-slate-800 border border-slate-600 rounded-xl p-4 h-full overflow-y-auto shadow-sm"
     >
-      {/* Header */}
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="p-2 bg-primary-600 rounded-lg">
-          <Settings className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-white">Reagent Controls</h2>
-          <p className="text-sm text-slate-300">Adjust reagent flow rates</p>
-        </div>
-      </div>
 
       {/* Controls */}
       <div className="space-y-4">

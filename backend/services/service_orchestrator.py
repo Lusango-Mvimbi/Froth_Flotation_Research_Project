@@ -408,7 +408,7 @@ class FlotationServiceOrchestrator:
         
         # Check ML model service
         try:
-            test_prediction = self.ml_model.predict_future_pb_concentrate({'Feed_Pb': 2.5, 'Feed_Zn': 10.0, 'Pb_Conditioner_KEX_Flowrate': 60.0, 'Pb_Rougher1_SIPX_Flowrate': 30.0, 'Pb_Rougher1_AirFlow': 10.0, 'Pb_Rougher1_Level': 40.0}, [5])
+            test_prediction = self.ml_model.predict_future_pb_concentrate({'Feed_Pb': 2.5, 'Pb_Conditioner_KEX_Flowrate': 60.0, 'Pb_Rougher1_SIPX_Flowrate': 30.0, 'Pb_Rougher1_AirFlow': 10.0, 'Pb_Rougher1_Level': 40.0}, [5])
             if test_prediction and 'future_predictions' in test_prediction:
                 health_status['components']['ml_model_service'] = 'healthy'
             else:

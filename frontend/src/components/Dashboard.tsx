@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Activity, 
   LogOut,
-  RefreshCw,
   WifiOff,
   Download,
   FileText,
@@ -81,7 +80,6 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
 
 
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
@@ -94,7 +92,7 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
         try {
           optimalRanges = await flotationAPI.getOptimalRanges();
         } catch (error) {
-          console.warn('⚠️ Could not fetch optimal ranges:', error);
+          console.warn('Could not fetch optimal ranges:', error);
           addError(createDataError('Unable to fetch optimal ranges for controls'));
         }
         
@@ -103,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
         try {
           targetRanges = await flotationAPI.getTargetRanges();
         } catch (error) {
-          console.warn('⚠️ Could not fetch target ranges:', error);
+          console.warn('Could not fetch target ranges:', error);
           addError(createDataError('Unable to fetch target ranges for predictions'));
         }
         
@@ -122,7 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
         try {
           currentData = await flotationAPI.getCurrentData();
         } catch (error) {
-          console.warn('⚠️ Could not fetch current data:', error);
+          console.warn('Could not fetch current data:', error);
           addError(createDataError('Unable to fetch current system data'));
         }
         
@@ -171,7 +169,7 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
           throw new Error('Backend connection failed - dashboard requires real-time data');
         }
       } catch (error) {
-        console.error('❌ Failed to initialize dashboard:', error);
+        console.error('Failed to initialize dashboard:', error);
         const errorType = classifyError(error);
         const errorMessage = extractErrorMessage(error);
         
@@ -283,7 +281,6 @@ const Dashboard: React.FC<DashboardProps> = ({ controls, onControlChange }) => {
       ['Air Flow', state.currentData.Pb_Rougher1_AirFlow || 0, 'm³/min', state.currentData.timestamp],
       ['Level', state.currentData.Pb_Rougher1_Level || 0, '%', state.currentData.timestamp],
       ['Feed Pb', state.currentData.Feed_Pb || 0, '%', state.currentData.timestamp],
-      ['Feed Zn', state.currentData.Feed_Zn || 0, '%', state.currentData.timestamp],
     ];
 
     // Add future predictions if available
@@ -327,7 +324,6 @@ SIPX Flowrate: ${state.currentData.Pb_Rougher1_SIPX_Flowrate || 0} L/min
 Air Flow: ${state.currentData.Pb_Rougher1_AirFlow || 0} m³/min
 Level: ${state.currentData.Pb_Rougher1_Level || 0}%
 Feed Pb: ${state.currentData.Feed_Pb || 0}%
-Feed Zn: ${state.currentData.Feed_Zn || 0}%
 
 FUTURE PREDICTIONS:
 ==================
@@ -349,58 +345,6 @@ SYSTEM STATUS: ${state.serverConnected ? 'CONNECTED' : 'DISCONNECTED'}
     toast.success('Report exported successfully!');
   };
 
-  // Manual refresh
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      let currentData: FlotationData | null = null;
-      let predictions: Prediction | null = null;
-      let serverConnected = false;
-
-      try {
-        currentData = await flotationAPI.getCurrentData();
-        
-        // Create predictions from current data
-        predictions = {
-          predicted_pb: currentData.Predicted_Pb_Concentrate || currentData.Pb_Concentrate || 0,
-          recovery_efficiency: currentData.Predicted_Pb_Recovery ? (currentData.Predicted_Pb_Recovery * 100) : (currentData.Pb_Recovery || 0) * 100,
-          status: currentData.Process_Status || 'optimal',
-          prediction_method: 'ML Model' as const
-        };
-        
-        serverConnected = true;
-      } catch (error) {
-        console.error('Refresh failed - backend required:', error);
-        throw error;
-      }
-      
-      setState(prev => ({
-        ...prev,
-        currentData,
-        predictions,
-        recommendations: (currentData?.Recommendations || []).map((rec: string, index: number) => ({
-          id: `rec-${index}`,
-          type: 'info' as const,
-          message: rec,
-          timestamp: new Date().toISOString()
-        })),
-        serverConnected,
-        error: serverConnected ? null : 'Backend services not available'
-      }));
-      
-      if (serverConnected) {
-        toast.success('Data refreshed successfully');
-      } else {
-        toast.error('Refresh failed - backend connection required');
-        throw new Error('Backend connection failed');
-      }
-    } catch (error) {
-      console.error('Failed to refresh data:', error);
-      toast.error('Failed to refresh data');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   // Fetch optimization data on component mount and periodically
 
@@ -408,14 +352,14 @@ SYSTEM STATUS: ${state.serverConnected ? 'CONNECTED' : 'DISCONNECTED'}
   // Handle logout
   const handleLogout = async () => {
     try {
-      console.log('🔐 Logging out...');
+      console.log('Logging out...');
       await logout(); // Use the proper logout method from useAuth
-      console.log('✅ Logout successful');
+      console.log('Logout successful');
       
       // Navigate to login page after successful logout
       navigate('/login', { replace: true });
     } catch (error) {
-      console.error('❌ Logout error:', error);
+      console.error('Logout error:', error);
       // Fallback: clear localStorage and redirect
       localStorage.removeItem('authToken');
       localStorage.removeItem('userData');
@@ -494,15 +438,6 @@ SYSTEM STATUS: ${state.serverConnected ? 'CONNECTED' : 'DISCONNECTED'}
                   </div>
                 </div>
               </div>
-              
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-800 text-white rounded-lg transition-colors duration-200 text-sm"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
-              </button>
               
               <button
                 onClick={handleLogout}

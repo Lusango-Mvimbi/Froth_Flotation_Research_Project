@@ -1,6 +1,5 @@
 """
 Froth Flotation Optimization Pipeline
-====================================
 
 This script implements a comprehensive machine learning pipeline for predicting
 Pb rougher concentrate values in froth flotation processes. The pipeline includes:
@@ -19,7 +18,6 @@ Key Features:
 - Time series-aware data splitting
 - Comprehensive performance metrics
 - Progress tracking with time estimates
-
 """
 
 import pandas as pd

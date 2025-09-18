@@ -7,8 +7,7 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle,
-  Calendar,
-  Filter
+  Calendar
 } from 'lucide-react';
 import {
   LineChart,
@@ -32,7 +31,6 @@ const METRICS = [
   { key: 'Actual_Pb_Concentrate', label: 'Pb Concentrate', unit: '%', color: '#3b82f6' },
   { key: 'Actual_Pb_Recovery', label: 'Pb Recovery', unit: '%', color: '#10b981' },
   { key: 'Feed_Pb', label: 'Feed Pb', unit: '%', color: '#f59e0b' },
-  { key: 'Feed_Zn', label: 'Feed Zn', unit: '%', color: '#ef4444' },
   { key: 'Pb_Conditioner_KEX_Flowrate', label: 'KEX Flowrate', unit: 'L/min', color: '#8b5cf6' },
   { key: 'Pb_Rougher1_SIPX_Flowrate', label: 'SIPX Flowrate', unit: 'L/min', color: '#06b6d4' },
   { key: 'Pb_Rougher1_AirFlow', label: 'Air Flow', unit: 'm³/min', color: '#84cc16' },

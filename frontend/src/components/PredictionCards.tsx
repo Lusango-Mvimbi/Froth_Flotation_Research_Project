@@ -33,29 +33,54 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
   const [activeTab, setActiveTab] = useState<'current' | '5min' | '15min' | '30min' | '60min'>('current');
 
 
-  // Performance state calculation
-  const getPerformanceState = (value: number, metric: 'pb' | 'recovery' | 'feed_grade'): PerformanceState => {
+  // Performance state calculation with horizon-specific targets
+  const getPerformanceState = (value: number, metric: 'pb' | 'recovery' | 'feed_grade', horizon?: string): PerformanceState => {
     if (!targetRanges) {
       // No fallback - return neutral state if no target ranges available
-      return { state: 'within_range' as const, color: 'text-slate-400', backgroundColor: 'bg-slate-700/20' };
+      return { state: 'info' as const, color: 'text-slate-400', backgroundColor: 'bg-slate-700/20' };
     }
 
-    // Use dynamic target ranges from backend
+    // Use dynamic target ranges from backend with horizon-specific adjustments
     if (metric === 'pb') {
-      const { min, max } = targetRanges.pb_concentrate;
+      let { min, max } = targetRanges.pb_concentrate;
+      
+      // Apply horizon-specific adjustments for Pb concentrate targets
+      if (horizon && horizon !== 'current') {
+        const horizonMinutes = parseInt(horizon);
+        
+        // Wider acceptable ranges for longer prediction horizons
+        if (horizonMinutes === 5) {
+          // 5-minute: Tight range (±1%)
+          min = Math.max(0, min - 1);
+          max = max + 1;
+        } else if (horizonMinutes === 15) {
+          // 15-minute: Moderate range (±2%)
+          min = Math.max(0, min - 2);
+          max = max + 2;
+        } else if (horizonMinutes === 30) {
+          // 30-minute: Wider range (±3%)
+          min = Math.max(0, min - 3);
+          max = max + 3;
+        } else if (horizonMinutes === 60) {
+          // 60-minute: Widest range (±5%)
+          min = Math.max(0, min - 5);
+          max = max + 5;
+        }
+      }
+      
       if (value < min) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
       if (value >= max) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
-      return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+      return { state: 'good', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
     } else if (metric === 'recovery') {
       const { min, max } = targetRanges.recovery;
       if (value < min) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
       if (value >= max) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
-      return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+      return { state: 'good', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
     } else { // feed_grade
       const { min, max } = targetRanges.feed_grade;
       if (value < min) return { state: 'below_min', color: 'text-danger-400', backgroundColor: 'bg-danger-900/20' };
       if (value >= max) return { state: 'above_max', color: 'text-warning-400', backgroundColor: 'bg-warning-900/20' };
-      return { state: 'within_range', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
+      return { state: 'good', color: 'text-success-400', backgroundColor: 'bg-success-900/20' };
     }
   };
 
@@ -100,10 +125,10 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
     );
   }
 
-  const feedGradePerformance = getPerformanceState(currentData.Feed_Pb, 'feed_grade');
+  const feedGradePerformance = getPerformanceState(currentData.Feed_Pb, 'feed_grade', 'current');
 
-  // Helper function to get target range string
-  const getTargetRange = (metric: 'pb' | 'recovery' | 'feed_grade') => {
+  // Helper function to get target range string with horizon-specific adjustments
+  const getTargetRange = (metric: 'pb' | 'recovery' | 'feed_grade', horizon?: string) => {
     if (!targetRanges) {
       // No fallback - return empty string if no target ranges available
       return 'N/A';
@@ -116,6 +141,35 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
     };
     
     const range = ranges[metric];
+    
+    // Apply horizon-specific adjustments for Pb concentrate targets
+    if (metric === 'pb' && horizon && horizon !== 'current') {
+      const horizonMinutes = parseInt(horizon);
+      let adjustedMin = range.min;
+      let adjustedMax = range.max;
+      
+      // Wider acceptable ranges for longer prediction horizons
+      if (horizonMinutes === 5) {
+        // 5-minute: Tight range (±1%)
+        adjustedMin = Math.max(0, range.min - 1);
+        adjustedMax = range.max + 1;
+      } else if (horizonMinutes === 15) {
+        // 15-minute: Moderate range (±2%)
+        adjustedMin = Math.max(0, range.min - 2);
+        adjustedMax = range.max + 2;
+      } else if (horizonMinutes === 30) {
+        // 30-minute: Wider range (±3%)
+        adjustedMin = Math.max(0, range.min - 3);
+        adjustedMax = range.max + 3;
+      } else if (horizonMinutes === 60) {
+        // 60-minute: Widest range (±5%)
+        adjustedMin = Math.max(0, range.min - 5);
+        adjustedMax = range.max + 5;
+      }
+      
+      return `${adjustedMin.toFixed(1)}-${adjustedMax.toFixed(1)}${range.unit}`;
+    }
+    
     return `${range.min}-${range.max}${range.unit}`;
   };
 
@@ -149,18 +203,18 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           title: 'Actual Pb',
           value: `${(currentData.Actual_Pb_Concentrate || 0).toFixed(2)}%`,
           trend: getTrendDirection(currentData.Actual_Pb_Concentrate || 0, targetRanges?.pb_concentrate?.optimal || 10),
-          performance: getPerformanceState(currentData.Actual_Pb_Concentrate || 0, 'pb'),
+          performance: getPerformanceState(currentData.Actual_Pb_Concentrate || 0, 'pb', 'current'),
           icon: Activity,
-          target: getTargetRange('pb'),
+          target: getTargetRange('pb', 'current'),
           confidence: null,
         },
         {
           title: 'Actual Recovery',
           value: `${((currentData.Actual_Pb_Recovery || 0) * 100).toFixed(1)}%`,
           trend: getTrendDirection((currentData.Actual_Pb_Recovery || 0) * 100, targetRanges?.recovery?.optimal || 85),
-          performance: getPerformanceState((currentData.Actual_Pb_Recovery || 0) * 100, 'recovery'),
+          performance: getPerformanceState((currentData.Actual_Pb_Recovery || 0) * 100, 'recovery', 'current'),
           icon: TrendingUp,
-          target: getTargetRange('recovery'),
+          target: getTargetRange('recovery', 'current'),
           confidence: null,
         },
         {
@@ -168,7 +222,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           value: predictions?.status || 'Loading...',
           trend: predictions?.status === 'optimal' ? 'up' : predictions?.status === 'warning' ? 'stable' : 'down',
           performance: { 
-            state: predictions?.status === 'optimal' ? 'within_range' : predictions?.status === 'warning' ? 'warning' : 'critical',
+            state: predictions?.status === 'optimal' ? 'good' : predictions?.status === 'warning' ? 'warning' : 'critical',
             color: predictions?.status === 'optimal' ? 'text-success-400' : predictions?.status === 'warning' ? 'text-warning-400' : 'text-danger-400',
             backgroundColor: predictions?.status === 'optimal' ? 'bg-success-900/20' : predictions?.status === 'warning' ? 'bg-warning-900/20' : 'bg-danger-900/20'
           },
@@ -182,25 +236,25 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           trend: 'stable',
           performance: feedGradePerformance,
           icon: TrendingDown,
-          target: getTargetRange('feed_grade'),
+          target: getTargetRange('feed_grade', 'current'),
           confidence: null,
         },
         {
           title: 'KEX Flowrate',
           value: `${(currentData.Pb_Conditioner_KEX_Flowrate || 0).toFixed(1)}`,
           trend: 'stable',
-          performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
+          performance: { state: 'info', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
           icon: Activity,
-          target: 'Control',
+          target: null,
           confidence: null,
         },
         {
           title: 'SIPX Flowrate',
           value: `${(currentData.Pb_Rougher1_SIPX_Flowrate || 0).toFixed(1)}`,
           trend: 'stable',
-          performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
+          performance: { state: 'info', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
           icon: Activity,
-          target: 'Control',
+          target: null,
           confidence: null,
         }
       ];
@@ -219,7 +273,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
 
       const currentPb = currentData.Actual_Pb_Concentrate || predictions?.predicted_pb || 0;
       const futureTrend = getFutureTrendDirection(futurePred.prediction, currentPb);
-      const futurePerformance = getPerformanceState(futurePred.prediction, 'pb');
+      const futurePerformance = getPerformanceState(futurePred.prediction, 'pb', horizonKey);
 
       console.log('PredictionCards: Current Pb:', currentPb, 'Future Pb:', futurePred.prediction, 'Trend:', futureTrend);
 
@@ -230,15 +284,15 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           trend: futureTrend,
           performance: futurePerformance,
           icon: Brain,
-          method: 'Random Forest',
-          target: getTargetRange('pb'),
+          method: futurePred.model,
+          target: getTargetRange('pb', horizonKey),
           confidence: null,
         },
         {
           title: 'Confidence Interval',
           value: `${(futurePred.confidence_interval?.lower || 0).toFixed(2)} - ${(futurePred.confidence_interval?.upper || 0).toFixed(2)}%`,
           trend: 'stable',
-          performance: { state: 'within_range', color: 'text-cyan-400', backgroundColor: 'bg-cyan-900/20' },
+          performance: { state: 'info', color: 'text-cyan-400', backgroundColor: 'bg-cyan-900/20' },
           icon: BarChart3,
           target: '95% Confidence',
           confidence: null,
@@ -248,12 +302,12 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           value: (futurePred.model_performance?.r2_score || 0) > 0 ? `${((futurePred.model_performance?.r2_score || 0) * 100).toFixed(1)}%` : 'Loading...',
           trend: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'up' : 'stable',
           performance: { 
-            state: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'within_range' : 'warning',
+            state: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'good' : 'warning',
             color: getConfidenceColor(futurePred.model_performance?.r2_score || 0),
             backgroundColor: (futurePred.model_performance?.r2_score || 0) > 0.8 ? 'bg-success-900/20' : 'bg-warning-900/20'
           },
           icon: Zap,
-          target: 'R² Score',
+          target: null,
           confidence: null,
         },
         {
@@ -261,7 +315,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           value: (futurePred.model_performance?.accuracy_10_percent || 0) > 0 ? `${((futurePred.model_performance?.accuracy_10_percent || 0) * 100).toFixed(1)}%` : 'Loading...',
           trend: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'up' : 'stable',
           performance: { 
-            state: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'within_range' : 'warning',
+            state: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'good' : 'warning',
             color: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'text-success-400' : 'text-warning-400',
             backgroundColor: (futurePred.model_performance?.accuracy_10_percent || 0) > 0.7 ? 'bg-success-900/20' : 'bg-warning-900/20'
           },
@@ -273,18 +327,18 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
           title: 'Predicted Recovery',
           value: `${((currentData.Actual_Pb_Recovery || 0) * 100).toFixed(1)}%`,
           trend: getTrendDirection((currentData.Actual_Pb_Recovery || 0) * 100, targetRanges?.recovery?.optimal || 85),
-          performance: getPerformanceState((currentData.Actual_Pb_Recovery || 0) * 100, 'recovery'),
+          performance: getPerformanceState((currentData.Actual_Pb_Recovery || 0) * 100, 'recovery', horizonKey),
           icon: TrendingUp,
-          target: getTargetRange('recovery'),
+          target: getTargetRange('recovery', horizonKey),
           confidence: null,
         },
         {
           title: 'Model Used',
           value: futurePred.model,
           trend: 'stable',
-          performance: { state: 'within_range', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
+          performance: { state: 'info', color: 'text-primary-400', backgroundColor: 'bg-primary-900/20' },
           icon: Brain,
-          target: 'Random Forest',
+          target: null,
           confidence: null,
         }
       ];
@@ -328,7 +382,7 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            className={`relative overflow-hidden bg-slate-800 border border-slate-600 rounded-xl p-4 sm:p-6 lg:p-8 transition-all duration-300 shadow-sm ${card.performance.backgroundColor}`}
+            className={`relative overflow-hidden bg-slate-800 border border-slate-600 rounded-xl p-4 sm:p-6 lg:p-8 transition-all duration-300 shadow-sm ${card.performance.backgroundColor} min-h-[140px] flex flex-col`}
           >
             {/* Performance indicator bar */}
             <div className={`absolute top-0 left-0 right-0 h-1 ${card.performance.color.replace('text-', 'bg-')}`} />
@@ -349,26 +403,29 @@ const PredictionCards: React.FC<PredictionCardsProps> = ({
                 {card.value}
               </div>
               <div className="flex items-center space-x-2">
-                {card.trend === 'up' ? (
-                  <TrendingUp className="h-3 w-3 text-success-400" />
-                ) : card.trend === 'down' ? (
-                  <TrendingDown className="h-3 w-3 text-danger-400" />
-                ) : (
-                  <div className="h-3 w-3 text-slate-400">—</div>
+                {card.title !== 'Model Performance' && card.title !== 'Model Used' && card.title !== 'Confidence Interval' && card.title !== 'Feed Grade' && card.title !== 'KEX Flowrate' && card.title !== 'SIPX Flowrate' && (
+                  <>
+                    {card.trend === 'up' ? (
+                      <TrendingUp className="h-3 w-3 text-success-400" />
+                    ) : card.trend === 'down' ? (
+                      <TrendingDown className="h-3 w-3 text-danger-400" />
+                    ) : (
+                      <div className="h-3 w-3 text-slate-400">—</div>
+                    )}
+                  </>
                 )}
-                <span className="text-xs text-slate-200 font-medium">
-                  Target: {card.target}
-                </span>
+                {card.target && (
+                  <span className="text-xs text-slate-200 font-medium">
+                    Target: {card.target}
+                  </span>
+                )}
               </div>
             </div>
 
 
-            {/* Performance indicator */}
-            <div className="flex items-center space-x-2">
+            {/* Performance indicator - color only, no text */}
+            <div className="flex items-center space-x-2 mt-auto">
               <div className={`w-2 h-2 rounded-full ${card.performance.color.replace('text-', 'bg-')}`} />
-              <span className={`text-xs font-medium capitalize ${card.performance.color}`}>
-                {card.performance.state.replace('_', ' ')}
-              </span>
             </div>
 
             {/* Hover effect overlay */}

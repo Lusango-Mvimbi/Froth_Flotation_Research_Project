@@ -49,10 +49,10 @@ logger = logging.getLogger(__name__)
 # Try to import GPU-accelerated libraries
 try:
     import cupy as cp
-    print("✅ CuPy available for GPU acceleration")
+    print("CuPy available for GPU acceleration")
     GPU_AVAILABLE = True
 except ImportError:
-    print("⚠️ CuPy not available, using CPU only")
+    print("CuPy not available, using CPU only")
     GPU_AVAILABLE = False
 
 class EfficientFiveMinuteTrainer:

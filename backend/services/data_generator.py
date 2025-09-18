@@ -1,6 +1,5 @@
 """
 Data Generator Implementation
-============================
 
 This module implements the data generation service following SOLID principles.
 """
@@ -26,7 +25,6 @@ class FlotationDataGenerator(IDataGenerator):
         """Initialize base values for flotation parameters - ONLY parameters from training data"""
         # Based on actual training data analysis
         self.base_values = {
-            'Feed_Zn': 10.32,  # From training data mean
             'Pb_Rougher1_Level': 39.01,  # From training data mean
         }
         
@@ -36,7 +34,6 @@ class FlotationDataGenerator(IDataGenerator):
         
         # Base feed characteristics - using ACTUAL training data ranges
         self.feed_pb = round(random.uniform(0.5, 2.5), 2)  # From training: 0.00 - 2.55
-        self.feed_zn = round(random.uniform(8.0, 12.5), 2)  # From training: 0.00 - 14.20
         
         # Use control ranges for KEX and SIPX (operator-controlled parameters)
         control_ranges = self.get_control_ranges()
@@ -66,7 +63,6 @@ class FlotationDataGenerator(IDataGenerator):
         
         # Generate fresh feed values each time for better variation
         fresh_feed_pb = round(random.uniform(0.5, 2.5), 2)  # Full range from training data
-        fresh_feed_zn = round(random.uniform(8.0, 12.5), 2)  # Full range from training data
         
         # Add realistic variations for other parameters
         airflow_variation = random.uniform(-1.5, 1.5)  # Smaller variation as per training data
@@ -76,7 +72,6 @@ class FlotationDataGenerator(IDataGenerator):
         data_point = {
             'timestamp': datetime.now().isoformat(),
             'Feed_Pb': fresh_feed_pb,  # Fresh value each time for better variation
-            'Feed_Zn': fresh_feed_zn,  # Fresh value each time for better variation
             'Pb_Conditioner_KEX_Flowrate': round(self.optimal_kex, 1),  # Use operator's control setting directly
             'Pb_Rougher1_SIPX_Flowrate': round(self.optimal_sipx, 1),  # Use operator's control setting directly
             'Pb_Rougher1_AirFlow': round(self.optimal_airflow + airflow_variation, 2),  # Training: 3.99 - 14.17
@@ -89,7 +84,6 @@ class FlotationDataGenerator(IDataGenerator):
         """Get valid parameter ranges - ONLY from training data"""
         return {
             'Feed_Pb': (0.0, 2.55),  # From training data
-            'Feed_Zn': (0.0, 14.20),  # From training data
             'Pb_Conditioner_KEX_Flowrate': (-2.55, 1499.97),  # From training data
             'Pb_Rougher1_SIPX_Flowrate': (-1.31, 1198.63),  # From training data
             'Pb_Rougher1_AirFlow': (3.99, 14.17),  # From training data

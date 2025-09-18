@@ -1,6 +1,5 @@
 """
 Optimization Service for Froth Flotation Digital Twin
-====================================================
 
 This service implements model-based optimization to find the best reagent flow rates
 that maximize recovery while maintaining concentrate grade targets.
@@ -11,9 +10,6 @@ Key Features:
 - Optimizes reagent flow rates (KEX, SIPX) for maximum recovery
 - Provides recommendations based on optimal settings
 - Handles constraints and realistic operating limits
-
-Author: AI Assistant
-Date: 2024
 """
 
 import numpy as np
@@ -79,7 +75,6 @@ class FlotationOptimizer:
         # Current process state - ONLY parameters from ML model training data
         self.current_state = {
             'Feed_Pb': 2.5,
-            'Feed_Zn': 10.0,
             'Pb_Conditioner_KEX_Flowrate': 60.0,
             'Pb_Rougher1_SIPX_Flowrate': 30.0,
             'Pb_Rougher1_AirFlow': 9.97,
@@ -115,10 +110,9 @@ class FlotationOptimizer:
         try:
             # Check for significant changes in feed composition
             feed_pb_change = abs(current_data.get('Feed_Pb', 0) - self.current_state.get('Feed_Pb', 0))
-            feed_zn_change = abs(current_data.get('Feed_Zn', 0) - self.current_state.get('Feed_Zn', 0))
             
             # Consider changes > 10% as significant
-            significant_change = (feed_pb_change > 0.1 or feed_zn_change > 1.0)
+            significant_change = (feed_pb_change > 0.1)
             
             if significant_change:
                 logger.warning("Significant external changes detected in feed composition")
@@ -544,7 +538,7 @@ class FlotationOptimizer:
         recommendations = []
         
         if not optimization_result.get('success', False):
-            recommendations.append("⚠️ Optimization failed. Using current settings.")
+            recommendations.append("WARNING: Optimization failed. Using current settings.")
             return recommendations
         
         optimal = optimization_result['optimal_settings']
@@ -605,25 +599,25 @@ class FlotationOptimizer:
         
         if is_optimal:
             # System is truly optimal - return minimal recommendations
-            recommendations.append("🎯 TARGETS ACHIEVED - All parameters within optimal ranges")
+            recommendations.append("TARGETS ACHIEVED - All parameters within optimal ranges")
             return recommendations
         
         # System needs optimization - generate recommendations
         # Add optimization summary
         if improvement > 0.01:  # More than 1% improvement
-            recommendations.append(f"🎯 Optimization found {improvement:.1%} potential recovery improvement")
+            recommendations.append(f"Optimization found {improvement:.1%} potential recovery improvement")
         else:
-            recommendations.append("✅ Current settings are near optimal")
+            recommendations.append("Current settings are near optimal")
         
         # KEX recommendations
         if abs(kex_diff) > 2.0:
             direction = "increase" if kex_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} KEX flow rate from {current['KEX']:.1f} to {optimal['KEX']:.1f} L/min")
+            recommendations.append(f"{direction.capitalize()} KEX flow rate from {current['KEX']:.1f} to {optimal['KEX']:.1f} L/min")
         
         # SIPX recommendations
         if abs(sipx_diff) > 1.0:
             direction = "increase" if sipx_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} SIPX flow rate from {current['SIPX']:.1f} to {optimal['SIPX']:.1f} L/min")
+            recommendations.append(f"{direction.capitalize()} SIPX flow rate from {current['SIPX']:.1f} to {optimal['SIPX']:.1f} L/min")
         
         # Only recommend KEX and SIPX changes - these are the controllable parameters
         # Other parameters (AirFlow, pH, ImpellerSpeed) are not in the ML model training data
@@ -635,7 +629,7 @@ class FlotationOptimizer:
         # Convert recovery to percentage (it's stored as decimal)
         optimal_recovery_pct = optimal_recovery * 100
         
-        recommendations.append(f"📊 Expected outcomes: {optimal_recovery_pct:.1f}% recovery, {optimal_concentrate:.1f}% Pb concentrate")
+        recommendations.append(f"Expected outcomes: {optimal_recovery_pct:.1f}% recovery, {optimal_concentrate:.1f}% Pb concentrate")
         
         return recommendations
 
@@ -691,7 +685,7 @@ class FlotationOptimizer:
         recommendations = []
         
         if not optimization_result.get('success', False):
-            recommendations.append("⚠️ Multi-horizon optimization failed. Using current settings.")
+            recommendations.append("WARNING: Multi-horizon optimization failed. Using current settings.")
             return recommendations
         
         optimal = optimization_result['optimal_settings']
@@ -701,7 +695,7 @@ class FlotationOptimizer:
         
         # Add optimization summary
         best_score = optimization_result.get('best_score', 0)
-        recommendations.append(f"🎯 Multi-horizon optimization score: {best_score:.3f}")
+        recommendations.append(f"Multi-horizon optimization score: {best_score:.3f}")
         
         # Analyze each horizon
         for horizon in self.optimization_horizons:
@@ -717,9 +711,9 @@ class FlotationOptimizer:
                 in_target = target_min <= optimal_pred <= target_max
                 
                 if in_target:
-                    recommendations.append(f"✅ {horizon}min: {optimal_pred:.1f}% Pb (target range) - Confidence: {confidence:.1%}")
+                    recommendations.append(f"{horizon}min: {optimal_pred:.1f}% Pb (target range) - Confidence: {confidence:.1%}")
                 else:
-                    recommendations.append(f"⚠️ {horizon}min: {optimal_pred:.1f}% Pb (outside target) - Confidence: {confidence:.1%}")
+                    recommendations.append(f"{horizon}min: {optimal_pred:.1f}% Pb (outside target) - Confidence: {confidence:.1%}")
         
         # Parameter change recommendations
         kex_diff = optimal['KEX'] - current['KEX']
@@ -727,11 +721,11 @@ class FlotationOptimizer:
         
         if abs(kex_diff) > 2.0:
             direction = "increase" if kex_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} KEX from {current['KEX']:.1f} to {optimal['KEX']:.1f} L/min")
+            recommendations.append(f"{direction.capitalize()} KEX from {current['KEX']:.1f} to {optimal['KEX']:.1f} L/min")
         
         if abs(sipx_diff) > 1.0:
             direction = "increase" if sipx_diff > 0 else "decrease"
-            recommendations.append(f"💡 {direction.capitalize()} SIPX from {current['SIPX']:.1f} to {optimal['SIPX']:.1f} L/min")
+            recommendations.append(f"{direction.capitalize()} SIPX from {current['SIPX']:.1f} to {optimal['SIPX']:.1f} L/min")
         
         # Uncertainty considerations
         avg_confidence = np.mean([
@@ -740,6 +734,6 @@ class FlotationOptimizer:
         ])
         
         if avg_confidence < 0.7:
-            recommendations.append(f"⚠️ Low prediction confidence ({avg_confidence:.1%}) - consider manual verification")
+            recommendations.append(f"Low prediction confidence ({avg_confidence:.1%}) - consider manual verification")
         
         return recommendations

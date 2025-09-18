@@ -44,7 +44,6 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
         'Actual Recovery': typeof item.Actual_Pb_Recovery === 'number' ? (item.Actual_Pb_Recovery * 100) : 0,
       // ONLY parameters from training data
       'Feed Pb': typeof item.Feed_Pb === 'number' ? item.Feed_Pb : 0,
-      'Feed Zn': typeof item.Feed_Zn === 'number' ? item.Feed_Zn : 0,
       'KEX Flow': typeof item.Pb_Conditioner_KEX_Flowrate === 'number' ? item.Pb_Conditioner_KEX_Flowrate : 0,
       'SIPX Flow': typeof item.Pb_Rougher1_SIPX_Flowrate === 'number' ? item.Pb_Rougher1_SIPX_Flowrate : 0,
       'Air Flow': typeof item.Pb_Rougher1_AirFlow === 'number' ? item.Pb_Rougher1_AirFlow : 0,
@@ -244,14 +243,6 @@ const RealTimeGraph: React.FC<RealTimeGraphProps> = ({
               <span className="text-white ml-2 font-medium">
                 {typeof currentData.Feed_Pb === 'number' && !isNaN(currentData.Feed_Pb) 
                   ? currentData.Feed_Pb.toFixed(2) 
-                  : 'N/A'}%
-              </span>
-            </div>
-            <div className="p-3 bg-slate-700/30 rounded">
-              <span className="text-slate-300">Feed Zn:</span>
-              <span className="text-white ml-2 font-medium">
-                {typeof currentData.Feed_Zn === 'number' && !isNaN(currentData.Feed_Zn) 
-                  ? currentData.Feed_Zn.toFixed(2) 
                   : 'N/A'}%
               </span>
             </div>

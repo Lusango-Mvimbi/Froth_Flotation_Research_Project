@@ -20,7 +20,7 @@ const Login: React.FC = () => {
 
   // Debug: Log authentication state changes
   useEffect(() => {
-    console.log('🔐 Login component: auth state changed', { isAuthenticated, authLoading, authError });
+    console.log('Login component: auth state changed', { isAuthenticated, authLoading, authError });
   }, [isAuthenticated, authLoading, authError]);
 
   if (authLoading) {
@@ -43,22 +43,22 @@ const Login: React.FC = () => {
     }
 
     setIsLoading(true);
-    console.log('🔐 Login form submitted:', { username: formData.username, passwordLength: formData.password.length });
+    console.log('Login form submitted:', { username: formData.username, passwordLength: formData.password.length });
 
     try {
       const result = await login({ username: formData.username, password: formData.password });
-      console.log('🔐 Login result:', result);
+      console.log('Login result:', result);
       
       if (result.success) {
         toast.success('Login successful!');
         navigate('/dashboard', { replace: true });
       } else {
         const errorMessage = result.error;
-        console.error('🔐 Login failed:', errorMessage);
+        console.error('Login failed:', errorMessage);
         toast.error(errorMessage || 'Login failed');
       }
     } catch (error) {
-      console.error('🔐 Login exception:', error);
+      console.error('Login exception:', error);
       
       // Handle message channel closed errors specifically
       if (error instanceof Error && error.message.includes('message channel closed')) {

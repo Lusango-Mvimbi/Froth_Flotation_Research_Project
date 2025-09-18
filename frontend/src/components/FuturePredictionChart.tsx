@@ -55,8 +55,8 @@ const FuturePredictionChart: React.FC<FuturePredictionChartProps> = ({
 }) => {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [selectedHorizons, setSelectedHorizons] = useState<Set<string>>(new Set(['5min', '15min', '30min', '60min']));
-  const [showConfidenceIntervals, setShowConfidenceIntervals] = useState(true);
+  const [selectedHorizons, setSelectedHorizons] = useState<Set<string>>(new Set());
+  const [showConfidenceIntervals, setShowConfidenceIntervals] = useState(false);
   const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h'>('1h');
 
   const getDataLimit = useCallback(() => {

@@ -1,6 +1,5 @@
 """
 ML Model Service for Froth Flotation Digital Twin
-================================================
 
 This service implements proper froth flotation behavior with ML predictions.
 Based on research: Pb concentrate is predicted by model, Recovery is calculated using froth flotation equations.
@@ -33,7 +32,7 @@ class MLModelService:
     def __init__(self):
         # ONLY parameters that were actually in the training data
         self.feature_names = [
-            'Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 
+            'Feed_Pb', 'Pb_Conditioner_KEX_Flowrate', 
             'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level'
         ]
         
@@ -523,7 +522,7 @@ class MLModelService:
             
             # Core features
             feature_names.extend([
-                'Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate',
+                'Feed_Pb', 'Pb_Conditioner_KEX_Flowrate',
                 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level'
             ])
             
@@ -558,7 +557,6 @@ class MLModelService:
         # Core features from input data - ONLY parameters from training data
         features.extend([
             input_data.get('Feed_Pb', 1.47),  # Training data mean
-            input_data.get('Feed_Zn', 10.32),  # Training data mean
             input_data.get('Pb_Conditioner_KEX_Flowrate', 60.0),  # Use realistic default
             input_data.get('Pb_Rougher1_SIPX_Flowrate', 30.0),  # Use realistic default
             input_data.get('Pb_Rougher1_AirFlow', 9.97),  # Training data mean
@@ -599,7 +597,7 @@ class MLModelService:
             elif i % 10 == 4:
                 features.append(2.5)  # Feed grades
             elif i % 10 == 5:
-                features.append(10.0)  # Zn content
+                features.append(1.0)  # Default value
             elif i % 10 == 6:
                 features.append(1200.0)  # Impeller speeds
             elif i % 10 == 7:
@@ -620,7 +618,6 @@ class MLModelService:
         try:
             # Use actual input data values, not static means
             feed_pb = input_data.get('Feed_Pb', 1.47)
-            feed_zn = input_data.get('Feed_Zn', 10.32)
             kex = input_data.get('Pb_Conditioner_KEX_Flowrate', 60.0)
             sipx = input_data.get('Pb_Rougher1_SIPX_Flowrate', 30.0)
             air_flow = input_data.get('Pb_Rougher1_AirFlow', 9.97)
@@ -952,7 +949,7 @@ class MLModelService:
             
             # pH recommendations
             if ph < 10.5:
-                recommendations.append("💡 pH is low. Consider increasing to improve Pb selectivity over Zn.")
+                recommendations.append("pH is low. Consider increasing to improve Pb selectivity.")
             elif ph > 11.5:
                 recommendations.append("💡 pH is high. Consider reducing to optimize mineral recovery.")
             
@@ -1022,7 +1019,6 @@ class MLModelService:
             'Pb_Conditioner_KEX_Flowrate': (30.0, 60.0),
             'Pb_Rougher1_SIPX_Flowrate': (15.0, 40.0),
             'Feed_Pb': (1.5, 4.0),
-            'Feed_Zn': (5.0, 15.0),
             'Cell_Level': (60.0, 80.0),
             'Impeller_Speed': (800.0, 1500.0),
             'Froth_Height': (10.0, 25.0)

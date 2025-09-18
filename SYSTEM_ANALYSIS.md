@@ -1,6 +1,6 @@
-# Froth Flotation Digital Twin System Analysis 🔍
+# Froth Flotation Digital Twin System Analysis
 
-## 🏗️ System Architecture Overview
+## System Architecture Overview
 
 The Froth Flotation Digital Twin system is a comprehensive real-time monitoring and prediction platform built with modern software architecture principles. Here's how it works:
 
@@ -240,7 +240,6 @@ Process Vars → 200 Features → Horizon Model → Pb Prediction → ±2σ Boun
 
 ### Process Variables (Auto-Generated)
 - **Feed_Pb**: 0.5-2.5% (Feed lead grade)
-- **Feed_Zn**: 8.0-12.5% (Feed zinc grade)
 - **AirFlow**: 8-12 L/min (Cell aeration)
 - **Level**: 25-55% (Cell level)
 

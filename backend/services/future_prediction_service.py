@@ -168,10 +168,9 @@ class FuturePredictionService:
             
             # Define all the features that the models expect (in order)
             expected_features = [
-                'Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 
+                'Feed_Pb', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 
                 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level', 'Feed_Pb_lag5min', 'Feed_Pb_lag15min', 
-                'Feed_Pb_lag30min', 'Feed_Pb_lag60min', 'Feed_Zn_lag5min', 'Feed_Zn_lag15min', 
-                'Feed_Zn_lag30min', 'Feed_Zn_lag60min', 'Feed_Pb_ratio_lag5min', 'Feed_Pb_ratio_lag15min', 
+                'Feed_Pb_lag30min', 'Feed_Pb_lag60min',  'Feed_Pb_ratio_lag5min', 'Feed_Pb_ratio_lag15min', 
                 'Feed_Pb_ratio_lag30min', 'Feed_Pb_ratio_lag60min', 'Pb_Rougher1_SIPX_Flowrate_lag5min', 
                 'Pb_Rougher1_SIPX_Flowrate_lag15min', 'Pb_Rougher1_SIPX_Flowrate_lag30min', 
                 'Pb_Rougher1_SIPX_Flowrate_lag60min', 'Pb_Rougher2_KEX_Flowrate_lag5min', 
@@ -226,8 +225,6 @@ class FuturePredictionService:
                 'Pb_Conditioner_KEX_Flowrate_lag30min_acceleration', 'Pb_Conditioner_KEX_Flowrate_lag60min_rate_of_change', 
                 'Feed_Pb_rolling_mean_5min', 'Feed_Pb_rolling_std_5min', 'Feed_Pb_rolling_mean_15min', 
                 'Feed_Pb_rolling_std_15min', 'Feed_Pb_rolling_mean_30min', 'Feed_Pb_rolling_std_30min', 
-                'Feed_Zn_rolling_mean_5min', 'Feed_Zn_rolling_std_5min', 'Feed_Zn_rolling_mean_15min', 
-                'Feed_Zn_rolling_std_15min', 'Feed_Zn_rolling_mean_30min', 'Feed_Zn_rolling_std_30min', 
                 'Pb_Conditioner_KEX_Flowrate_rolling_mean_5min', 'Pb_Conditioner_KEX_Flowrate_rolling_std_5min', 
                 'Pb_Conditioner_KEX_Flowrate_rolling_mean_15min', 'Pb_Conditioner_KEX_Flowrate_rolling_std_15min', 
                 'Pb_Conditioner_KEX_Flowrate_rolling_mean_30min', 'Pb_Conditioner_KEX_Flowrate_rolling_std_30min', 
@@ -251,7 +248,7 @@ class FuturePredictionService:
                 'Pb_Cleaner1_DiluteNigrosine_Flowrate_rate_of_change', 'Pb_Cleaner1_Nigrosine_Flowrate_rate_of_change', 
                 'Pb_Cleaner3_Valve_rate_of_change', 'Pb_Cleaner3_DiluteNigrosine_Flowrate_rate_of_change', 
                 'Pb_Rougher2_AirFlow_roll15_rate_of_change', 'Feed_Pb_rate_of_change', 'Feed_Pb_momentum_5min', 
-                'Feed_Zn_rate_of_change', 'Feed_Zn_momentum_5min', 'Pb_Conditioner_KEX_Flowrate_momentum_5min', 
+ 'Pb_Conditioner_KEX_Flowrate_momentum_5min', 
                 'Pb_Rougher1_SIPX_Flowrate_momentum_5min', 'Pb_Rougher1_Level_momentum_5min', 
                 'Pb_Rougher_Conc_Pb_rate_of_change', 'Pb_Rougher_Conc_Pb_momentum_5min', 'day_of_week', 
                 'day_of_year', 'hour_sin', 'hour_cos', 'day_sin', 'day_cos', 'hour_of_day', 'shift', 
@@ -264,7 +261,7 @@ class FuturePredictionService:
                 enhanced_features[feature] = 0.0
             
             # Set base features from input data
-            base_features = ['Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level']
+            base_features = ['Feed_Pb', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level']
             for feature in base_features:
                 if feature in features.columns:
                     enhanced_features[feature] = features[feature]
@@ -293,7 +290,7 @@ class FuturePredictionService:
                 enhanced_features[var] = default_value
             
             # Generate lag features
-            lag_vars = ['Feed_Pb', 'Feed_Zn', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher2_KEX_Flowrate', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Conditioner_Nigrosine_Flowrate']
+            lag_vars = ['Feed_Pb', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher2_KEX_Flowrate', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Conditioner_Nigrosine_Flowrate']
             for var in lag_vars:
                 for lag in [5, 15, 30, 60]:
                     lag_col = f'{var}_lag{lag}min'
@@ -330,7 +327,7 @@ class FuturePredictionService:
                         enhanced_features[acc_col] = enhanced_features[roc_col].diff().fillna(0)
             
             # Generate rolling features for base variables
-            base_vars_with_rolling = ['Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level', 'Pb_Rougher_Conc_Pb']
+            base_vars_with_rolling = ['Feed_Pb', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level', 'Pb_Rougher_Conc_Pb']
             for var in base_vars_with_rolling:
                 for window in [5, 15, 30]:
                     for stat in ['mean', 'std']:
@@ -339,14 +336,14 @@ class FuturePredictionService:
                             enhanced_features[rolling_col] = enhanced_features[var].rolling(window=window, min_periods=1).agg(stat).fillna(enhanced_features[var].mean())
             
             # Generate rate of change features
-            roc_vars = ['Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_Valve', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher2_KEX_Flowrate', 'Pb_Scavenger1_Valve', 'Pb_Rougher_Conc_FlowA', 'Pb_Rougher_Conc_FlowB', 'Pb_Final_Conc_FlowA', 'Pb_Cleaner1_Valve', 'Pb_Cleaner1_AirFlow', 'Pb_Cleaner1_DiluteNigrosine_Flowrate', 'Pb_Cleaner1_Nigrosine_Flowrate', 'Pb_Cleaner3_Valve', 'Pb_Cleaner3_DiluteNigrosine_Flowrate', 'Pb_Rougher2_AirFlow_roll15', 'Feed_Pb', 'Feed_Zn', 'Pb_Rougher_Conc_Pb']
+            roc_vars = ['Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_Valve', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher2_KEX_Flowrate', 'Pb_Scavenger1_Valve', 'Pb_Rougher_Conc_FlowA', 'Pb_Rougher_Conc_FlowB', 'Pb_Final_Conc_FlowA', 'Pb_Cleaner1_Valve', 'Pb_Cleaner1_AirFlow', 'Pb_Cleaner1_DiluteNigrosine_Flowrate', 'Pb_Cleaner1_Nigrosine_Flowrate', 'Pb_Cleaner3_Valve', 'Pb_Cleaner3_DiluteNigrosine_Flowrate', 'Pb_Rougher2_AirFlow_roll15', 'Feed_Pb', 'Pb_Rougher_Conc_Pb']
             for var in roc_vars:
                 roc_col = f'{var}_rate_of_change'
                 if roc_col in expected_features:
                     enhanced_features[roc_col] = enhanced_features[var].diff().fillna(0)
             
             # Generate momentum features
-            momentum_vars = ['Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_Level', 'Pb_Rougher_Conc_Pb']
+            momentum_vars = ['Feed_Pb', 'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_Level', 'Pb_Rougher_Conc_Pb']
             for var in momentum_vars:
                 momentum_col = f'{var}_momentum_5min'
                 if momentum_col in expected_features:

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { 
   TrendingUp, 
-  TrendingDown, 
   AlertTriangle, 
   CheckCircle, 
   Info,
@@ -90,13 +89,13 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       let suggestedValue = 0;
 
       // Parse different types of recommendations
-      if (rec.includes('🎯')) {
+      if (rec.includes('TARGETS ACHIEVED')) {
         type = 'success';
         actionType = 'info';  // Targets achieved is informational, not actionable
         impact = 'high';
         confidence = 1.0;
-        title = '🎯 TARGETS ACHIEVED';
-      } else if (rec.includes('💡')) {
+        title = 'TARGETS ACHIEVED';
+      } else if (rec.toLowerCase().includes('increase') || rec.toLowerCase().includes('decrease')) {
         type = 'optimization';
         if (rec.toLowerCase().includes('increase')) {
           actionType = 'increase';
@@ -126,19 +125,19 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           }
           title = rec.includes('increase') ? 'Increase SIPX Flow Rate' : 'Decrease SIPX for Efficiency';
         }
-      } else if (rec.includes('⚠️')) {
+      } else if (rec.includes('WARNING:')) {
         type = 'warning';
         actionType = 'info';  // Warnings are informational, no direct action needed
         impact = 'medium';
         confidence = 0.7;
         title = 'System Warning';
-      } else if (rec.includes('📊')) {
+      } else if (rec.includes('Expected outcomes:')) {
         type = 'info';
         actionType = 'info';
         impact = 'low';
         confidence = 0.8;
         title = 'Expected Outcomes';
-      } else if (rec.includes('✅')) {
+      } else if (rec.includes('Current settings are near optimal')) {
         type = 'success';
         actionType = 'info';  // System optimal is informational, no action needed
         impact = 'medium';
@@ -608,11 +607,11 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
       {/* All Systems Optimal - Single TARGETS ACHIEVED recommendation */}
       {!loading && groupedRecommendations.actionable.length === 0 && groupedRecommendations.informational.length === 1 && 
-       groupedRecommendations.informational[0]?.title === '🎯 TARGETS ACHIEVED' && (
+       groupedRecommendations.informational[0]?.title === 'TARGETS ACHIEVED' && (
         <div className="text-center py-12">
           <div className="bg-gradient-to-br from-success-500/20 to-success-600/20 rounded-2xl p-8 border border-success-500/30">
             <CheckCircle className="h-16 w-16 text-success-400 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-success-400 mb-3">🎯 TARGETS ACHIEVED</h3>
+            <h3 className="text-2xl font-bold text-success-400 mb-3">TARGETS ACHIEVED</h3>
             <h4 className="text-lg font-semibold text-white mb-2">All Systems Optimal</h4>
             <p className="text-slate-300 mb-4">Your flotation process is performing at peak efficiency</p>
             <div className="flex items-center justify-center space-x-2 text-sm text-slate-400">
@@ -633,36 +632,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         </div>
       )}
 
-      {/* Future Predictions Summary */}
-      {futurePredictions && (
-        <div className="mt-6 p-4 bg-slate-700/30 rounded-lg">
-          <h4 className="text-sm font-medium text-slate-300 mb-3">Prediction Summary</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {Object.entries(futurePredictions.future_predictions).map(([horizon, prediction]) => {
-              const currentValue = currentData?.Actual_Pb_Concentrate || 0;
-              const change = prediction.prediction - currentValue;
-              
-              return (
-                <div key={horizon} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">{horizon} Forecast</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-white">
-                      {prediction.prediction.toFixed(2)}%
-                    </span>
-                    {change > 0 ? (
-                      <TrendingUp className="h-4 w-4 text-success-400" />
-                    ) : change < 0 ? (
-                      <TrendingDown className="h-4 w-4 text-danger-400" />
-                    ) : (
-                      <div className="h-4 w-4 text-slate-400">—</div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Simulation Results Modal */}
       {simulationModal.isOpen && (

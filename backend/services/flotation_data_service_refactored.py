@@ -28,7 +28,7 @@ from services.shared_logging import setup_logger
 # Set up logging
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
 log_file = os.path.join(log_dir, 'flotation_data_service_refactored.log')
-logger = setup_logger(__name__, log_file, level=logging.ERROR)
+logger = setup_logger(__name__, log_file, level=logging.INFO)
 
 # Log service startup (INFO level for important startup info)
 logger.info("Starting Refactored Froth Flotation Data Service")
@@ -167,28 +167,32 @@ async def get_model_info():
 @app.get("/api/current-data")
 async def get_current_data():
     """Get current flotation data (frontend endpoint)"""
+    logger.info("API: GET /api/current-data - Request received")
     try:
         data_point = await orchestrator.generate_and_process_data(use_cache=True)  # Use caching
+        logger.info(f"API: GET /api/current-data - Success, Pb Concentrate: {data_point.get('Pb_Concentrate', 'N/A')}%")
         return data_point
     except Exception as e:
-        logger.error(f"Current data retrieval failed: {e}")
+        logger.error(f"API: GET /api/current-data - Failed: {e}")
         raise HTTPException(status_code=500, detail="Current data retrieval failed")
 
 @app.get("/api/optimal-ranges")
 async def get_optimal_ranges():
     """Get optimal parameter ranges (frontend endpoint)"""
+    logger.info("API: GET /api/optimal-ranges - Request received")
     try:
         # Get both parameter ranges (for data generation) and control ranges (for manual control)
         parameter_ranges = orchestrator.data_generator.get_parameter_ranges()
         control_ranges = orchestrator.data_generator.get_control_ranges()
         
+        logger.info(f"API: GET /api/optimal-ranges - Success, {len(parameter_ranges)} parameter ranges returned")
         return {
             "parameter_ranges": parameter_ranges,
             "control_ranges": control_ranges,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        logger.error(f"Optimal ranges retrieval failed: {e}")
+        logger.error(f"API: GET /api/optimal-ranges - Failed: {e}")
         raise HTTPException(status_code=500, detail="Optimal ranges retrieval failed")
 
 @app.get("/api/target-ranges")
@@ -301,15 +305,17 @@ async def get_control_settings():
 @app.post("/api/control-settings")
 async def update_control_settings(controls: Dict[str, float]):
     """Update control settings (frontend endpoint)"""
+    logger.info(f"API: POST /api/control-settings - Request received with controls: {controls}")
     try:
         # Validate control parameters
         if 'kex' not in controls or 'sipx' not in controls:
+            logger.warning(f"API: POST /api/control-settings - Missing required parameters: {controls}")
             raise HTTPException(status_code=400, detail="Missing required control parameters: kex, sipx")
         
         # Update the orchestrator's control settings (FIXED: Added await)
         await orchestrator.update_control_settings(controls)
         
-        logger.info(f"Control settings updated: KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
+        logger.info(f"API: POST /api/control-settings - Success, KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
         
         return {
             "message": "Control settings updated successfully",
@@ -339,7 +345,6 @@ async def optimize_reagent_rates(reagent_settings: Dict[str, float]):
             'Pb_Conditioner_KEX_Flowrate': reagent_settings['kex'],
             'Pb_Rougher1_SIPX_Flowrate': reagent_settings['sipx'],
             'Feed_Pb': current_system_data.get('Feed_Pb', 2.5),  # Use real system data
-            'Feed_Zn': current_system_data.get('Feed_Zn', 10.0),
             'Pb_Rougher1_AirFlow': current_system_data.get('Pb_Rougher1_AirFlow', 10.0),
             'Pb_Rougher1_Level': current_system_data.get('Pb_Rougher1_Level', 40.0)
         }
@@ -636,6 +641,7 @@ async def get_future_predictions():
     """
     Get future predictions for multiple time horizons (GET endpoint for health checks)
     """
+    logger.info("API: GET /api/future-predictions - Request received")
     try:
         # Get current data to use for future predictions (use same data source as current-data endpoint)
         current_data = await orchestrator.generate_and_process_data(use_cache=True)
@@ -643,7 +649,6 @@ async def get_future_predictions():
         # Extract the relevant data for predictions
         prediction_data = {
             'Feed_Pb': current_data.get('Feed_Pb', 2.5),
-            'Feed_Zn': current_data.get('Feed_Zn', 10.0),
             'Pb_Conditioner_KEX_Flowrate': current_data.get('Pb_Conditioner_KEX_Flowrate', 45.0),
             'Pb_Rougher1_SIPX_Flowrate': current_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0),
             'Pb_Rougher1_AirFlow': current_data.get('Pb_Rougher1_AirFlow', 150.0),
@@ -664,6 +669,8 @@ async def get_future_predictions():
         
         converted_predictions = convert_numpy_types(future_predictions['future_predictions'])
         
+        logger.info(f"API: GET /api/future-predictions - Success, {len(converted_predictions)} horizons predicted")
+        
         return {
             "success": True,
             "future_predictions": converted_predictions,
@@ -673,7 +680,7 @@ async def get_future_predictions():
             "timestamp": future_predictions['prediction_time']  # Use same timestamp as prediction_time for consistency
         }
     except Exception as e:
-        logger.error(f"Error getting future predictions: {e}")
+        logger.error(f"API: GET /api/future-predictions - Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/predict-future")
@@ -685,7 +692,6 @@ async def predict_future(input_data: Dict[str, Any]):
         # Convert input data to the format expected by the ML service
         prediction_data = {
             'Feed_Pb': float(input_data.get('Feed_Pb', 2.5)),
-            'Feed_Zn': float(input_data.get('Feed_Zn', 10.0)),
             'Pb_Conditioner_KEX_Flowrate': float(input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
             'Pb_Rougher1_SIPX_Flowrate': float(input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
             'Pb_Rougher1_AirFlow': float(input_data.get('Pb_Rougher1_AirFlow', 150.0)),
@@ -722,6 +728,7 @@ async def predict_future(input_data: Dict[str, Any]):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time data"""
+    logger.info("WebSocket: New connection established")
     try:
         # Connect to WebSocket manager
         await orchestrator.websocket_manager.connect(websocket)
@@ -729,6 +736,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Send initial data point
         data_point = await orchestrator.generate_and_process_data()
         await orchestrator.websocket_manager.broadcast_data_point(data_point)
+        logger.info("WebSocket: Initial data point sent to client")
         
         # Keep connection alive and handle messages
         while True:

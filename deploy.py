@@ -178,13 +178,13 @@ class DeploymentPipeline:
                 try:
                     response = requests.get(url, timeout=5)
                     if response.status_code == 200:
-                        self.logger.info(f"✅ {service_name} is healthy")
+                        self.logger.info(f" {service_name} is healthy")
                         break
                 except requests.RequestException:
                     pass
                 time.sleep(2)
             else:
-                self.logger.error(f"❌ {service_name} failed health check")
+                self.logger.error(f" {service_name} failed health check")
                 return False
         
         # Additional prediction service checks
@@ -202,7 +202,7 @@ class DeploymentPipeline:
             if response.status_code == 200:
                 data = response.json()
                 if 'future_predictions' in data:
-                    self.logger.info("✅ Future prediction service operational")
+                    self.logger.info(" Future prediction service operational")
                     
                     # Test additional endpoints
                     endpoints = [
@@ -214,7 +214,7 @@ class DeploymentPipeline:
                         try:
                             resp = requests.get(f"http://localhost:8000{endpoint}", timeout=5)
                             if resp.status_code == 200:
-                                self.logger.info(f"✅ {endpoint} operational")
+                                self.logger.info(f" {endpoint} operational")
                             else:
                                 self.logger.warning(f"⚠️ {endpoint} returned {resp.status_code}")
                         except:
@@ -222,13 +222,13 @@ class DeploymentPipeline:
                     
                     return True
                 else:
-                    self.logger.error("❌ Future predictions not available")
+                    self.logger.error(" Future predictions not available")
                     return False
             else:
-                self.logger.error(f"❌ Prediction service returned {response.status_code}")
+                self.logger.error(f" Prediction service returned {response.status_code}")
                 return False
         except Exception as e:
-            self.logger.error(f"❌ Prediction service check failed: {e}")
+            self.logger.error(f" Prediction service check failed: {e}")
             return False
     
     def cleanup_old_backups(self):
@@ -284,11 +284,11 @@ class DeploymentPipeline:
             # Step 7: Cleanup
             self.cleanup_old_backups()
             
-            self.logger.info(f"✅ Deployment {self.deployment_id} completed successfully")
+            self.logger.info(f" Deployment {self.deployment_id} completed successfully")
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ Deployment {self.deployment_id} failed: {e}")
+            self.logger.error(f" Deployment {self.deployment_id} failed: {e}")
             self.logger.info("Consider rolling back to previous version")
             return False
     
@@ -324,12 +324,12 @@ class DeploymentPipeline:
                     
                     self.logger.info(f"Restored {dir_path}")
             
-            self.logger.info(f"✅ Rollback to {backup_id} completed")
+            self.logger.info(f" Rollback to {backup_id} completed")
             self.logger.info("Restart services to complete rollback")
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ Rollback failed: {e}")
+            self.logger.error(f" Rollback failed: {e}")
             return False
     
     def list_backups(self):

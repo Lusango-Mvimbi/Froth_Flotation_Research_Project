@@ -108,14 +108,8 @@ const TabbedDashboard: React.FC<TabbedDashboardProps> = ({ className = '' }) => 
         <div className="w-80 bg-slate-800 border-r border-slate-600 flex-shrink-0">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-primary-600 rounded-lg">
-                  <Settings className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Reagent Controls</h3>
-                  <p className="text-sm text-slate-300">Adjust KEX and SIPX flowrates</p>
-                </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Reagent Controls</h3>
               </div>
               <button
                 onClick={refreshControls}
