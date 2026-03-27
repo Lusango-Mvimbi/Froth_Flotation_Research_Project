@@ -1,10 +1,10 @@
-# Future Prediction User Guide 🔮
+# Future Prediction User Guide
 
 ## Overview
 
 The Future Prediction System provides advanced time-series forecasting capabilities for the froth flotation process, enabling operators to see what will happen 5 minutes and 60 minutes ahead. This guide explains how to use these predictive features effectively.
 
-## ✨ Key Features
+## Key Features
 
 - **Multi-Horizon Predictions**: See predictions for 5 minutes and 60 minutes ahead
 - **Confidence Intervals**: Understand prediction uncertainty with ±2σ bounds
@@ -13,7 +13,7 @@ The Future Prediction System provides advanced time-series forecasting capabilit
 - **Scenario Analysis**: Explore "what-if" scenarios before making changes
 - **Proactive Alerts**: Receive warnings before problems occur
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Accessing Future Predictions
 
@@ -30,7 +30,7 @@ The future prediction features are integrated into the main dashboard. After log
 - **5-min Prediction**: Expected value in 5 minutes
 - **60-min Prediction**: Expected value in 60 minutes
 - **Confidence**: Color-coded confidence levels (Green: High, Yellow: Medium, Red: Low)
-- **Trend Indicators**: ↗️ Improving, ↘️ Declining, ➡️ Stable
+- **Trend Indicators**: Improving, Declining, Stable
 
 #### Future Prediction Chart
 - **Time Horizons**: Toggle between 5-min and 60-min predictions
@@ -38,7 +38,7 @@ The future prediction features are integrated into the main dashboard. After log
 - **Interactive Controls**: Zoom, pan, and explore historical data
 - **Auto-refresh**: Real-time updates every 4 seconds
 
-## 📊 Using Prediction Features
+## Using Prediction Features
 
 ### Multi-Horizon Analysis
 
@@ -62,13 +62,13 @@ The future prediction features are integrated into the main dashboard. After log
 
 ```
 1. Monitor current Pb concentrate: 12.5%
-2. Check 5-min prediction: 11.8% (↘️ declining trend)
+2. Check 5-min prediction: 11.8% (declining trend)
 3. Review recommendation: "Increase KEX flow by 5 L/min"
 4. Use scenario analysis to verify impact
 5. Apply changes and monitor results
 ```
 
-## 🎯 Scenario Analysis
+## Scenario Analysis
 
 ### What-If Modeling
 

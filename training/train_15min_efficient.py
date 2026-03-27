@@ -49,10 +49,10 @@ logger = logging.getLogger(__name__)
 # Try to import GPU-accelerated libraries
 try:
     import cupy as cp
-    print("✅ CuPy available for GPU acceleration")
+    print(" CuPy available for GPU acceleration")
     GPU_AVAILABLE = True
 except ImportError:
-    print("⚠️ CuPy not available, using CPU only")
+    print(" CuPy not available, using CPU only")
     GPU_AVAILABLE = False
 
 class EfficientFifteenMinuteTrainer:
@@ -86,7 +86,7 @@ class EfficientFifteenMinuteTrainer:
         checkpoint_file = self.checkpoint_dir / f'checkpoint_{stage}.pkl'
         with open(checkpoint_file, 'wb') as f:
             pickle.dump(data, f)
-        logger.info(f"✅ Checkpoint saved: {checkpoint_file}")
+        logger.info(f" Checkpoint saved: {checkpoint_file}")
     
     def load_checkpoint(self, stage):
         """Load checkpoint data from disk if it exists."""
@@ -94,7 +94,7 @@ class EfficientFifteenMinuteTrainer:
         if checkpoint_file.exists():
             with open(checkpoint_file, 'rb') as f:
                 data = pickle.load(f)
-            logger.info(f"✅ Checkpoint loaded: {checkpoint_file}")
+            logger.info(f" Checkpoint loaded: {checkpoint_file}")
             return data
         return None
     
@@ -311,7 +311,7 @@ class EfficientFifteenMinuteTrainer:
             search.fit(X_train, y_train)
             optimized_models[name] = search.best_estimator_
             
-            logger.info(f"   ✅ {name} - Best CV score: {search.best_score_:.4f}")
+            logger.info(f"    {name} - Best CV score: {search.best_score_:.4f}")
             
             # Save checkpoint after each model optimization
             self.save_checkpoint('model_optimization', {'optimized_models': optimized_models})
@@ -365,7 +365,7 @@ class EfficientFifteenMinuteTrainer:
                 'model': model
             }
             
-            logger.info(f"   ✅ {name} - Test R²: {test_r2:.4f}, RMSE: {test_rmse:.4f}, 10% Acc: {test_pred_10:.2%}")
+            logger.info(f"    {name} - Test R²: {test_r2:.4f}, RMSE: {test_rmse:.4f}, 10% Acc: {test_pred_10:.2%}")
             
             # Save checkpoint after each model evaluation
             self.save_checkpoint('model_evaluation', {'results': results})
@@ -547,9 +547,9 @@ class EfficientFifteenMinuteTrainer:
         logger.info(f"   • Visualization: {Path(__file__).parent.parent}/analysis_visualizations/15min_efficient_model_performance.png")
         logger.info(f"   • Checkpoints: {self.checkpoint_dir}/ directory")
         
-        logger.info(f"\n✅ This efficient training completed in reasonable time!")
-        logger.info(f"   Target R² > 90% achieved: {'✅' if best_results['test_r2'] > 0.9 else '❌'}")
-        logger.info(f"   Target R² > 85% achieved: {'✅' if best_results['test_r2'] > 0.85 else '❌'}")
+        logger.info(f"\n This efficient training completed in reasonable time!")
+        logger.info(f"   Target R² > 90% achieved: {'' if best_results['test_r2'] > 0.9 else '❌'}")
+        logger.info(f"   Target R² > 85% achieved: {'' if best_results['test_r2'] > 0.85 else '❌'}")
     
     def run_training(self):
         """

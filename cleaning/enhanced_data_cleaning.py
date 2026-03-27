@@ -277,7 +277,7 @@ def create_statistical_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def enhance_features(df: pd.DataFrame) -> pd.DataFrame:
     """Apply all 7 feature engineering steps as per documentation."""
-    print("🔧 Applying comprehensive feature engineering...")
+    print(" Applying comprehensive feature engineering...")
     
     # 1. Time-based Features
     df = create_time_features(df)
@@ -311,7 +311,7 @@ def enhance_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def apply_feature_selection(df: pd.DataFrame, target_col: str = 'Pb_Rougher_Conc_Pb') -> pd.DataFrame:
     """Apply feature selection as per documentation."""
-    print("🎯 Applying feature selection...")
+    print(" Applying feature selection...")
     
     if target_col not in df.columns:
         print("   Target column not found, skipping feature selection")
@@ -340,7 +340,7 @@ def apply_feature_selection(df: pd.DataFrame, target_col: str = 'Pb_Rougher_Conc
 
 def sample_data(df: pd.DataFrame, max_samples: int = 50000) -> pd.DataFrame:
     """Sample data for processing efficiency as per documentation."""
-    print("⚡ Sampling data for processing efficiency...")
+    print(" Sampling data for processing efficiency...")
     
     if len(df) <= max_samples:
         print(f"   No sampling needed: {len(df)} samples")
@@ -361,7 +361,7 @@ def build_enhanced_dataset(raw_dir: str) -> pd.DataFrame:
     if not raw_files:
         raise FileNotFoundError(f"No parquet files found in: {raw_dir}")
     
-    print(f"📊 Processing {len(raw_files)} monthly files...")
+    print(f" Processing {len(raw_files)} monthly files...")
     monthly_frames = []
     for i, path in enumerate(raw_files):
         print(f"   Reading {os.path.basename(path)} ({i+1}/{len(raw_files)})")
@@ -390,7 +390,7 @@ def build_enhanced_dataset(raw_dir: str) -> pd.DataFrame:
     df_all = clean_and_impute(df_all)
     
     # Sample data FIRST for processing efficiency (as per documentation)
-    print("⚡ Sampling data for processing efficiency...")
+    print(" Sampling data for processing efficiency...")
     df_all = sample_data(df_all, max_samples=50000)
     
     # Apply comprehensive feature engineering (all 7 types) on sampled data
@@ -408,7 +408,7 @@ def build_enhanced_dataset_simple(raw_dir: str) -> pd.DataFrame:
     if not raw_files:
         raise FileNotFoundError(f"No parquet files found in: {raw_dir}")
     
-    print(f"📊 Processing {len(raw_files)} monthly files...")
+    print(f" Processing {len(raw_files)} monthly files...")
     monthly_frames = []
     for i, path in enumerate(raw_files):
         print(f"   Reading {os.path.basename(path)} ({i+1}/{len(raw_files)})")
@@ -473,11 +473,11 @@ def main(argv: List[str]) -> None:
     print("🚀 Building enhanced dataset...")
     
     if args.fast:
-        print("⚡ Fast mode: Using simplified feature engineering...")
+        print(" Fast mode: Using simplified feature engineering...")
         # Use simplified version for speed
         df = build_enhanced_dataset_simple(args.raw_dir)
     else:
-        print("🔧 Full mode: Using complete feature engineering as per documentation...")
+        print(" Full mode: Using complete feature engineering as per documentation...")
         # Use full version for complete features
         df = build_enhanced_dataset(args.raw_dir)
     

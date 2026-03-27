@@ -2,8 +2,7 @@
 Backend Service Interfaces
 =========================
 
-This module defines interfaces following SOLID principles for the froth flotation
-digital twin backend services.
+This module defines interfaces for the backend services.
 """
 
 from abc import ABC, abstractmethod

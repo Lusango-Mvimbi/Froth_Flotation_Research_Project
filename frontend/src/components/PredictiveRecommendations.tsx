@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { 
   TrendingUp, 
-  TrendingDown, 
   AlertTriangle, 
   CheckCircle, 
   Info,
@@ -16,7 +15,8 @@ import {
   RotateCcw,
   Brain
 } from 'lucide-react';
-import { FlotationData, ProcessControls } from '../types';
+import { FlotationData, ProcessControls, Recommendation } from '../types';
+import { RecommendationsSkeleton } from './LoadingSkeleton';
 import { flotationAPI } from '../services/api';
 import { useFuturePredictions } from '../hooks/useFuturePredictions';
 
@@ -27,29 +27,14 @@ interface PredictiveRecommendationsProps {
   currentControls?: ProcessControls;
 }
 
-interface Recommendation {
-  id: string;
-  type: 'improvement' | 'risk' | 'optimization' | 'info';
-  title: string;
-  description: string;
-  parameter: string;
-  currentValue: number;
-  suggestedValue: number;
-  expectedOutcome: string;
-  timeHorizon: string;
-  confidence: number;
-  impact: 'high' | 'medium' | 'low';
-  actionType: 'increase' | 'decrease' | 'maintain';
-}
 
 const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({ 
   currentData, 
   targetRanges,
   onControlChange,
-  currentControls 
+  currentControls
 }) => {
   const { futurePredictions, loading, refreshing, fetchPredictions } = useFuturePredictions();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
   const [simulationModal, setSimulationModal] = useState<{
     isOpen: boolean;
@@ -72,200 +57,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     message: ''
   });
 
-  const generateRecommendations = useCallback(() => {
-    if (!futurePredictions || !currentData) return;
-
-    const newRecommendations: Recommendation[] = [];
-    const currentPb = currentData.Actual_Pb_Concentrate;
-
-    // Analyze 5-minute predictions
-    const pred5min = futurePredictions.future_predictions['5min'];
-    if (pred5min) {
-      const change5min = pred5min.prediction - (currentPb || 0);
-      
-      if (change5min > 2) {
-        // Significant improvement expected
-        newRecommendations.push({
-          id: '5min-improvement',
-          type: 'improvement',
-          title: 'Strong Performance Expected',
-          description: `Pb concentrate is predicted to increase by ${change5min.toFixed(2)}% in 5 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred5min.prediction,
-          expectedOutcome: `Expected to reach ${pred5min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '5 minutes',
-          confidence: pred5min.model_performance.r2_score,
-          impact: 'high',
-          actionType: 'maintain'
-        });
-      } else if (change5min < -2) {
-        // Potential decline
-        newRecommendations.push({
-          id: '5min-risk',
-          type: 'risk',
-          title: 'Performance Decline Warning',
-          description: `Pb concentrate is predicted to decrease by ${Math.abs(change5min).toFixed(2)}% in 5 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred5min.prediction,
-          expectedOutcome: `May drop to ${pred5min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '5 minutes',
-          confidence: pred5min.model_performance.r2_score,
-          impact: 'high',
-          actionType: 'increase'
-        });
-      }
-    }
-
-    // Analyze 60-minute predictions
-    const pred60min = futurePredictions.future_predictions['60min'];
-    if (pred60min) {
-      const change60min = pred60min.prediction - (currentPb || 0);
-      
-      if (change60min > 3) {
-        newRecommendations.push({
-          id: '60min-optimization',
-          type: 'optimization',
-          title: 'Long-term Optimization Opportunity',
-          description: `Significant improvement expected: +${change60min.toFixed(2)}% in 60 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred60min.prediction,
-          expectedOutcome: `Could reach ${pred60min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '60 minutes',
-          confidence: pred60min.model_performance.r2_score,
-          impact: 'medium',
-          actionType: 'maintain'
-        });
-      } else if (change60min < -3) {
-        newRecommendations.push({
-          id: '60min-risk-long',
-          type: 'risk',
-          title: 'Long-term Performance Risk',
-          description: `Sustained decline predicted: -${Math.abs(change60min).toFixed(2)}% in 60 minutes`,
-          parameter: 'Pb_Concentrate',
-          currentValue: currentPb || 0,
-          suggestedValue: pred60min.prediction,
-          expectedOutcome: `May decline to ${pred60min.prediction.toFixed(2)}% Pb concentrate`,
-          timeHorizon: '60 minutes',
-          confidence: pred60min.model_performance.r2_score,
-          impact: 'high',
-          actionType: 'increase'
-        });
-      }
-    }
-
-    // Parameter-specific recommendations
-    if (currentData.Pb_Conditioner_KEX_Flowrate < 50) {
-      newRecommendations.push({
-        id: 'kex-increase',
-        type: 'optimization',
-        title: 'Increase KEX Flowrate',
-        description: 'Current KEX flowrate is below optimal range',
-        parameter: 'Pb_Conditioner_KEX_Flowrate',
-        currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-        suggestedValue: Math.min(currentData.Pb_Conditioner_KEX_Flowrate + 10, 80),
-        expectedOutcome: 'Expected to improve Pb concentrate by 1-2%',
-        timeHorizon: '15-30 minutes',
-        confidence: 0.75,
-        impact: 'medium',
-        actionType: 'increase'
-      });
-    }
-
-    // Air flow optimization (decrease scenarios)
-    if (currentData.Pb_Rougher1_AirFlow > 15) {
-      newRecommendations.push({
-        id: 'airflow-decrease',
-        type: 'optimization',
-        title: 'Reduce Air Flow',
-        description: 'Air flow is above optimal range',
-        parameter: 'Pb_Rougher1_AirFlow',
-        currentValue: currentData.Pb_Rougher1_AirFlow,
-        suggestedValue: Math.max(currentData.Pb_Rougher1_AirFlow - 2, 8),
-        expectedOutcome: 'Expected to stabilize Pb concentrate',
-        timeHorizon: '10-20 minutes',
-        confidence: 0.70,
-        impact: 'low',
-        actionType: 'decrease'
-      });
-    }
-
-    // SIPX flow rate optimization (increase scenarios - too low)
-    if (currentData.Pb_Rougher1_SIPX_Flowrate < 15) {
-      newRecommendations.push({
-        id: 'sipx-increase',
-        type: 'optimization',
-        title: 'Increase SIPX Flow Rate',
-        description: 'SIPX flow rate is below optimal range',
-        parameter: 'Pb_Rougher1_SIPX_Flowrate',
-        currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
-        suggestedValue: Math.min(currentData.Pb_Rougher1_SIPX_Flowrate + 10, 35),
-        expectedOutcome: 'Expected to improve froth stability and recovery',
-        timeHorizon: '10-20 minutes',
-        confidence: 0.85,
-        impact: 'high',
-        actionType: 'increase'
-      });
-    }
-
-    // SIPX flow rate optimization (decrease scenarios - too high)
-    if (currentData.Pb_Rougher1_SIPX_Flowrate > 35) {
-      newRecommendations.push({
-        id: 'sipx-decrease',
-        type: 'optimization',
-        title: 'Reduce SIPX Flow Rate',
-        description: 'SIPX flow rate is above optimal range',
-        parameter: 'Pb_Rougher1_SIPX_Flowrate',
-        currentValue: currentData.Pb_Rougher1_SIPX_Flowrate,
-        suggestedValue: Math.max(currentData.Pb_Rougher1_SIPX_Flowrate - 5, 20),
-        expectedOutcome: 'Expected to reduce reagent waste and improve efficiency',
-        timeHorizon: '15-30 minutes',
-        confidence: 0.75,
-        impact: 'medium',
-        actionType: 'decrease'
-      });
-    }
-
-    // KEX flow rate optimization (decrease scenarios)
-    if (currentData.Pb_Conditioner_KEX_Flowrate > 70) {
-      newRecommendations.push({
-        id: 'kex-decrease',
-        type: 'optimization',
-        title: 'Reduce KEX Flow Rate',
-        description: 'KEX flow rate is above optimal range',
-        parameter: 'Pb_Conditioner_KEX_Flowrate',
-        currentValue: currentData.Pb_Conditioner_KEX_Flowrate,
-        suggestedValue: Math.max(currentData.Pb_Conditioner_KEX_Flowrate - 8, 50),
-        expectedOutcome: 'Expected to reduce reagent consumption while maintaining performance',
-        timeHorizon: '20-40 minutes',
-        confidence: 0.80,
-        impact: 'medium',
-        actionType: 'decrease'
-      });
-    }
-
-    // Model confidence recommendations
-    if (pred5min && pred5min.model_performance.r2_score < 0.7) {
-      newRecommendations.push({
-        id: 'low-confidence',
-        type: 'info',
-        title: 'Low Prediction Confidence',
-        description: 'Model confidence is below 70%',
-        parameter: 'Model_Confidence',
-        currentValue: pred5min.model_performance.r2_score * 100,
-        suggestedValue: 80,
-        expectedOutcome: 'Consider manual verification of predictions',
-        timeHorizon: 'Immediate',
-        confidence: pred5min.model_performance.r2_score,
-        impact: 'low',
-        actionType: 'maintain'
-      });
-    }
-
-    setRecommendations(newRecommendations);
-  }, [futurePredictions, currentData]);
 
   // Fetch future predictions when current data changes
   useEffect(() => {
@@ -280,12 +71,110 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
     }
   }, [currentData, fetchPredictions, futurePredictions]);
 
-  // Generate recommendations when predictions change
-  useEffect(() => {
-    if (futurePredictions && currentData) {
-      generateRecommendations();
+  // Parse backend recommendations into structured format
+  const parseBackendRecommendations = useCallback(() => {
+    if (!currentData?.Recommendations || !Array.isArray(currentData.Recommendations)) {
+      return [];
     }
-  }, [futurePredictions, currentData, generateRecommendations]);
+
+    return currentData.Recommendations.map((rec: string, index: number) => {
+      // Parse the recommendation string to extract structured information
+      let type = 'info';
+      let title = rec;
+      let parameter = 'System_Status';
+      let actionType = 'info';
+      let impact = 'medium';
+      let confidence = 0.8;
+      let currentValue = 0;
+      let suggestedValue = 0;
+
+      // Parse different types of recommendations
+      if (rec.includes('TARGETS ACHIEVED')) {
+        type = 'success';
+        actionType = 'info';  // Targets achieved is informational, not actionable
+        impact = 'high';
+        confidence = 1.0;
+        title = 'TARGETS ACHIEVED';
+      } else if (rec.toLowerCase().includes('increase') || rec.toLowerCase().includes('decrease')) {
+        type = 'optimization';
+        if (rec.toLowerCase().includes('increase')) {
+          actionType = 'increase';
+        } else if (rec.toLowerCase().includes('decrease')) {
+          actionType = 'decrease';
+        }
+        impact = 'high';
+        confidence = 0.8;
+        
+        // Extract parameter name and values
+        if (rec.includes('KEX')) {
+          parameter = 'Pb_Conditioner_KEX_Flowrate';
+          // Parse "from X to Y" pattern
+          const fromMatch = rec.match(/from ([\d.]+) to ([\d.]+)/);
+          if (fromMatch) {
+            currentValue = parseFloat(fromMatch[1]);
+            suggestedValue = parseFloat(fromMatch[2]);
+          }
+          title = rec.includes('increase') ? 'Increase KEX to Meet Target' : 'Decrease KEX for Efficiency';
+        } else if (rec.includes('SIPX')) {
+          parameter = 'Pb_Rougher1_SIPX_Flowrate';
+          // Parse "from X to Y" pattern
+          const fromMatch = rec.match(/from ([\d.]+) to ([\d.]+)/);
+          if (fromMatch) {
+            currentValue = parseFloat(fromMatch[1]);
+            suggestedValue = parseFloat(fromMatch[2]);
+          }
+          title = rec.includes('increase') ? 'Increase SIPX Flow Rate' : 'Decrease SIPX for Efficiency';
+        }
+      } else if (rec.includes('WARNING:')) {
+        type = 'warning';
+        actionType = 'info';  // Warnings are informational, no direct action needed
+        impact = 'medium';
+        confidence = 0.7;
+        title = 'System Warning';
+      } else if (rec.includes('Expected outcomes:')) {
+        type = 'info';
+        actionType = 'info';
+        impact = 'low';
+        confidence = 0.8;
+        title = 'Expected Outcomes';
+      } else if (rec.includes('Current settings are near optimal')) {
+        type = 'success';
+        actionType = 'info';  // System optimal is informational, no action needed
+        impact = 'medium';
+        confidence = 0.9;
+        title = 'System Optimal';
+      }
+
+      return {
+        id: `backend-rec-${index}`,
+        type: type as any,
+        title: title,
+        description: rec,
+        parameter: parameter,
+        currentValue: currentValue || (currentData as any)[parameter] || 0,
+        suggestedValue: suggestedValue || (currentData as any)[parameter] || 0,
+        expectedOutcome: rec,
+        timeHorizon: '15-30 minutes',
+        confidence: confidence,
+        impact: impact as any,
+        actionType: actionType as any
+      };
+    });
+  }, [currentData]);
+
+  // Always use backend recommendations parsed from currentData
+  const allRecommendations = parseBackendRecommendations();
+  
+  // Group recommendations by type for better organization
+  const groupedRecommendations = useMemo(() => {
+    const actionable = allRecommendations.filter(rec => rec.actionType !== 'info');
+    const informational = allRecommendations.filter(rec => rec.actionType === 'info');
+    
+    return {
+      actionable: actionable.slice(0, 4), // Limit actionable to 4
+      informational: informational.slice(0, 3) // Limit informational to 3
+    };
+  }, [allRecommendations]);
 
   const getRecommendationIcon = (type: string) => {
     switch (type) {
@@ -298,20 +187,20 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
       case 'info':
         return <Info className="h-5 w-5 text-info-400" />;
       default:
-        return <Info className="h-5 w-5 text-dark-400" />;
+        return <Info className="h-5 w-5 text-slate-400" />;
     }
   };
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'high':
-        return 'text-danger-400 bg-danger-900/20';
+        return 'text-red-400 bg-red-900/20 border border-red-800/30';
       case 'medium':
-        return 'text-warning-400 bg-warning-900/20';
+        return 'text-orange-400 bg-orange-900/20 border border-orange-800/30';
       case 'low':
-        return 'text-info-400 bg-info-900/20';
+        return 'text-blue-400 bg-blue-900/20 border border-blue-800/30';
       default:
-        return 'text-dark-400 bg-dark-700/20';
+        return 'text-slate-300 bg-slate-700/20 border border-slate-600/30';
     }
   };
 
@@ -330,19 +219,24 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
   const handleQuickAction = async (recommendation: Recommendation) => {
     try {
-      console.log('Quick action triggered:', recommendation);
+      // Ensure we have current controls - fail if not available
+      if (!currentControls) {
+        setQuickActionModal({
+          isOpen: true,
+          recommendation,
+          success: false,
+          message: 'Current control settings not available. Please refresh the page.'
+        });
+        return;
+      }
       
       // Map recommendation parameters to control settings
       let controlSettings: { kex?: number; sipx?: number } = {};
       
-      console.log('Mapping recommendation parameter:', recommendation.parameter, 'to control settings');
-      
       if (recommendation.parameter === 'Pb_Conditioner_KEX_Flowrate') {
         controlSettings.kex = recommendation.suggestedValue;
-        console.log('Setting KEX to:', recommendation.suggestedValue);
       } else if (recommendation.parameter === 'Pb_Rougher1_SIPX_Flowrate') {
         controlSettings.sipx = recommendation.suggestedValue;
-        console.log('Setting SIPX to:', recommendation.suggestedValue);
       } else if (recommendation.parameter === 'Pb_Rougher1_AirFlow') {
         // Air flow is not directly controllable via KEX/SIPX, but we can adjust them as a proxy
         const currentKex = currentControls?.kex || 0;
@@ -352,7 +246,6 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           // Reduce KEX and SIPX to compensate for high air flow
           controlSettings.kex = Math.max(currentKex - 3, 30);
           controlSettings.sipx = Math.max(currentSipx - 2, 15);
-          console.log('Adjusting KEX/SIPX due to high air flow');
         }
       } else if (recommendation.parameter === 'Pb_Concentrate') {
         // For Pb concentrate recommendations, we need to adjust KEX and SIPX
@@ -360,43 +253,34 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         const currentKex = currentControls?.kex || 0;
         const currentSipx = currentControls?.sipx || 0;
         
-        if (recommendation.actionType === 'increase') {
+        const actionType = (recommendation.actionType || 'maintain').toLowerCase();
+        
+        if (actionType === 'increase') {
           controlSettings.kex = Math.min(currentKex + 5, 80);
           controlSettings.sipx = Math.min(currentSipx + 3, 50);
-          console.log('Increasing KEX/SIPX for better Pb concentrate');
-        } else if (recommendation.actionType === 'decrease') {
+        } else if (actionType === 'decrease') {
           controlSettings.kex = Math.max(currentKex - 5, 0);
           controlSettings.sipx = Math.max(currentSipx - 3, 0);
-          console.log('Decreasing KEX/SIPX for better Pb concentrate');
+        } else if (actionType === 'maintain') {
+          // For maintain, keep current values but ensure they're within optimal ranges
+          controlSettings.kex = currentKex;
+          controlSettings.sipx = currentSipx;
         }
       }
       
       // Only proceed if we have valid control settings
       if (Object.keys(controlSettings).length > 0) {
-        console.log('Control settings to apply:', controlSettings);
-        
-        // Get current settings to ensure we have both kex and sipx
-        const apiControls = await flotationAPI.getControlSettings();
-        console.log('Current controls from API:', apiControls);
-        
         const fullControlSettings: ProcessControls = {
-          kex: controlSettings.kex ?? apiControls.kex,
-          sipx: controlSettings.sipx ?? apiControls.sipx
+          kex: controlSettings.kex ?? currentControls.kex,
+          sipx: controlSettings.sipx ?? currentControls.sipx
         };
-        
-        console.log('Full control settings to send:', fullControlSettings);
         
         // Update control settings via API
         await flotationAPI.updateControls(fullControlSettings);
-        console.log('API update completed');
         
         // Update the parent component's controls state to refresh the UI
         if (onControlChange) {
-          console.log('Calling onControlChange with:', fullControlSettings);
           onControlChange(fullControlSettings);
-          console.log('onControlChange called successfully');
-        } else {
-          console.warn('onControlChange callback is not available');
         }
         
         // Show success modal
@@ -475,15 +359,23 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
         throw new Error('Invalid simulation data structure received from API');
       }
       
-      // Use the average values from the optimization result for better accuracy
-      const currentRecovery = optimizationData.current_avg_recovery;
+      // Get actual current system data instead of optimization result data
+      const currentDataResponse = await flotationAPI.getCurrentData();
+      const currentSystemData = currentDataResponse;
+      
+      // Use the average values from the optimization result for optimal predictions
       const optimalRecovery = optimizationData.optimal_avg_recovery;
-      const currentConcentrate = optimizationData.current_avg_concentrate;
       const optimalConcentrate = optimizationData.optimal_avg_concentrate;
       
       // Get the optimal settings for display
       const optimalKex = optimizationData.optimal_settings.KEX;
       const optimalSipx = optimizationData.optimal_settings.SIPX;
+      
+      // Use actual current system data
+      const currentRecovery = currentSystemData.Actual_Pb_Recovery || 0; // Already a decimal (0.5 = 50%)
+      const currentConcentrate = currentSystemData.Actual_Pb_Concentrate || 0;
+      const currentKex = currentSystemData.Pb_Conditioner_KEX_Flowrate;
+      const currentSipx = currentSystemData.Pb_Rougher1_SIPX_Flowrate;
       
       setSimulationModal({
         isOpen: true,
@@ -492,6 +384,8 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
           optimalRecovery,
           currentConcentrate,
           optimalConcentrate,
+          currentKex,
+          currentSipx,
           optimalKex,
           optimalSipx,
           simulationParams: fullSimulationParams
@@ -509,14 +403,14 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
   };
 
   return (
-    <div className="bg-dark-800/50 backdrop-blur-sm border border-dark-600 rounded-xl p-6">
+    <div className="bg-slate-800 border border-slate-600 rounded-xl p-6 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Brain className="h-6 w-6 text-primary-400" />
           <div>
             <h3 className="text-lg font-semibold text-white">Predictive Recommendations</h3>
-            <p className="text-sm text-dark-300">AI-powered insights and action suggestions</p>
+            <p className="text-sm text-slate-300">AI-powered insights and action suggestions</p>
           </div>
         </div>
         
@@ -524,15 +418,12 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
       {/* Loading State */}
       {loading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400 mx-auto mb-4"></div>
-          <p className="text-dark-300">Analyzing predictions...</p>
-        </div>
+        <RecommendationsSkeleton />
       )}
 
 
       {/* Recommendations Grid */}
-      {!loading && recommendations.length > 0 && (
+      {!loading && (groupedRecommendations.actionable.length > 0 || groupedRecommendations.informational.length > 0) && (
         <div className="relative">
           {/* Subtle refreshing overlay */}
           {refreshing && (
@@ -541,13 +432,28 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
               <span>Updating...</span>
             </div>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {recommendations.map((recommendation) => (
+          
+          {/* Recommendation count indicator */}
+          {allRecommendations.length > 7 && (
+            <div className="absolute top-0 left-0 z-10 flex items-center space-x-2 px-3 py-1 bg-slate-600/90 text-white rounded-lg text-xs font-medium">
+              <span>Showing {groupedRecommendations.actionable.length + groupedRecommendations.informational.length} of {allRecommendations.length} recommendations</span>
+            </div>
+          )}
+
+          {/* Actionable Recommendations Section */}
+          {groupedRecommendations.actionable.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="h-1 w-8 bg-primary-500 rounded"></div>
+                <h3 className="text-sm font-semibold text-primary-400 uppercase tracking-wide">Actionable Recommendations</h3>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                {groupedRecommendations.actionable.map((recommendation) => (
             <motion.div
               key={recommendation.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`bg-dark-700/50 rounded-lg p-4 border border-dark-600 hover:border-primary-500/50 transition-all duration-200 ${
+              className={`bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:border-primary-500/50 transition-all duration-200 ${
                 selectedRecommendation === recommendation.id ? 'ring-2 ring-primary-500/50' : ''
               }`}
               onClick={() => setSelectedRecommendation(recommendation.id)}
@@ -558,30 +464,30 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   {getRecommendationIcon(recommendation.type)}
                   <div>
                     <h4 className="text-sm font-semibold text-white">{recommendation.title}</h4>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(recommendation.impact)}`}>
-                      {recommendation.impact.toUpperCase()} IMPACT
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(recommendation.impact || 'medium')}`}>
+                      {(recommendation.impact || 'medium').toUpperCase()} IMPACT
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1 text-xs text-dark-400">
+                <div className="flex items-center space-x-1 text-xs text-slate-400">
                   <Clock className="h-3 w-3" />
                   <span>{recommendation.timeHorizon}</span>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-dark-300 mb-3">{recommendation.description}</p>
+              <p className="text-sm text-slate-300 mb-3">{recommendation.description}</p>
 
               {/* Parameter Details */}
-              <div className="bg-dark-600/50 rounded-lg p-3 mb-3">
+              <div className="bg-slate-600/50 rounded-lg p-3 mb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-dark-400">Parameter</span>
-                  <span className="text-xs text-dark-400">Current → Suggested</span>
+                  <span className="text-xs text-slate-400">Parameter</span>
+                  <span className="text-xs text-slate-400">Current → Suggested</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white">{recommendation.parameter}</span>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-dark-300">{recommendation.currentValue}</span>
+                    <span className="text-sm text-slate-300">{recommendation.currentValue}</span>
                     <ArrowUp className="h-3 w-3 text-primary-400" />
                     <span className="text-sm font-medium text-primary-400">{recommendation.suggestedValue}</span>
                   </div>
@@ -590,99 +496,142 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
               {/* Expected Outcome */}
               <div className="mb-3">
-                <span className="text-xs text-dark-400">Expected Outcome:</span>
+                <span className="text-xs text-slate-400">Expected Outcome:</span>
                 <p className="text-sm text-white font-medium">{recommendation.expectedOutcome}</p>
               </div>
 
               {/* Confidence */}
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-dark-400">Model Confidence</span>
+                <span className="text-xs text-slate-400">Model Confidence</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-16 bg-dark-600 rounded-full h-2">
+                  <div className="w-16 bg-slate-600 rounded-full h-2">
                     <div 
                       className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${recommendation.confidence * 100}%` }}
+                      style={{ width: `${(recommendation.confidence || 0.8) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-white">{(recommendation.confidence * 100).toFixed(0)}%</span>
+                  <span className="text-xs text-white">{((recommendation.confidence || 0.8) * 100).toFixed(0)}%</span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuickAction(recommendation);
-                  }}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    recommendation.actionType === 'increase' 
-                      ? 'bg-success-600 text-white hover:bg-success-700'
-                      : recommendation.actionType === 'decrease'
-                      ? 'bg-warning-600 text-white hover:bg-warning-700'
-                      : 'bg-primary-600 text-white hover:bg-primary-700'
-                  }`}
-                >
-                  {getActionIcon(recommendation.actionType)}
-                  <span>Quick Action</span>
-                </button>
-                
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSimulateScenario(recommendation);
-                  }}
-                  className="flex items-center space-x-1 px-3 py-2 bg-dark-600 text-dark-300 hover:text-white rounded-lg text-xs font-medium transition-all duration-200"
-                >
-                  <Zap className="h-3 w-3" />
-                  <span>Simulate</span>
-                </button>
-              </div>
+              {/* Only show action buttons for actionable recommendations */}
+              {recommendation.actionType !== 'info' && (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuickAction(recommendation);
+                    }}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                      recommendation.actionType === 'increase' 
+                        ? 'bg-success-600 text-white hover:bg-success-700'
+                        : recommendation.actionType === 'decrease'
+                        ? 'bg-warning-600 text-white hover:bg-warning-700'
+                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                    }`}
+                  >
+                    {getActionIcon(recommendation.actionType || 'maintain')}
+                    <span>Quick Action</span>
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSimulateScenario(recommendation);
+                    }}
+                    className="flex items-center space-x-1 px-3 py-2 bg-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-all duration-200"
+                  >
+                    <Zap className="h-3 w-3" />
+                    <span>Simulate</span>
+                  </button>
+                </div>
+              )}
+              
+              {/* Show "Info Only" label for informational recommendations */}
+              {recommendation.actionType === 'info' && (
+                <div className="flex items-center space-x-1 px-3 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-xs font-medium">
+                  <Info className="h-3 w-3" />
+                  <span>Info Only</span>
+                </div>
+              )}
             </motion.div>
-          ))}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Informational Recommendations Section */}
+          {groupedRecommendations.informational.length > 0 && (
+            <div>
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="h-1 w-8 bg-slate-500 rounded"></div>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">System Status</h3>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+                {groupedRecommendations.informational.map((recommendation) => (
+                  <motion.div
+                    key={recommendation.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:border-slate-500/50 transition-all duration-200"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        {getRecommendationIcon(recommendation.type)}
+                        <span className="text-sm font-medium text-slate-300">{recommendation.title}</span>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(recommendation.impact)}`}>
+                        {recommendation.impact.toUpperCase()}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-slate-400 mb-3 leading-relaxed">
+                      {recommendation.description}
+                    </p>
+
+                    {/* Info Only label */}
+                    <div className="flex items-center space-x-1 px-3 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-xs font-medium">
+                      <Info className="h-3 w-3" />
+                      <span>Info Only</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* All Systems Optimal - Single TARGETS ACHIEVED recommendation */}
+      {!loading && groupedRecommendations.actionable.length === 0 && groupedRecommendations.informational.length === 1 && 
+       groupedRecommendations.informational[0]?.title === 'TARGETS ACHIEVED' && (
+        <div className="text-center py-12">
+          <div className="bg-gradient-to-br from-success-500/20 to-success-600/20 rounded-2xl p-8 border border-success-500/30">
+            <CheckCircle className="h-16 w-16 text-success-400 mx-auto mb-6" />
+            <h3 className="text-2xl font-bold text-success-400 mb-3">TARGETS ACHIEVED</h3>
+            <h4 className="text-lg font-semibold text-white mb-2">All Systems Optimal</h4>
+            <p className="text-slate-300 mb-4">Your flotation process is performing at peak efficiency</p>
+            <div className="flex items-center justify-center space-x-2 text-sm text-slate-400">
+              <div className="h-1 w-8 bg-success-500 rounded"></div>
+              <span>No immediate action required</span>
+              <div className="h-1 w-8 bg-success-500 rounded"></div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* No Recommendations */}
-      {!loading && recommendations.length === 0 && (
+      {/* No Recommendations - True empty state */}
+      {!loading && groupedRecommendations.actionable.length === 0 && groupedRecommendations.informational.length === 0 && (
         <div className="text-center py-8">
           <CheckCircle className="h-12 w-12 text-success-400 mx-auto mb-4" />
           <h4 className="text-lg font-semibold text-white mb-2">All Systems Optimal</h4>
-          <p className="text-dark-300">No immediate recommendations at this time</p>
+          <p className="text-slate-300">No immediate recommendations at this time</p>
         </div>
       )}
 
-      {/* Future Predictions Summary */}
-      {futurePredictions && (
-        <div className="mt-6 p-4 bg-dark-700/30 rounded-lg">
-          <h4 className="text-sm font-medium text-dark-300 mb-3">Prediction Summary</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(futurePredictions.future_predictions).map(([horizon, prediction]) => {
-              const currentValue = currentData?.Actual_Pb_Concentrate || 0;
-              const change = prediction.prediction - currentValue;
-              
-              return (
-                <div key={horizon} className="flex items-center justify-between">
-                  <span className="text-sm text-dark-300">{horizon} Forecast</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-white">
-                      {prediction.prediction.toFixed(2)}%
-                    </span>
-                    {change > 0 ? (
-                      <TrendingUp className="h-4 w-4 text-success-400" />
-                    ) : change < 0 ? (
-                      <TrendingDown className="h-4 w-4 text-danger-400" />
-                    ) : (
-                      <div className="h-4 w-4 text-dark-400">—</div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Simulation Results Modal */}
       {simulationModal.isOpen && (
@@ -691,7 +640,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            className="bg-slate-800 border border-slate-600 rounded-xl p-4 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-sm"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-4">
@@ -701,14 +650,14 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white">Simulation Results</h3>
-                  <p className="text-sm text-dark-300">{simulationModal.recommendation?.title}</p>
+                  <p className="text-sm text-slate-300">{simulationModal.recommendation?.title}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSimulationModal({ isOpen: false, data: null, recommendation: null })}
-                className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <svg className="h-5 w-5 text-dark-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -718,48 +667,48 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             {simulationModal.data && (
               <div className="space-y-4">
                 {/* Current vs Expected Comparison */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {/* Current Settings */}
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-dark-300 mb-3">Current Settings</h4>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-slate-300 mb-3">Current Settings</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">KEX Flowrate:</span>
-                        <span className="text-sm font-medium text-white">{simulationModal.data.simulationParams.kex}</span>
+                        <span className="text-sm text-slate-400">KEX Flowrate:</span>
+                        <span className="text-sm font-medium text-white">{simulationModal.data.currentKex}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">SIPX Flowrate:</span>
-                        <span className="text-sm font-medium text-white">{simulationModal.data.simulationParams.sipx}</span>
+                        <span className="text-sm text-slate-400">SIPX Flowrate:</span>
+                        <span className="text-sm font-medium text-white">{simulationModal.data.currentSipx}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Pb Concentrate:</span>
+                        <span className="text-sm text-slate-400">Pb Concentrate:</span>
                         <span className="text-sm font-medium text-white">{simulationModal.data.currentConcentrate.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Recovery Rate:</span>
+                        <span className="text-sm text-slate-400">Recovery Rate:</span>
                         <span className="text-sm font-medium text-white">{(simulationModal.data.currentRecovery * 100).toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Expected Outcome */}
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-dark-300 mb-3">Expected Outcome</h4>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-slate-300 mb-3">Expected Outcome</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">KEX Flowrate:</span>
+                        <span className="text-sm text-slate-400">KEX Flowrate:</span>
                         <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalKex}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">SIPX Flowrate:</span>
+                        <span className="text-sm text-slate-400">SIPX Flowrate:</span>
                         <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalSipx}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Pb Concentrate:</span>
+                        <span className="text-sm text-slate-400">Pb Concentrate:</span>
                         <span className="text-sm font-medium text-primary-400">{simulationModal.data.optimalConcentrate.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-dark-400">Recovery Rate:</span>
+                        <span className="text-sm text-slate-400">Recovery Rate:</span>
                         <span className="text-sm font-medium text-primary-400">{(simulationModal.data.optimalRecovery * 100).toFixed(1)}%</span>
                       </div>
                     </div>
@@ -767,37 +716,37 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                 </div>
 
                 {/* Performance Impact */}
-                <div className="bg-dark-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">Performance Impact</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-slate-300 mb-3">Performance Impact</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-white mb-1">
                         {((simulationModal.data.optimalConcentrate - simulationModal.data.currentConcentrate) / simulationModal.data.currentConcentrate * 100).toFixed(1)}%
                       </div>
-                      <div className="text-xs text-dark-400">Pb Concentrate Change</div>
+                      <div className="text-xs text-slate-400">Pb Concentrate Change</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-white mb-1">
                         {((simulationModal.data.optimalRecovery - simulationModal.data.currentRecovery) / simulationModal.data.currentRecovery * 100).toFixed(1)}%
                       </div>
-                      <div className="text-xs text-dark-400">Recovery Rate Change</div>
+                      <div className="text-xs text-slate-400">Recovery Rate Change</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Recommendation Details */}
                 {simulationModal.recommendation && (
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-dark-300 mb-3">Recommendation Details</h4>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-slate-300 mb-3">Recommendation Details</h4>
                     <div className="space-y-2">
                       <p className="text-sm text-white">{simulationModal.recommendation.description}</p>
-                      <p className="text-sm text-dark-300">{simulationModal.recommendation.expectedOutcome}</p>
+                      <p className="text-sm text-slate-300">{simulationModal.recommendation.expectedOutcome}</p>
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-dark-400">Time Horizon:</span>
+                        <span className="text-xs text-slate-400">Time Horizon:</span>
                         <span className="text-xs font-medium text-white">{simulationModal.recommendation.timeHorizon}</span>
-                        <span className="text-xs text-dark-400">•</span>
-                        <span className="text-xs text-dark-400">Confidence:</span>
-                        <span className="text-xs font-medium text-white">{(simulationModal.recommendation.confidence * 100).toFixed(0)}%</span>
+                        <span className="text-xs text-slate-400">•</span>
+                        <span className="text-xs text-slate-400">Confidence:</span>
+                        <span className="text-xs font-medium text-white">{((simulationModal.recommendation.confidence || 0.8) * 100).toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -853,7 +802,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   </button>
                   <button
                     onClick={() => setSimulationModal({ isOpen: false, data: null, recommendation: null })}
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-dark-600 hover:bg-dark-700 text-white rounded-lg font-medium transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
                   >
                     <span>Close</span>
                   </button>
@@ -871,7 +820,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-dark-800 border border-dark-600 rounded-xl p-6 max-w-md w-full"
+            className="bg-slate-800 border border-slate-600 rounded-xl p-6 max-w-md w-full"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
@@ -891,16 +840,16 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   <h3 className="text-lg font-semibold text-white">
                     {quickActionModal.success ? 'Quick Action Applied' : 'Quick Action Failed'}
                   </h3>
-                  <p className="text-sm text-dark-300">
+                  <p className="text-sm text-slate-300">
                     {quickActionModal.recommendation?.title}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setQuickActionModal({ isOpen: false, recommendation: null, success: false, message: '' })}
-                className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <svg className="h-5 w-5 text-dark-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -910,29 +859,29 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
             <div className="space-y-4">
               {/* Action Details */}
               {quickActionModal.recommendation && (
-                <div className="bg-dark-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">Action Details</h4>
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-slate-300 mb-3">Action Details</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Parameter:</span>
+                      <span className="text-sm text-slate-400">Parameter:</span>
                       <span className="text-sm font-medium text-white">
                         {quickActionModal.recommendation.parameter}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Current Value:</span>
+                      <span className="text-sm text-slate-400">Current Value:</span>
                       <span className="text-sm font-medium text-white">
                         {quickActionModal.recommendation.currentValue}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Suggested Value:</span>
+                      <span className="text-sm text-slate-400">Suggested Value:</span>
                       <span className="text-sm font-medium text-primary-400">
                         {quickActionModal.recommendation.suggestedValue}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-dark-400">Action Type:</span>
+                      <span className="text-sm text-slate-400">Action Type:</span>
                       <span className={`text-sm font-medium capitalize ${
                         quickActionModal.recommendation.actionType === 'increase' 
                           ? 'text-success-400'
@@ -974,20 +923,20 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
 
               {/* Expected Outcome */}
               {quickActionModal.recommendation && quickActionModal.success && (
-                <div className="bg-dark-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-dark-300 mb-2">Expected Outcome</h4>
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-slate-300 mb-2">Expected Outcome</h4>
                   <p className="text-sm text-white">
                     {quickActionModal.recommendation.expectedOutcome}
                   </p>
                   <div className="flex items-center space-x-2 mt-2">
-                    <span className="text-xs text-dark-400">Time Horizon:</span>
+                    <span className="text-xs text-slate-400">Time Horizon:</span>
                     <span className="text-xs font-medium text-white">
                       {quickActionModal.recommendation.timeHorizon}
                     </span>
-                    <span className="text-xs text-dark-400">•</span>
-                    <span className="text-xs text-dark-400">Confidence:</span>
+                    <span className="text-xs text-slate-400">•</span>
+                    <span className="text-xs text-slate-400">Confidence:</span>
                     <span className="text-xs font-medium text-white">
-                      {(quickActionModal.recommendation.confidence * 100).toFixed(0)}%
+                      {((quickActionModal.recommendation.confidence || 0.8) * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
@@ -1000,7 +949,7 @@ const PredictiveRecommendations: React.FC<PredictiveRecommendationsProps> = ({
                   className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                     quickActionModal.success
                       ? 'bg-success-600 hover:bg-success-700 text-white'
-                      : 'bg-dark-600 hover:bg-dark-700 text-white'
+                      : 'bg-slate-600 hover:bg-slate-700 text-white'
                   }`}
                 >
                   {quickActionModal.success ? 'Continue' : 'Close'}

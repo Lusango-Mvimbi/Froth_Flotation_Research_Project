@@ -59,7 +59,6 @@ export const useFuturePredictions = () => {
     try {
       const inputData = {
         Feed_Pb: currentData.Feed_Pb,
-        Feed_Zn: currentData.Feed_Zn,
         Pb_Conditioner_KEX_Flowrate: currentData.Pb_Conditioner_KEX_Flowrate,
         Pb_Rougher1_SIPX_Flowrate: currentData.Pb_Rougher1_SIPX_Flowrate,
         Pb_Rougher1_AirFlow: currentData.Pb_Rougher1_AirFlow,

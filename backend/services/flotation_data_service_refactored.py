@@ -1,9 +1,9 @@
 """
-Refactored FastAPI WebSocket Server for Real-time Flotation Data
+FastAPI WebSocket Server for Real-time Flotation Data
 ===============================================================
 
 This server provides real-time data updates to the React frontend
-via WebSocket connections, using SOLID principles.
+via WebSocket connections.
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
@@ -28,7 +28,7 @@ from services.shared_logging import setup_logger
 # Set up logging
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
 log_file = os.path.join(log_dir, 'flotation_data_service_refactored.log')
-logger = setup_logger(__name__, log_file, level=logging.ERROR)
+logger = setup_logger(__name__, log_file, level=logging.INFO)
 
 # Log service startup (INFO level for important startup info)
 logger.info("Starting Refactored Froth Flotation Data Service")
@@ -167,28 +167,32 @@ async def get_model_info():
 @app.get("/api/current-data")
 async def get_current_data():
     """Get current flotation data (frontend endpoint)"""
+    logger.info("API: GET /api/current-data - Request received")
     try:
         data_point = await orchestrator.generate_and_process_data(use_cache=True)  # Use caching
+        logger.info(f"API: GET /api/current-data - Success, Pb Concentrate: {data_point.get('Pb_Concentrate', 'N/A')}%")
         return data_point
     except Exception as e:
-        logger.error(f"Current data retrieval failed: {e}")
+        logger.error(f"API: GET /api/current-data - Failed: {e}")
         raise HTTPException(status_code=500, detail="Current data retrieval failed")
 
 @app.get("/api/optimal-ranges")
 async def get_optimal_ranges():
     """Get optimal parameter ranges (frontend endpoint)"""
+    logger.info("API: GET /api/optimal-ranges - Request received")
     try:
         # Get both parameter ranges (for data generation) and control ranges (for manual control)
         parameter_ranges = orchestrator.data_generator.get_parameter_ranges()
         control_ranges = orchestrator.data_generator.get_control_ranges()
         
+        logger.info(f"API: GET /api/optimal-ranges - Success, {len(parameter_ranges)} parameter ranges returned")
         return {
             "parameter_ranges": parameter_ranges,
             "control_ranges": control_ranges,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        logger.error(f"Optimal ranges retrieval failed: {e}")
+        logger.error(f"API: GET /api/optimal-ranges - Failed: {e}")
         raise HTTPException(status_code=500, detail="Optimal ranges retrieval failed")
 
 @app.get("/api/target-ranges")
@@ -301,21 +305,26 @@ async def get_control_settings():
 @app.post("/api/control-settings")
 async def update_control_settings(controls: Dict[str, float]):
     """Update control settings (frontend endpoint)"""
+    logger.info(f"API: POST /api/control-settings - Request received with controls: {controls}")
     try:
         # Validate control parameters
         if 'kex' not in controls or 'sipx' not in controls:
+            logger.warning(f"API: POST /api/control-settings - Missing required parameters: {controls}")
             raise HTTPException(status_code=400, detail="Missing required control parameters: kex, sipx")
         
         # Update the orchestrator's control settings (FIXED: Added await)
         await orchestrator.update_control_settings(controls)
         
-        logger.info(f"Control settings updated: KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
+        logger.info(f"API: POST /api/control-settings - Success, KEX={controls.get('kex')}, SIPX={controls.get('sipx')}")
         
         return {
             "message": "Control settings updated successfully",
             "controls": controls,
             "timestamp": datetime.now().isoformat()
         }
+    except HTTPException:
+        # Re-raise HTTP exceptions (like validation errors) without modification
+        raise
     except Exception as e:
         logger.error(f"Control settings update failed: {e}")
         raise HTTPException(status_code=500, detail="Control settings update failed")
@@ -328,14 +337,16 @@ async def optimize_reagent_rates(reagent_settings: Dict[str, float]):
         if 'kex' not in reagent_settings or 'sipx' not in reagent_settings:
             raise HTTPException(status_code=400, detail="Missing required reagent parameters: kex, sipx")
         
-        # Create current data with the provided reagent settings
+        # Get current system data for simulation
+        current_system_data = await orchestrator.generate_and_process_data(use_cache=False)
+        
+        # Create current data with the provided reagent settings and real system data
         current_data = {
             'Pb_Conditioner_KEX_Flowrate': reagent_settings['kex'],
             'Pb_Rougher1_SIPX_Flowrate': reagent_settings['sipx'],
-            'Feed_Pb': 1.5,  # Default values for simulation
-            'Feed_Zn': 0.8,
-            'Pb_Rougher1_AirFlow': 12.0,
-            'Pb_Rougher1_Level': 45.0
+            'Feed_Pb': current_system_data.get('Feed_Pb', 2.5),  # Use real system data
+            'Pb_Rougher1_AirFlow': current_system_data.get('Pb_Rougher1_AirFlow', 10.0),
+            'Pb_Rougher1_Level': current_system_data.get('Pb_Rougher1_Level', 40.0)
         }
         
         # Initialize optimizer if needed
@@ -373,22 +384,130 @@ async def get_connections():
         raise HTTPException(status_code=500, detail="Connections status retrieval failed")
 
 @app.get("/api/database/sensor-data")
-async def get_sensor_data(limit: int = 100):
-    """Get historical sensor data (frontend endpoint)"""
+async def get_sensor_data(
+    limit: int = 100, 
+    start_date: str = None, 
+    end_date: str = None
+):
+    """Get historical sensor data with real calculated values from database (frontend endpoint)
+    
+    Args:
+        limit: Maximum number of data points to return (default: 100)
+        start_date: Start date in YYYY-MM-DD format (optional)
+        end_date: End date in YYYY-MM-DD format (optional)
+    """
     try:
-        # Get data from RES1 table (real-time flotation data)
-        historical_data = orchestrator.database.get_latest_res1_data(limit)
+        # Parse date parameters
+        start_datetime = None
+        end_datetime = None
+        
+        if start_date:
+            try:
+                start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+        
+        if end_date:
+            try:
+                end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+                # Set end date to end of day
+                end_datetime = end_datetime.replace(hour=23, minute=59, second=59)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+        
+        # Validate date range (maximum 1 month) - do this before database queries
+        if start_datetime and end_datetime:
+            if (end_datetime - start_datetime).days > 31:
+                raise HTTPException(status_code=400, detail="Date range cannot exceed 1 month (31 days)")
+        
+        # Get raw sensor data from flotation_sensor_data table with date filtering
+        try:
+            res1_data = orchestrator.database.get_sensor_data_by_date_range(
+                limit=limit, 
+                start_date=start_datetime, 
+                end_date=end_datetime
+            )
+        except Exception as e:
+            logger.error(f"Error fetching sensor data: {e}")
+            res1_data = []
+        
+        # Get calculated values from flotation_calculated_values table with date filtering
+        try:
+            res2_data = orchestrator.database.get_calculated_values_by_date_range(
+                limit=limit, 
+                start_date=start_datetime, 
+                end_date=end_datetime
+            )
+        except Exception as e:
+            logger.error(f"Error fetching calculated values: {e}")
+            res2_data = []
+        
+        # Combine RES1 and RES2 data by timestamp
+        combined_data = []
+        
+        # Create a lookup dictionary for RES2 data by timestamp
+        res2_lookup = {}
+        for res2_point in res2_data:
+            timestamp = res2_point.get('timestamp', '')
+            res2_lookup[timestamp] = res2_point
+        
+        # Combine RES1 and RES2 data
+        for res1_point in res1_data:
+            timestamp = res1_point.get('timestamp', '')
+            
+            # Start with RES1 data (sensor readings)
+            combined_point = res1_point.copy()
+            
+            # Add RES2 data (calculated values) if available
+            if timestamp in res2_lookup:
+                res2_point = res2_lookup[timestamp]
+                combined_point.update({
+                    'Actual_Pb_Concentrate': res2_point.get('Actual_Pb_Concentrate', 0),
+                    'Actual_Pb_Recovery': res2_point.get('Actual_Pb_Recovery', 0),
+                    'Predicted_Pb_Concentrate': res2_point.get('Predicted_Pb_Concentrate', 0),
+                    'Predicted_Pb_Recovery': res2_point.get('Predicted_Pb_Recovery', 0),
+                    'Process_Status': res2_point.get('Process_Status', 'good'),
+                    'Pb_Concentrate': res2_point.get('Actual_Pb_Concentrate', 0),  # Legacy field
+                    'Pb_Recovery': res2_point.get('Actual_Pb_Recovery', 0)  # Legacy field
+                })
+            else:
+                # If no RES2 data, calculate basic values (fallback)
+                feed_pb = res1_point.get('Feed_Pb', 2.0)
+                kex = res1_point.get('Pb_Conditioner_KEX_Flowrate', 60.0)
+                sipx = res1_point.get('Pb_Rougher1_SIPX_Flowrate', 30.0)
+                
+                # Simple calculation for Pb concentrate based on feed and reagents
+                actual_pb_concentrate = feed_pb * (1 + (kex - 60) * 0.1 + (sipx - 30) * 0.05)
+                actual_pb_concentrate = max(5.0, min(40.0, actual_pb_concentrate))
+                
+                # Simple calculation for recovery
+                actual_pb_recovery = 0.7 + (kex - 40) * 0.002 + (sipx - 20) * 0.001
+                actual_pb_recovery = max(0.5, min(0.95, actual_pb_recovery))
+                
+                combined_point.update({
+                    'Actual_Pb_Concentrate': round(actual_pb_concentrate, 2),
+                    'Actual_Pb_Recovery': round(actual_pb_recovery, 3),
+                    'Predicted_Pb_Concentrate': round(actual_pb_concentrate, 2),
+                    'Predicted_Pb_Recovery': round(actual_pb_recovery, 3),
+                    'Process_Status': 'good',
+                    'Pb_Concentrate': round(actual_pb_concentrate, 2),
+                    'Pb_Recovery': round(actual_pb_recovery, 3)
+                })
+            
+            combined_data.append(combined_point)
         
         # If no database data, generate a few recent data points
-        if not historical_data:
-            historical_data = []
+        if not combined_data:
+            combined_data = []
             for _ in range(min(limit, 10)):  # Only generate 10 points max
                 data_point = await orchestrator.generate_and_process_data()
-                historical_data.append(data_point)
+                combined_data.append(data_point)
+        
+        logger.info(f"Retrieved {len(combined_data)} historical data points (RES1: {len(res1_data)}, RES2: {len(res2_data)})")
         
         return {
-            "data": historical_data,
-            "count": len(historical_data),
+            "data": combined_data,
+            "count": len(combined_data),
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
@@ -399,7 +518,7 @@ async def get_sensor_data(limit: int = 100):
 async def get_res1_data(limit: int = 100):
     """Get latest RES1 data (real-time flotation data)"""
     try:
-        data = orchestrator.database.get_latest_res1_data(limit)
+        data = orchestrator.database.get_latest_sensor_data(limit)
         logger.info(f"Retrieved {len(data)} records from RES1")
         return {
             "data": data,
@@ -414,7 +533,7 @@ async def get_res1_data(limit: int = 100):
 async def get_res2_data(limit: int = 100):
     """Get latest RES2 data (ML predictions and actual values)"""
     try:
-        data = orchestrator.database.get_latest_res2_data(limit)
+        data = orchestrator.database.get_latest_calculated_values(limit)
         logger.info(f"Retrieved {len(data)} records from RES2")
         return {
             "data": data,
@@ -429,7 +548,7 @@ async def get_res2_data(limit: int = 100):
 async def get_res3_data(limit: int = 100):
     """Get latest RES3 data (optimization recommendations and control settings)"""
     try:
-        data = orchestrator.database.get_latest_res3_data(limit)
+        data = orchestrator.database.get_latest_optimization_data(limit)
         logger.info(f"Retrieved {len(data)} records from RES3")
         return {
             "data": data,
@@ -444,9 +563,9 @@ async def get_res3_data(limit: int = 100):
 async def get_res_tables_summary():
     """Get summary of all RES tables"""
     try:
-        res1_data = orchestrator.database.get_latest_res1_data(1)
-        res2_data = orchestrator.database.get_latest_res2_data(1)
-        res3_data = orchestrator.database.get_latest_res3_data(1)
+        res1_data = orchestrator.database.get_latest_sensor_data(1)
+        res2_data = orchestrator.database.get_latest_calculated_values(1)
+        res3_data = orchestrator.database.get_latest_optimization_data(1)
         
         summary = {
             "RES1": {
@@ -522,15 +641,18 @@ async def get_future_predictions():
     """
     Get future predictions for multiple time horizons (GET endpoint for health checks)
     """
+    logger.info("API: GET /api/future-predictions - Request received")
     try:
-        # Use default values for health check
+        # Get current data to use for future predictions (use same data source as current-data endpoint)
+        current_data = await orchestrator.generate_and_process_data(use_cache=True)
+        
+        # Extract the relevant data for predictions
         prediction_data = {
-            'Feed_Pb': 2.5,
-            'Feed_Zn': 10.0,
-            'Pb_Conditioner_KEX_Flowrate': 45.0,
-            'Pb_Rougher1_SIPX_Flowrate': 25.0,
-            'Pb_Rougher1_AirFlow': 150.0,
-            'Pb_Rougher1_Level': 65.0
+            'Feed_Pb': current_data.get('Feed_Pb', 2.5),
+            'Pb_Conditioner_KEX_Flowrate': current_data.get('Pb_Conditioner_KEX_Flowrate', 45.0),
+            'Pb_Rougher1_SIPX_Flowrate': current_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0),
+            'Pb_Rougher1_AirFlow': current_data.get('Pb_Rougher1_AirFlow', 150.0),
+            'Pb_Rougher1_Level': current_data.get('Pb_Rougher1_Level', 65.0)
         }
         future_predictions = orchestrator.ml_model.predict_future_pb_concentrate(prediction_data, [5, 15, 30, 60])
         
@@ -547,15 +669,18 @@ async def get_future_predictions():
         
         converted_predictions = convert_numpy_types(future_predictions['future_predictions'])
         
+        logger.info(f"API: GET /api/future-predictions - Success, {len(converted_predictions)} horizons predicted")
+        
         return {
             "success": True,
             "future_predictions": converted_predictions,
+            "current_data": current_data,  # Include current data for frontend
             "prediction_time": future_predictions['prediction_time'],
             "available_horizons": future_predictions['available_horizons'],
             "timestamp": future_predictions['prediction_time']  # Use same timestamp as prediction_time for consistency
         }
     except Exception as e:
-        logger.error(f"Error getting future predictions: {e}")
+        logger.error(f"API: GET /api/future-predictions - Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/predict-future")
@@ -567,7 +692,6 @@ async def predict_future(input_data: Dict[str, Any]):
         # Convert input data to the format expected by the ML service
         prediction_data = {
             'Feed_Pb': float(input_data.get('Feed_Pb', 2.5)),
-            'Feed_Zn': float(input_data.get('Feed_Zn', 10.0)),
             'Pb_Conditioner_KEX_Flowrate': float(input_data.get('Pb_Conditioner_KEX_Flowrate', 45.0)),
             'Pb_Rougher1_SIPX_Flowrate': float(input_data.get('Pb_Rougher1_SIPX_Flowrate', 25.0)),
             'Pb_Rougher1_AirFlow': float(input_data.get('Pb_Rougher1_AirFlow', 150.0)),
@@ -604,6 +728,7 @@ async def predict_future(input_data: Dict[str, Any]):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time data"""
+    logger.info("WebSocket: New connection established")
     try:
         # Connect to WebSocket manager
         await orchestrator.websocket_manager.connect(websocket)
@@ -611,6 +736,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Send initial data point
         data_point = await orchestrator.generate_and_process_data()
         await orchestrator.websocket_manager.broadcast_data_point(data_point)
+        logger.info("WebSocket: Initial data point sent to client")
         
         # Keep connection alive and handle messages
         while True:

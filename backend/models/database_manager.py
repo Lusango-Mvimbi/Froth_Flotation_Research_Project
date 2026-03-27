@@ -1,6 +1,5 @@
 """
 Database Utilities for Froth Flotation Data Storage
-==================================================
 
 This module handles SQLite database operations for storing and retrieving
 flotation process data, sensor readings, and control parameters.
@@ -25,12 +24,12 @@ from services.shared_logging import setup_logger
 # Set up logging
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
 log_file = os.path.join(log_dir, 'database_manager.log')
-logger = setup_logger(__name__, log_file, level=logging.WARNING)
+logger = setup_logger(__name__, log_file, level=logging.INFO)
 
-# Log service startup (WARNING level for important startup info)
-logger.warning("Starting Froth Flotation Database Manager")
-logger.warning(f"Log file: {log_file}")
-logger.warning(f"Service: SQLite Database Manager")
+# Log service startup (INFO level for important startup info)
+logger.info("Starting Froth Flotation Database Manager")
+logger.info(f"Log file: {log_file}")
+logger.info(f"Service: SQLite Database Manager")
 
 class FlotationDatabase:
     """SQLite database manager for flotation data"""
@@ -57,13 +56,12 @@ class FlotationDatabase:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
             
-            # Create RES1 table for real-time flotation data (sensor readings and process parameters)
+            # Create flotation_sensor_data table for real-time sensor readings and process parameters
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS RES1 (
+                CREATE TABLE IF NOT EXISTS flotation_sensor_data (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     Feed_Pb REAL,
-                    Feed_Zn REAL,
                     Pb_Conditioner_KEX_Flowrate REAL,
                     Pb_Rougher1_SIPX_Flowrate REAL,
                     Pb_Rougher1_AirFlow REAL,
@@ -72,9 +70,9 @@ class FlotationDatabase:
                 )
             ''')
             
-            # Create RES2 table for ML predictions and actual values
+            # Create flotation_calculated_values table for ML predictions and actual calculated values
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS RES2 (
+                CREATE TABLE IF NOT EXISTS flotation_calculated_values (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     Predicted_Pb_Concentrate REAL,
@@ -87,9 +85,9 @@ class FlotationDatabase:
                 )
             ''')
             
-            # Create RES3 table for optimization recommendations and control settings
+            # Create flotation_optimization_data table for optimization recommendations and control settings
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS RES3 (
+                CREATE TABLE IF NOT EXISTS flotation_optimization_data (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     current_kex REAL,
@@ -114,7 +112,6 @@ class FlotationDatabase:
                     kex_flowrate REAL,
                     sipx_flowrate REAL,
                     feed_pb REAL,
-                    feed_zn REAL,
                     cell_level REAL,
                     impeller_speed REAL,
                     froth_height REAL,
@@ -250,9 +247,9 @@ class FlotationDatabase:
             cursor.execute('''
                 INSERT INTO sensor_data (
                     pH, temperature, air_flow, kex_flowrate, sipx_flowrate,
-                    feed_pb, feed_zn, cell_level, impeller_speed, froth_height,
+                    feed_pb, cell_level, impeller_speed, froth_height,
                     pulp_density, nigrosine_min, nigrosine_max, pb_recovery, pb_concentrate
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 data.get('pH'),
                 data.get('Temperature'),
@@ -260,7 +257,6 @@ class FlotationDatabase:
                 data.get('Pb_Conditioner_KEX_Flowrate'),
                 data.get('Pb_Rougher1_SIPX_Flowrate'),
                 data.get('Feed_Pb'),
-                data.get('Feed_Zn'),
                 data.get('Cell_Level'),
                 data.get('Impeller_Speed'),
                 data.get('Froth_Height'),
@@ -678,19 +674,18 @@ class FlotationDatabase:
             else:
                 print("INFO: Default admin user 'admin' already exists")
 
-    def save_to_res1(self, data: Dict[str, Any]) -> int:
-        """Save real-time flotation data to RES1 table"""
+    def save_to_sensor_data(self, data: Dict[str, Any]) -> int:
+        """Save real-time flotation sensor data to flotation_sensor_data table"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
             cursor.execute('''
-                INSERT INTO RES1 (
-                    Feed_Pb, Feed_Zn, Pb_Conditioner_KEX_Flowrate, 
+                INSERT INTO flotation_sensor_data (
+                    Feed_Pb, Pb_Conditioner_KEX_Flowrate, 
                     Pb_Rougher1_SIPX_Flowrate, Pb_Rougher1_AirFlow, Pb_Rougher1_Level
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?)
             ''', (
                 data.get('Feed_Pb'),
-                data.get('Feed_Zn'),
                 data.get('Pb_Conditioner_KEX_Flowrate'),
                 data.get('Pb_Rougher1_SIPX_Flowrate'),
                 data.get('Pb_Rougher1_AirFlow'),
@@ -700,13 +695,13 @@ class FlotationDatabase:
             conn.commit()
             return cursor.lastrowid
     
-    def save_to_res2(self, data: Dict[str, Any]) -> int:
-        """Save ML predictions and actual values to RES2 table"""
+    def save_to_calculated_values(self, data: Dict[str, Any]) -> int:
+        """Save ML predictions and actual calculated values to flotation_calculated_values table"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
             cursor.execute('''
-                INSERT INTO RES2 (
+                INSERT INTO flotation_calculated_values (
                     Predicted_Pb_Concentrate, Actual_Pb_Concentrate,
                     Predicted_Pb_Recovery, Actual_Pb_Recovery,
                     Process_Status, model_confidence
@@ -723,8 +718,8 @@ class FlotationDatabase:
             conn.commit()
             return cursor.lastrowid
     
-    def save_to_res3(self, data: Dict[str, Any]) -> int:
-        """Save optimization recommendations and control settings to RES3 table"""
+    def save_to_optimization_data(self, data: Dict[str, Any]) -> int:
+        """Save optimization recommendations and control settings to flotation_optimization_data table"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
@@ -732,7 +727,7 @@ class FlotationDatabase:
             recommendations_json = json.dumps(data.get('recommendations', []))
             
             cursor.execute('''
-                INSERT INTO RES3 (
+                INSERT INTO flotation_optimization_data (
                     current_kex, current_sipx, recommended_kex, recommended_sipx,
                     optimization_confidence, recommendations, external_factors_changed
                 ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -749,46 +744,92 @@ class FlotationDatabase:
             conn.commit()
             return cursor.lastrowid
     
-    def get_latest_res1_data(self, limit: int = 100) -> List[Dict[str, Any]]:
-        """Get latest RES1 data"""
+    def get_latest_sensor_data(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get latest flotation sensor data"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             
             cursor.execute('''
-                SELECT * FROM RES1 
+                SELECT * FROM flotation_sensor_data 
                 ORDER BY timestamp DESC 
                 LIMIT ?
             ''', (limit,))
             
             return [dict(row) for row in cursor.fetchall()]
     
-    def get_latest_res2_data(self, limit: int = 100) -> List[Dict[str, Any]]:
-        """Get latest RES2 data"""
+    def get_latest_calculated_values(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get latest flotation calculated values"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             
             cursor.execute('''
-                SELECT * FROM RES2 
+                SELECT * FROM flotation_calculated_values 
                 ORDER BY timestamp DESC 
                 LIMIT ?
             ''', (limit,))
             
             return [dict(row) for row in cursor.fetchall()]
     
-    def get_latest_res3_data(self, limit: int = 100) -> List[Dict[str, Any]]:
-        """Get latest RES3 data"""
+    def get_latest_optimization_data(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get latest flotation optimization data"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             
             cursor.execute('''
-                SELECT * FROM RES3 
+                SELECT * FROM flotation_optimization_data 
                 ORDER BY timestamp DESC 
                 LIMIT ?
             ''', (limit,))
             
+            return [dict(row) for row in cursor.fetchall()]
+    
+    def get_sensor_data_by_date_range(self, limit: int = 100, start_date=None, end_date=None) -> List[Dict[str, Any]]:
+        """Get flotation sensor data filtered by date range"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            query = 'SELECT * FROM flotation_sensor_data WHERE 1=1'
+            params = []
+            
+            if start_date:
+                query += ' AND timestamp >= ?'
+                params.append(start_date.strftime('%Y-%m-%d %H:%M:%S'))
+            
+            if end_date:
+                query += ' AND timestamp <= ?'
+                params.append(end_date.strftime('%Y-%m-%d %H:%M:%S'))
+            
+            query += ' ORDER BY timestamp DESC LIMIT ?'
+            params.append(limit)
+            
+            cursor.execute(query, params)
+            return [dict(row) for row in cursor.fetchall()]
+    
+    def get_calculated_values_by_date_range(self, limit: int = 100, start_date=None, end_date=None) -> List[Dict[str, Any]]:
+        """Get flotation calculated values filtered by date range"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            query = 'SELECT * FROM flotation_calculated_values WHERE 1=1'
+            params = []
+            
+            if start_date:
+                query += ' AND timestamp >= ?'
+                params.append(start_date.strftime('%Y-%m-%d %H:%M:%S'))
+            
+            if end_date:
+                query += ' AND timestamp <= ?'
+                params.append(end_date.strftime('%Y-%m-%d %H:%M:%S'))
+            
+            query += ' ORDER BY timestamp DESC LIMIT ?'
+            params.append(limit)
+            
+            cursor.execute(query, params)
             return [dict(row) for row in cursor.fetchall()]
 
 # Global database instance

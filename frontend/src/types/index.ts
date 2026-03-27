@@ -3,7 +3,6 @@ export interface FlotationData {
   timestamp: string;
   // ONLY parameters that were actually in the training data
   Feed_Pb: number;
-  Feed_Zn: number;
   Pb_Conditioner_KEX_Flowrate: number;
   Pb_Rougher1_SIPX_Flowrate: number;
   Pb_Rougher1_AirFlow: number;
@@ -63,16 +62,25 @@ export interface FuturePredictionResponse {
 
 export interface Recommendation {
   id: string;
-  type: 'danger' | 'warning' | 'success' | 'info';
-  message: string;
+  type: 'danger' | 'warning' | 'success' | 'info' | 'improvement' | 'risk' | 'optimization';
+  title?: string;
+  description?: string;
   parameter?: string;
+  currentValue?: number;
+  suggestedValue?: number;
+  expectedOutcome?: string;
+  timeHorizon?: string;
+  confidence?: number;
+  impact?: 'low' | 'medium' | 'high';
+  actionType?: 'increase' | 'decrease' | 'maintain';
+  message?: string;
   current_value?: number;
   optimal_range?: string;
-  timestamp: string;
+  timestamp?: string;
 }
 
 export interface PerformanceState {
-  state: 'below_min' | 'within_range' | 'above_max';
+  state: 'below_min' | 'within_range' | 'above_max' | 'good' | 'warning' | 'critical' | 'info';
   color: string;
   backgroundColor: string;
 }

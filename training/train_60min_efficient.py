@@ -82,10 +82,10 @@ logger.addHandler(console_handler)
 # Try to import GPU-accelerated libraries
 try:
     import cupy as cp
-    logger.info("✅ CuPy available for GPU acceleration")
+    logger.info(" CuPy available for GPU acceleration")
     GPU_AVAILABLE = True
 except ImportError:
-    logger.warning("⚠️ CuPy not available, using CPU only")
+    logger.warning(" CuPy not available, using CPU only")
     GPU_AVAILABLE = False
 
 class EfficientSixtyMinuteTrainer:
@@ -121,7 +121,7 @@ class EfficientSixtyMinuteTrainer:
         checkpoint_file = self.checkpoint_dir / f'checkpoint_{stage}.pkl'
         with open(checkpoint_file, 'wb') as f:
             pickle.dump(data, f)
-        logger.info(f"✅ Checkpoint saved: {checkpoint_file}")
+        logger.info(f" Checkpoint saved: {checkpoint_file}")
     
     def load_checkpoint(self, stage):
         """Load checkpoint data from disk if it exists."""
@@ -129,7 +129,7 @@ class EfficientSixtyMinuteTrainer:
         if checkpoint_file.exists():
             with open(checkpoint_file, 'rb') as f:
                 data = pickle.load(f)
-            logger.info(f"✅ Checkpoint loaded: {checkpoint_file}")
+            logger.info(f" Checkpoint loaded: {checkpoint_file}")
             return data
         return None
     
@@ -350,15 +350,15 @@ class EfficientSixtyMinuteTrainer:
                 search.fit(X_train, y_train)
                 optimized_models[name] = search.best_estimator_
                 
-                logger.info(f"   ✅ {name.upper()} - Best CV score: {search.best_score_:.4f}")
-                logger.info(f"   ✅ {name.upper()} - Best parameters: {search.best_params_}")
+                logger.info(f"    {name.upper()} - Best CV score: {search.best_score_:.4f}")
+                logger.info(f"    {name.upper()} - Best parameters: {search.best_params_}")
                 
                 # Save checkpoint after each model optimization
                 self.save_checkpoint('model_optimization', {'optimized_models': optimized_models})
                 
             except Exception as e:
                 logger.error(f"❌ Error optimizing {name}: {e}")
-                logger.warning(f"⚠️ Skipping {name} and continuing with other models...")
+                logger.warning(f" Skipping {name} and continuing with other models...")
                 continue
         
         logger.info(f"🤖 Model optimization completed. Optimized {len(optimized_models)} models.")
@@ -414,14 +414,14 @@ class EfficientSixtyMinuteTrainer:
                     'model': model
                 }
                 
-                logger.info(f"   ✅ {name.upper()} - Test R²: {test_r2:.4f}, RMSE: {test_rmse:.4f}, 10% Acc: {test_pred_10:.2%}")
+                logger.info(f"    {name.upper()} - Test R²: {test_r2:.4f}, RMSE: {test_rmse:.4f}, 10% Acc: {test_pred_10:.2%}")
                 
                 # Save checkpoint after each model evaluation
                 self.save_checkpoint('model_evaluation', {'results': results})
                 
             except Exception as e:
                 logger.error(f"❌ Error evaluating {name}: {e}")
-                logger.warning(f"⚠️ Skipping {name} evaluation and continuing...")
+                logger.warning(f" Skipping {name} evaluation and continuing...")
                 continue
         
         logger.info(f"📈 Model evaluation completed. Evaluated {len(results)} models.")
@@ -604,9 +604,9 @@ class EfficientSixtyMinuteTrainer:
         logger.info(f"   • Checkpoints: {self.checkpoint_dir}/ directory")
         logger.info(f"   • Log file: logs/60min_training.log")
         
-        logger.info(f"\n✅ This efficient training completed in reasonable time!")
-        logger.info(f"   Target R² > 90% achieved: {'✅' if best_results['test_r2'] > 0.9 else '❌'}")
-        logger.info(f"   Target R² > 85% achieved: {'✅' if best_results['test_r2'] > 0.85 else '❌'}")
+        logger.info(f"\n This efficient training completed in reasonable time!")
+        logger.info(f"   Target R² > 90% achieved: {'' if best_results['test_r2'] > 0.9 else '❌'}")
+        logger.info(f"   Target R² > 85% achieved: {'' if best_results['test_r2'] > 0.85 else '❌'}")
     
     def run_training(self):
         """

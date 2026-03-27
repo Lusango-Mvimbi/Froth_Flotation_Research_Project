@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Settings, 
   Droplets, 
   TrendingUp,
   AlertTriangle,
@@ -92,57 +91,47 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="glass rounded-xl p-4 sm:p-6 h-full overflow-y-auto"
+      className="bg-slate-800 border border-slate-600 rounded-xl p-4 h-full overflow-y-auto shadow-sm"
     >
-      {/* Header */}
-      <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-        <div className="p-2 bg-primary-600 rounded-lg">
-          <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-        </div>
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold text-white">Reagent Controls</h2>
-          <p className="text-xs sm:text-sm text-dark-300">Adjust reagent flow rates</p>
-        </div>
-      </div>
 
       {/* Controls */}
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4">
         {controlConfigs.map((config) => {
           const value = localControls[config.key];
           const optimalRange = optimalRanges?.[config.key];
           const status = optimalRange 
             ? getControlStatus(value, optimalRange.optimal_min || optimalRange.min, optimalRange.optimal_max || optimalRange.max)  // Use optimal ranges from backend
-            : { status: 'unknown', color: 'text-dark-400', bgColor: 'bg-dark-700/20' };
+            : { status: 'unknown', color: 'text-slate-400', bgColor: 'bg-slate-700/20' };
 
           return (
             <motion.div
               key={config.key}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-3 sm:p-4 rounded-lg border transition-all duration-300 ${status.bgColor} border-dark-600`}
+              className={`p-4 rounded-lg border transition-all duration-300 ${status.bgColor} border-slate-600`}
             >
               {/* Control Header */}
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2 min-w-0">
-                  <config.icon className={`h-3 w-3 sm:h-4 sm:w-4 ${status.color} flex-shrink-0`} />
+                  <config.icon className={`h-4 w-4 ${status.color} flex-shrink-0`} />
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-semibold text-white truncate">{config.label}</h3>
-                    <p className="text-xs text-dark-400 hidden sm:block">{config.description}</p>
+                    <h3 className="text-sm font-semibold text-white truncate">{config.label}</h3>
+                    <p className="text-xs text-slate-400">{config.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-1 flex-shrink-0">
-                  {status.status === 'optimal' && <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-success-400" />}
-                  {status.status === 'below' && <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-danger-400" />}
-                  {status.status === 'above' && <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-warning-400" />}
+                  {status.status === 'optimal' && <CheckCircle className="h-4 w-4 text-success-400" />}
+                  {status.status === 'below' && <AlertTriangle className="h-4 w-4 text-danger-400" />}
+                  {status.status === 'above' && <AlertTriangle className="h-4 w-4 text-warning-400" />}
                 </div>
               </div>
 
                              {/* Current Value */}
                <div className="flex items-center justify-between mb-2">
-                 <span className="text-base sm:text-lg font-bold text-white">
+                 <span className="text-lg font-bold text-white">
                    {value.toFixed(1)}
                  </span>
-                 <span className="text-xs sm:text-sm text-dark-300">{config.unit}</span>
+                 <span className="text-sm text-slate-300">{config.unit}</span>
                </div>
 
               {/* Slider */}
@@ -155,7 +144,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   value={value}
                   onInput={(e) => handleSliderChange(config.key, parseFloat((e.target as HTMLInputElement).value))}
                   onChange={(e) => handleSliderChange(config.key, parseFloat((e.target as HTMLInputElement).value))}
-                  className="w-full h-2 bg-dark-600 rounded-lg appearance-none cursor-pointer slider-track"
+                  className="w-full h-3 bg-slate-600 rounded-lg appearance-none cursor-pointer slider-track"
                   style={{
                     background: `linear-gradient(to right, ${status.color.replace('text-', '')} 0%, ${status.color.replace('text-', '')} ${((value - config.min) / (config.max - config.min)) * 100}%, #475569 ${((value - config.min) / (config.max - config.min)) * 100}%, #475569 100%)`
                   }}
@@ -164,13 +153,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
               {/* Range Info */}
               <div className="flex items-center justify-between text-xs">
-                <span className="text-dark-400">Min: {config.min}</span>
+                <span className="text-slate-400">Min: {config.min}</span>
                 {optimalRange && (
-                  <span className={`font-medium ${status.color} hidden sm:inline`}>
+                  <span className={`font-medium ${status.color}`}>
                     Optimal: {optimalRange.optimal_min || optimalRange.min}-{optimalRange.optimal_max || optimalRange.max}
                   </span>
                 )}
-                <span className="text-dark-400">Max: {config.max}</span>
+                <span className="text-slate-400">Max: {config.max}</span>
               </div>
 
               {/* Status Indicator */}
@@ -192,13 +181,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="mt-4 sm:mt-6 p-3 sm:p-4 bg-dark-700/50 rounded-lg border border-dark-600"
+        className="mt-4 sm:mt-6 p-3 sm:p-4 bg-slate-700/50 rounded-lg border border-slate-600"
       >
         <div className="flex items-center space-x-2 mb-2">
           <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-primary-400" />
           <h4 className="text-xs sm:text-sm font-semibold text-white">Control Summary</h4>
         </div>
-        <p className="text-xs text-dark-300">
+        <p className="text-xs text-slate-300">
           Adjust sliders to optimize process performance. Green indicators show optimal ranges.
         </p>
       </motion.div>

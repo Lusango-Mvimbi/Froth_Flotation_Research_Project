@@ -2,7 +2,7 @@
 ML Model Implementation
 ======================
 
-This module implements the ML model service following SOLID principles.
+This module implements the ML model service.
 """
 
 import numpy as np
@@ -89,7 +89,7 @@ class FeatureProcessor(IFeatureProcessor):
         self.logger = logger
         # ONLY parameters that were actually in the training data
         self.feature_names = [
-            'Feed_Pb', 'Feed_Zn', 'Pb_Conditioner_KEX_Flowrate', 
+            'Feed_Pb', 'Pb_Conditioner_KEX_Flowrate', 
             'Pb_Rougher1_SIPX_Flowrate', 'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level'
         ]
         
@@ -100,7 +100,7 @@ class FeatureProcessor(IFeatureProcessor):
             'Pulp_Density_lag1', 'Pulp_Density_lag2',
             'Pb_Conditioner_KEX_Flowrate_lag1', 'Pb_Conditioner_KEX_Flowrate_lag2',
             'Pb_Rougher1_SIPX_Flowrate_lag1', 'Pb_Rougher1_SIPX_Flowrate_lag2',
-            'Feed_Pb_lag1', 'Feed_Pb_lag2', 'Feed_Zn_lag1', 'Feed_Zn_lag2',
+            'Feed_Pb_lag1', 'Feed_Pb_lag2',
             'Pb_Rougher1_Level_lag1', 'Pb_Rougher1_Level_lag2',
             'Impeller_Speed_lag1', 'Impeller_Speed_lag2',
             'Froth_Height_lag1', 'Froth_Height_lag2'

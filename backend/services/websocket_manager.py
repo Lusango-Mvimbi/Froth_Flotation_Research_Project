@@ -2,7 +2,7 @@
 WebSocket Manager Implementation
 ==============================
 
-This module implements the WebSocket connection management following SOLID principles.
+This module implements the WebSocket connection management.
 """
 
 import asyncio

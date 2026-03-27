@@ -1,10 +1,10 @@
-# Deployment Guide 🚀
+# Deployment Guide
 
 ## Overview
 
 This guide covers the complete deployment process for the Froth Flotation Digital Twin system with future prediction capabilities. It includes automated deployment pipelines, version management, monitoring setup, and rollback procedures.
 
-## 📋 Deployment Checklist
+## Deployment Checklist
 
 ### Pre-Deployment
 - [ ] **Code Review**: All changes reviewed and approved
@@ -29,7 +29,7 @@ This guide covers the complete deployment process for the Froth Flotation Digita
 - [ ] **User Acceptance**: Core functionality verified
 - [ ] **Documentation**: Deployment notes recorded
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### Production Environment Structure
 

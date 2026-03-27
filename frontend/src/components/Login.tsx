@@ -20,15 +20,15 @@ const Login: React.FC = () => {
 
   // Debug: Log authentication state changes
   useEffect(() => {
-    console.log('🔐 Login component: auth state changed', { isAuthenticated, authLoading, authError });
+    console.log('Login component: auth state changed', { isAuthenticated, authLoading, authError });
   }, [isAuthenticated, authLoading, authError]);
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading authentication...</p>
+          <p className="text-slate-300">Loading authentication...</p>
         </div>
       </div>
     );
@@ -43,22 +43,22 @@ const Login: React.FC = () => {
     }
 
     setIsLoading(true);
-    console.log('🔐 Login form submitted:', { username: formData.username, passwordLength: formData.password.length });
+    console.log('Login form submitted:', { username: formData.username, passwordLength: formData.password.length });
 
     try {
       const result = await login({ username: formData.username, password: formData.password });
-      console.log('🔐 Login result:', result);
+      console.log('Login result:', result);
       
       if (result.success) {
         toast.success('Login successful!');
         navigate('/dashboard', { replace: true });
       } else {
         const errorMessage = result.error;
-        console.error('🔐 Login failed:', errorMessage);
+        console.error('Login failed:', errorMessage);
         toast.error(errorMessage || 'Login failed');
       }
     } catch (error) {
-      console.error('🔐 Login exception:', error);
+      console.error('Login exception:', error);
       
       // Handle message channel closed errors specifically
       if (error instanceof Error && error.message.includes('message channel closed')) {
@@ -77,23 +77,23 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 flex items-center justify-center p-2 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center p-2 sm:p-4 lg:p-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
       >
-        <div className="glass rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-2xl">
+        <div className="bg-slate-800 border border-slate-600 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <Activity className="w-12 h-12 text-blue-400" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-200 mb-2">
               Froth Flotation Digital Twin
             </h1>
-            <p className="text-gray-400 text-sm sm:text-base">
+            <p className="text-slate-400 text-sm sm:text-base">
               Industrial Process Monitoring System
             </p>
           </div>
@@ -117,18 +117,18 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
             <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="username" className="block text-sm font-medium text-slate-300">
                 Username
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
                   id="username"
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your username"
                   required
                   disabled={isLoading}
@@ -138,18 +138,18 @@ const Login: React.FC = () => {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-12 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your password"
                   required
                   disabled={isLoading}
@@ -157,7 +157,7 @@ const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
                   disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -169,7 +169,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">

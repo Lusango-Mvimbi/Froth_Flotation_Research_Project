@@ -44,7 +44,6 @@ class TestFlotationDataGenerator(unittest.TestCase):
         """Test generator initialization"""
         self.assertIsNotNone(self.generator.base_values)
         self.assertIsNotNone(self.generator.feed_pb)
-        self.assertIsNotNone(self.generator.feed_zn)
         self.assertIsNotNone(self.generator.optimal_kex)
         self.assertIsNotNone(self.generator.optimal_sipx)
         self.assertIsNotNone(self.generator.optimal_airflow)
@@ -55,7 +54,7 @@ class TestFlotationDataGenerator(unittest.TestCase):
         
         # Check required fields (updated to match current implementation)
         required_fields = [
-            'timestamp', 'Feed_Pb', 'Feed_Zn',
+            'timestamp', 'Feed_Pb',
             'Pb_Conditioner_KEX_Flowrate', 'Pb_Rougher1_SIPX_Flowrate',
             'Pb_Rougher1_AirFlow', 'Pb_Rougher1_Level'
         ]
@@ -66,7 +65,6 @@ class TestFlotationDataGenerator(unittest.TestCase):
         # Check data types
         self.assertIsInstance(data_point['timestamp'], str)
         self.assertIsInstance(data_point['Feed_Pb'], (int, float))
-        self.assertIsInstance(data_point['Feed_Zn'], (int, float))
     
     def test_get_parameter_ranges(self):
         """Test parameter ranges retrieval"""
@@ -74,7 +72,6 @@ class TestFlotationDataGenerator(unittest.TestCase):
         
         self.assertIsInstance(ranges, dict)
         self.assertIn('Feed_Pb', ranges)
-        self.assertIn('Feed_Zn', ranges)
         
         # Check range format
         for param, (min_val, max_val) in ranges.items():
@@ -86,7 +83,6 @@ class TestFlotationDataGenerator(unittest.TestCase):
         """Test parameter validation with valid parameters"""
         valid_params = {
             'Feed_Pb': 2.5,
-            'Feed_Zn': 10.0,
             'Pb_Conditioner_KEX_Flowrate': 50.0
         }
         
@@ -97,7 +93,6 @@ class TestFlotationDataGenerator(unittest.TestCase):
         """Test parameter validation with invalid parameters"""
         invalid_params = {
             'Feed_Pb': -1.0,  # Outside valid range
-            'Feed_Zn': 10.0,
             'Pb_Conditioner_KEX_Flowrate': 50.0
         }
         
@@ -248,7 +243,6 @@ class TestFeatureProcessor(unittest.TestCase):
         """Test feature preparation"""
         raw_data = {
             'Feed_Pb': 2.5,
-            'Feed_Zn': 10.0,
             'Pb_Conditioner_KEX_Flowrate': 50.0
         }
         
@@ -259,7 +253,6 @@ class TestFeatureProcessor(unittest.TestCase):
         
         # Check that provided features are included
         self.assertEqual(features['Feed_Pb'], 2.5)
-        self.assertEqual(features['Feed_Zn'], 10.0)
         self.assertEqual(features['Pb_Conditioner_KEX_Flowrate'], 50.0)
         
         # Check that all features are present
@@ -578,14 +571,14 @@ def run_performance_tests():
     print(f"Status analysis (100 iterations): {analysis_time:.4f}s")
     assert analysis_time < 1.0, "Status analysis is too slow"
     
-    print("✅ Performance tests passed!")
+    print("Performance tests passed!")
 
 # ============================================================================
 # MAIN TEST RUNNER
 # ============================================================================
 
 if __name__ == '__main__':
-    print("🧪 Running Backend Services Unit Tests...")
+    print("Running Backend Services Unit Tests...")
     
     # Create test suite
     test_suite = unittest.TestSuite()
@@ -631,7 +624,7 @@ if __name__ == '__main__':
             print(f"  - {test}: {traceback}")
     
     if result.wasSuccessful():
-        print("\n🎉 All tests passed!")
+        print("\nAll tests passed!")
     else:
-        print("\n❌ Some tests failed!")
+        print("\nSome tests failed!")
         exit(1)

@@ -86,7 +86,6 @@ export interface IFloationData {
   Temperature: number;
   Pulp_Density: number;
   Feed_Pb: number;
-  Feed_Zn: number;
   Pb_Conditioner_KEX_Flowrate: number;
   Pb_Rougher1_SIPX_Flowrate: number;
   Pb_Rougher1_AirFlow: number;
