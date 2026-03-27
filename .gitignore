@@ -134,5 +134,6 @@ dmypy.json
 *.backup
 *.old
 
-# System files
-.tatus --porcelain
+# Office temporary lock files
+~$*.docx
+~$*.doc
