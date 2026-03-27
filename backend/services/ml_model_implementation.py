@@ -2,7 +2,7 @@
 ML Model Implementation
 ======================
 
-This module implements the ML model service following SOLID principles.
+This module implements the ML model service.
 """
 
 import numpy as np

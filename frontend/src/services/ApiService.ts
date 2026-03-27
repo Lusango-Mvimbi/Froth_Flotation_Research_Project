@@ -2,7 +2,7 @@
  * API Service Implementation
  * =========================
  * 
- * Concrete implementation of the API service following SOLID principles.
+ * Concrete implementation of the API service.
  */
 
 import { IApiService } from '../interfaces';

@@ -3,7 +3,7 @@ Future Prediction Service
 ========================
 
 This service loads trained time-series models and provides future predictions
-for multiple time horizons (5, 60 minutes) with confidence intervals.
+for multiple time horizons with confidence intervals.
 """
 
 import joblib
@@ -92,7 +92,7 @@ class FuturePredictionService:
                         try:
                             model = joblib.load(model_path)
                             self.models[horizon_key][model_name] = model
-                            logger.info(f"✅ Loaded {model_name.upper()} model for {horizon_key}: {model_path}")
+                            logger.info(f" Loaded {model_name.upper()} model for {horizon_key}: {model_path}")
                         except Exception as e:
                             logger.error(f"Failed to load {model_name} model for {horizon_key}: {e}")
                     else:

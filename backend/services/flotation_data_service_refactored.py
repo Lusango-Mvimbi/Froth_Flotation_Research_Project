@@ -1,9 +1,9 @@
 """
-Refactored FastAPI WebSocket Server for Real-time Flotation Data
+FastAPI WebSocket Server for Real-time Flotation Data
 ===============================================================
 
 This server provides real-time data updates to the React frontend
-via WebSocket connections, using SOLID principles.
+via WebSocket connections.
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException

@@ -1,7 +1,6 @@
 """
 Data Generator Implementation
 
-This module implements the data generation service following SOLID principles.
 """
 
 import random

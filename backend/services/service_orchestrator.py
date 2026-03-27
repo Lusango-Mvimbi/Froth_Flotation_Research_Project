@@ -2,7 +2,7 @@
 Service Orchestrator
 ===================
 
-This module orchestrates all the backend services following SOLID principles.
+This module orchestrates all the backend services.
 """
 
 import asyncio

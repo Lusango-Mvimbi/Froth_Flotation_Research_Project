@@ -1,5 +1,5 @@
 """
-ML Model Service for Froth Flotation Digital Twin
+ML Model Service
 
 This service implements proper froth flotation behavior with ML predictions.
 Based on research: Pb concentrate is predicted by model, Recovery is calculated using froth flotation equations.

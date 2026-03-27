@@ -1,5 +1,5 @@
 """
-Simple Flask Login Page for Froth Flotation Digital Twin
+Flask Login Page
 ======================================================
 
 A reliable Flask-based login page with database authentication.
